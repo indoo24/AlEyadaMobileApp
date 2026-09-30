@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cleartext HTTP is refused everywhere in a release build. The app has exactly
+  one production origin and it is HTTPS; there is no certificate pinning bypass
+  and no debug override here, because a shipped binary must not contain one.
+
+  A developer pointing a debug build at a local backend uses the debug variant's
+  own config (android/app/src/debug/res/xml/network_security_config.xml), which
+  permits cleartext to localhost and the emulator host only.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>

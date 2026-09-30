@@ -1,0 +1,7 @@
+arb-dir: lib/l10n
+template-arb-file: app_ar.arb
+output-localization-file: app_localizations.dart
+output-class: L
+nullable-getter: false
+# Arabic is the template because it is the product's primary language: the
+# English file is the translation, not the other way round.

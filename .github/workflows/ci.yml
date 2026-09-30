@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    name: Analyze, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          # Pinned: a toolchain that drifts is a build that breaks for reasons
+          # unrelated to the change being reviewed.
+          flutter-version: "3.44.8"
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify localizations are current
+        # ARB files are the source; the generated Dart is committed. If the two
+        # disagree, someone edited an .arb without regenerating.
+        run: |
+          flutter gen-l10n
+          git diff --exit-code lib/l10n/ || {
+            echo "::error::lib/l10n is stale — run 'flutter gen-l10n' and commit the result"
+            exit 1
+          }
+
+      - name: Formatting
+        run: dart format --line-length 100 --set-exit-if-changed lib test
+
+      - name: Static analysis
+        run: flutter analyze
+
+      - name: Tests
+        run: flutter test --reporter expanded
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Android release build
+        # Debug-signed: no keystore exists in CI and none should. This proves the
+        # project compiles and packages, not that it is publishable.
+        run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 14

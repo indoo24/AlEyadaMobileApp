@@ -1,0 +1,67 @@
+name: aleyada_mobile
+description: >-
+  AlEyada (العيادة) — the mobile client for the AlEyada medical directory.
+  A native client of the existing Django API; it holds no business rules of
+  its own.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # HTTP. Chosen over package:http for interceptors, which is where token
+  # refresh and error mapping belong — one place rather than every call site.
+  dio: ^5.7.0
+
+  # State. One approach throughout.
+  flutter_riverpod: ^2.6.1
+
+  # Navigation with declarative guards, so an unauthorised route cannot be
+  # reached just by knowing its name.
+  go_router: ^14.6.2
+
+  # Tokens live here, never in SharedPreferences: Keystore/Keychain-backed.
+  flutter_secure_storage: ^9.2.2
+
+  # Non-secret UI preference only (chosen locale).
+  shared_preferences: ^2.3.3
+
+  # Dates, numbers and Arabic-aware formatting.
+  intl: ^0.20.2
+
+  # Uploads: doctor photo, licence documents, payment receipts.
+  image_picker: ^1.1.2
+
+  # Contact actions — the tel: and wa.me links the API hands us pre-built.
+  url_launcher: ^6.3.1
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  # Widget tests must answer HTTP without touching a network.
+  http_mock_adapter: ^0.6.1
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/brand/
+    - assets/fonts/OFL.txt
+
+  fonts:
+    # Bundled, not fetched at runtime — design-tokens.md is explicit about this,
+    # and an Arabic-first product must not render in a fallback face while a
+    # webfont downloads. One variable file covers every weight we use.
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo-Variable.ttf

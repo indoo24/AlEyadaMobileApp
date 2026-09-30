@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The launcher label. Arabic lives in values-ar so an Arabic device shows
+         العيادة on the home screen. -->
+    <string name="app_name">AlEyada</string>
+</resources>
