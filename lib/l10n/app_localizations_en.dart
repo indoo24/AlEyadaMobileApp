@@ -93,7 +93,8 @@ class LEn extends L {
   String get stateOfflineTitle => 'No connection';
 
   @override
-  String get stateOfflineBody => 'Check your internet connection and try again.';
+  String get stateOfflineBody =>
+      'Check your internet connection and try again.';
 
   @override
   String get authSignIn => 'Sign in';
@@ -132,7 +133,8 @@ class LEn extends L {
   String get authSignInSubtitle => 'Sign in to manage your appointments.';
 
   @override
-  String get authSignUpSubtitle => 'Create an account to book and track appointments.';
+  String get authSignUpSubtitle =>
+      'Create an account to book and track appointments.';
 
   @override
   String get authPhoneRequired => 'Please enter your phone number.';
@@ -173,7 +175,8 @@ class LEn extends L {
   String get consentTitle => 'Accept the terms';
 
   @override
-  String get consentBody => 'Please review the terms and privacy policy to continue.';
+  String get consentBody =>
+      'Please review the terms and privacy policy to continue.';
 
   @override
   String get consentAccept => 'I accept the terms and privacy policy';
@@ -339,7 +342,8 @@ class LEn extends L {
   String get bookingsEmpty => 'No bookings yet.';
 
   @override
-  String get bookingsEmptyHint => 'Find a doctor and book your first appointment.';
+  String get bookingsEmptyHint =>
+      'Find a doctor and book your first appointment.';
 
   @override
   String get bookingsUpcoming => 'Upcoming';
@@ -472,7 +476,8 @@ class LEn extends L {
   String get claimTitle => 'We found pages that may be yours';
 
   @override
-  String get claimBody => 'If one of these is your page, claim it instead of creating a new one.';
+  String get claimBody =>
+      'If one of these is your page, claim it instead of creating a new one.';
 
   @override
   String get claimThisIsMe => 'This is my page';
@@ -491,7 +496,8 @@ class LEn extends L {
       'Our team is reviewing your details and will contact you once a decision is made.';
 
   @override
-  String get applicationClaimPendingTitle => 'Your ownership claim is under review';
+  String get applicationClaimPendingTitle =>
+      'Your ownership claim is under review';
 
   @override
   String applicationClaimPendingBody(String name) {
@@ -509,7 +515,8 @@ class LEn extends L {
   String get applicationRejectedTitle => 'Your application was not approved';
 
   @override
-  String get applicationRejectedBody => 'We will contact you on your phone to explain why.';
+  String get applicationRejectedBody =>
+      'We will contact you on your phone to explain why.';
 
   @override
   String get applicationReviewerNote => 'Reviewer\'s note:';
@@ -541,7 +548,8 @@ class LEn extends L {
   String get dashboardPublished => 'Your page is live';
 
   @override
-  String get dashboardActivationMissing => 'Complete the missing details to publish your page.';
+  String get dashboardActivationMissing =>
+      'Complete the missing details to publish your page.';
 
   @override
   String get dashboardTodayBookings => 'Today\'s bookings';
@@ -586,10 +594,12 @@ class LEn extends L {
   String get errorGeneric => 'Something unexpected happened. Please try again.';
 
   @override
-  String get errorNetwork => 'Could not reach the server. Check your connection.';
+  String get errorNetwork =>
+      'Could not reach the server. Check your connection.';
 
   @override
-  String get errorServer => 'The server is not responding. Please try again shortly.';
+  String get errorServer =>
+      'The server is not responding. Please try again shortly.';
 
   @override
   String get errorNotAuthenticated => 'Please sign in to continue.';
@@ -604,7 +614,8 @@ class LEn extends L {
   String get errorInvalidCredentials => 'Phone/email or password is incorrect.';
 
   @override
-  String get errorThrottled => 'Too many attempts. Please wait a moment and try again.';
+  String get errorThrottled =>
+      'Too many attempts. Please wait a moment and try again.';
 
   @override
   String get errorAccountInactive => 'This account is not active.';
@@ -616,19 +627,24 @@ class LEn extends L {
   String get errorEmailTaken => 'That email address is already registered.';
 
   @override
-  String get errorSlotUnavailable => 'That time is no longer available. Please pick another.';
+  String get errorSlotUnavailable =>
+      'That time is no longer available. Please pick another.';
 
   @override
-  String get errorBookingConflict => 'You have another booking that clashes with this time.';
+  String get errorBookingConflict =>
+      'You have another booking that clashes with this time.';
 
   @override
-  String get errorOutsideAvailability => 'That time is outside the doctor\'s working hours.';
+  String get errorOutsideAvailability =>
+      'That time is outside the doctor\'s working hours.';
 
   @override
-  String get errorLeadTime => 'That time is too soon to book. Please pick a later one.';
+  String get errorLeadTime =>
+      'That time is too soon to book. Please pick a later one.';
 
   @override
-  String get errorTooManyBookings => 'You already have several bookings with this doctor.';
+  String get errorTooManyBookings =>
+      'You already have several bookings with this doctor.';
 
   @override
   String get errorInvalidOtp => 'That code is incorrect or has expired.';

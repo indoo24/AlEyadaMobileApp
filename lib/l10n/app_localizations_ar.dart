@@ -185,7 +185,8 @@ class LAr extends L {
   String get consentReacceptTitle => 'تحديث الشروط';
 
   @override
-  String get consentReacceptBody => 'حدّثنا الشروط وسياسة الخصوصية. راجعها للمتابعة.';
+  String get consentReacceptBody =>
+      'حدّثنا الشروط وسياسة الخصوصية. راجعها للمتابعة.';
 
   @override
   String get doctorsTitle => 'الأطباء';
@@ -295,7 +296,8 @@ class LAr extends L {
   String get bookingNoSlots => 'لا توجد مواعيد متاحة في هذا اليوم.';
 
   @override
-  String get bookingNoSlotsAtAll => 'لا توجد مواعيد متاحة حاليًا. تواصل مع العيادة للاستفسار.';
+  String get bookingNoSlotsAtAll =>
+      'لا توجد مواعيد متاحة حاليًا. تواصل مع العيادة للاستفسار.';
 
   @override
   String get bookingSummary => 'ملخص الحجز';
@@ -442,7 +444,8 @@ class LAr extends L {
   String get joinLicence => 'الشهادات / الترخيص الطبي';
 
   @override
-  String get joinLicenceHint => 'هذه البيانات تساعدنا على التحقق من حسابك بسرعة.';
+  String get joinLicenceHint =>
+      'هذه البيانات تساعدنا على التحقق من حسابك بسرعة.';
 
   @override
   String get joinOnboardingScope =>
@@ -463,13 +466,15 @@ class LAr extends L {
       'يراجع فريق العيادة بياناتك الآن، وسنتواصل معك على رقم هاتفك فور صدور القرار.';
 
   @override
-  String get joinPatientUntilApproved => 'يمكنك استخدام حسابك كمريض بشكل طبيعي في أثناء المراجعة.';
+  String get joinPatientUntilApproved =>
+      'يمكنك استخدام حسابك كمريض بشكل طبيعي في أثناء المراجعة.';
 
   @override
   String get claimTitle => 'وجدنا صفحات قد تخصّك';
 
   @override
-  String get claimBody => 'إذا كانت إحدى هذه الصفحات لك، طالب بها بدلًا من إنشاء صفحة جديدة.';
+  String get claimBody =>
+      'إذا كانت إحدى هذه الصفحات لك، طالب بها بدلًا من إنشاء صفحة جديدة.';
 
   @override
   String get claimThisIsMe => 'هذه صفحتي';
@@ -488,7 +493,8 @@ class LAr extends L {
       'يراجع فريق العيادة بياناتك الآن، وسنتواصل معك فور صدور القرار.';
 
   @override
-  String get applicationClaimPendingTitle => 'طلب إثبات ملكية الصفحة قيد المراجعة';
+  String get applicationClaimPendingTitle =>
+      'طلب إثبات ملكية الصفحة قيد المراجعة';
 
   @override
   String applicationClaimPendingBody(String name) {
@@ -506,7 +512,8 @@ class LAr extends L {
   String get applicationRejectedTitle => 'لم يتم اعتماد طلبك';
 
   @override
-  String get applicationRejectedBody => 'سنتواصل معك على رقم هاتفك لتوضيح الأسباب.';
+  String get applicationRejectedBody =>
+      'سنتواصل معك على رقم هاتفك لتوضيح الأسباب.';
 
   @override
   String get applicationReviewerNote => 'ملاحظة المراجع:';
@@ -538,7 +545,8 @@ class LAr extends L {
   String get dashboardPublished => 'صفحتك منشورة';
 
   @override
-  String get dashboardActivationMissing => 'لإتمام نشر صفحتك، أكمل البيانات الناقصة.';
+  String get dashboardActivationMissing =>
+      'لإتمام نشر صفحتك، أكمل البيانات الناقصة.';
 
   @override
   String get dashboardTodayBookings => 'حجوزات اليوم';
@@ -601,7 +609,8 @@ class LAr extends L {
   String get errorInvalidCredentials => 'رقم الهاتف أو كلمة المرور غير صحيحة.';
 
   @override
-  String get errorThrottled => 'حاولت كثيرًا. من فضلك انتظر قليلًا ثم أعد المحاولة.';
+  String get errorThrottled =>
+      'حاولت كثيرًا. من فضلك انتظر قليلًا ثم أعد المحاولة.';
 
   @override
   String get errorAccountInactive => 'هذا الحساب غير مُفعّل.';
@@ -613,7 +622,8 @@ class LAr extends L {
   String get errorEmailTaken => 'هذا البريد الإلكتروني مسجل بالفعل.';
 
   @override
-  String get errorSlotUnavailable => 'هذا الموعد لم يعد متاحًا. اختر موعدًا آخر.';
+  String get errorSlotUnavailable =>
+      'هذا الموعد لم يعد متاحًا. اختر موعدًا آخر.';
 
   @override
   String get errorBookingConflict => 'لديك حجز آخر يتعارض مع هذا الموعد.';
@@ -622,7 +632,8 @@ class LAr extends L {
   String get errorOutsideAvailability => 'هذا الوقت خارج مواعيد عمل الطبيب.';
 
   @override
-  String get errorLeadTime => 'لا يمكن الحجز في هذا الوقت القريب. اختر موعدًا لاحقًا.';
+  String get errorLeadTime =>
+      'لا يمكن الحجز في هذا الوقت القريب. اختر موعدًا لاحقًا.';
 
   @override
   String get errorTooManyBookings => 'لديك حجوزات كثيرة مع هذا الطبيب.';

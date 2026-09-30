@@ -66,13 +66,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<!-- Shown in the system prompt when a doctor attaches a photo or a licence
-	     document during onboarding. iOS rejects a build that uses the camera or
-	     the photo library without a purpose string. -->
-	<key>NSCameraUsageDescription</key>
-	<string>لالتقاط صورة للملف الطبي أو لمستند الترخيص.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>لاختيار صورة للملف الطبي أو لمستند الترخيص من معرض الصور.</string>
+	<!-- No NSCameraUsageDescription / NSPhotoLibraryUsageDescription here: this
+	     build requests neither. Both belong back in place, with Arabic purpose
+	     strings, alongside the photo-upload screen — iOS rejects a build that
+	     uses the camera or the library without them. -->
 	<!-- The app calls clinics and opens WhatsApp using the links the API returns.
 	     Without these schemes declared, canLaunchUrl reports false and the
 	     buttons appear to do nothing. -->

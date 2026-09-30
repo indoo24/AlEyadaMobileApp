@@ -35,8 +35,11 @@ dependencies:
   # Dates, numbers and Arabic-aware formatting.
   intl: ^0.20.2
 
-  # Uploads: doctor photo, licence documents, payment receipts.
-  image_picker: ^1.1.2
+  # No image_picker yet, deliberately. The transport for uploads is in place
+  # (ApiClient.upload, multipart with progress), but the screen that needs it —
+  # post-approval doctor profile editing — is not built, and shipping an unused
+  # native plugin would add camera and photo-library permission surface to the
+  # app for nothing. Add it back with that screen.
 
   # Contact actions — the tel: and wa.me links the API hands us pre-built.
   url_launcher: ^6.3.1

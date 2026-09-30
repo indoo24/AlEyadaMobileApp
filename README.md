@@ -240,6 +240,30 @@ These are platform facts, not app defects.
 6. **Analytics / crash reporting**: none configured, and none invented. There are
    no telemetry secrets in this repo.
 
+## Not built yet
+
+Named rather than left to be discovered:
+
+- **Post-approval doctor profile editing**, including photo upload. The upload
+  transport is in place (`ApiClient.upload`, multipart with progress) but no screen
+  uses it, so `image_picker` is deliberately not a dependency — an unused native
+  plugin would add camera and photo-library permission surface for nothing. Add
+  both together.
+- **Reschedule UI.** `BookingRepository.reschedule` is wired to
+  `POST /bookings/{id}/reschedule/`; nothing calls it yet.
+- **Review submission.** Reviews are read on a doctor's profile; writing one
+  (`/reviews/create/`, `/reviews/reviewable/`) is not built.
+- **Claim submission.** Candidate profiles are surfaced right after a doctor
+  applies, which is the point at which duplicates are avoided, but filing the
+  claim needs an authenticated session that does not exist until the phone is
+  verified. `POST /doctor/claim-requests/` is unwired.
+- **Doctor clinic and availability management**, assistants, and articles — the
+  larger half of the web dashboard.
+- **Standalone clinic directory.** Clinic details appear inside a doctor's
+  profile; `/clinics/` as a browsable list is not built.
+- **Integration tests.** None: this machine has no emulator or device, so
+  claiming device-level coverage would be false.
+
 ## Contributing
 
 1. `flutter analyze` and `flutter test` must both be clean.
