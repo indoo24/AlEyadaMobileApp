@@ -58,7 +58,6 @@ flutter:
   generate: true
 
   assets:
-    - assets/brand/
     - assets/fonts/OFL.txt
 
   fonts:
