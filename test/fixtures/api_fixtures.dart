@@ -394,3 +394,43 @@ const throttledError = {
     {'code': 'throttled', 'detail': 'Request was throttled.', 'field': null},
   ],
 };
+
+// --- consent ----------------------------------------------------------------
+
+/// `GET /legal/policies/current/` — a bare array of `LegalPolicyVersion`.
+final currentPoliciesResponse = <String, dynamic>{
+  'data': [
+    {
+      'id': '0b6f3c1e-2a4d-4e8b-9c11-5f7a2d9e8a01',
+      'policy_type': 'privacy',
+      'version': '1.0',
+      'title_ar': 'سياسة الخصوصية',
+      'body_ar': 'نص سياسة الخصوصية.',
+      'title_en': 'Privacy policy',
+      'body_en': 'Privacy policy text.',
+      'effective_from': '2026-07-01',
+    },
+    {
+      'id': '7d2e9a40-1b3c-4f5d-8e6a-0c9b8a7f6e02',
+      'policy_type': 'terms',
+      'version': '1.0',
+      'title_ar': 'الشروط والأحكام',
+      'body_ar': 'نص الشروط والأحكام.',
+      'title_en': 'Terms and conditions',
+      'body_en': 'Terms and conditions text.',
+      'effective_from': '2026-07-01',
+    },
+  ],
+  'meta': <String, dynamic>{},
+  'errors': <dynamic>[],
+};
+
+/// `POST /consents/` without `policy_version_ids` — the DRF required-field
+/// rejection, in the Arabic the user saw on the consent screen.
+const consentIdsRequiredError = {
+  'data': null,
+  'meta': <String, dynamic>{},
+  'errors': [
+    {'code': 'required', 'detail': 'هذا الحقل مطلوب.', 'field': 'policy_version_ids'},
+  ],
+};

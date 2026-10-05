@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
+import '../../core/auth/greeting.dart';
 import '../../core/auth/models.dart';
 import '../../core/providers.dart';
 import '../../core/theme/tokens.dart';
@@ -51,7 +52,7 @@ class HomeScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          user == null ? l.appName : l.dashboardWelcome(user.shortName),
+                          user == null ? l.appName : welcomeGreeting(l, user),
                           style: Theme.of(context).textTheme.titleLarge,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

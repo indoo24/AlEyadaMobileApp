@@ -189,6 +189,10 @@ class LAr extends L {
       'حدّثنا الشروط وسياسة الخصوصية. راجعها للمتابعة.';
 
   @override
+  String get consentSubmitRejected =>
+      'تعذّر تسجيل موافقتك بسبب خطأ في الطلب. حاول مرة أخرى، وإن تكرر ذلك فتواصل مع الدعم.';
+
+  @override
   String get doctorsTitle => 'الأطباء';
 
   @override
@@ -523,7 +527,12 @@ class LAr extends L {
 
   @override
   String dashboardWelcome(String name) {
-    return 'أهلًا د. $name';
+    return 'أهلاً $name';
+  }
+
+  @override
+  String dashboardWelcomeDoctor(String name) {
+    return 'أهلاً د. $name';
   }
 
   @override

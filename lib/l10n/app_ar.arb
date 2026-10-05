@@ -67,6 +67,7 @@
   "consentRequired": "يجب الموافقة على الشروط للمتابعة.",
   "consentReacceptTitle": "تحديث الشروط",
   "consentReacceptBody": "حدّثنا الشروط وسياسة الخصوصية. راجعها للمتابعة.",
+  "consentSubmitRejected": "تعذّر تسجيل موافقتك بسبب خطأ في الطلب. حاول مرة أخرى، وإن تكرر ذلك فتواصل مع الدعم.",
 
   "doctorsTitle": "الأطباء",
   "doctorsSearchHint": "ابحث باسم الطبيب أو التخصص",
@@ -181,8 +182,10 @@
   "applicationReviewerNote": "ملاحظة المراجع:",
 
   "dashboardTitle": "لوحة التحكم",
-  "dashboardWelcome": "أهلًا د. {name}",
+  "dashboardWelcome": "أهلاً {name}",
   "@dashboardWelcome": { "placeholders": { "name": { "type": "String" } } },
+  "dashboardWelcomeDoctor": "أهلاً د. {name}",
+  "@dashboardWelcomeDoctor": { "placeholders": { "name": { "type": "String" } } },
   "dashboardStatPatients": "المرضى",
   "dashboardStatVisits": "الزيارات",
   "dashboardStatRating": "التقييم",

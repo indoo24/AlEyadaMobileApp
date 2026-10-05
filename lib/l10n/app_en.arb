@@ -67,6 +67,7 @@
   "consentRequired": "You must accept the terms to continue.",
   "consentReacceptTitle": "Terms updated",
   "consentReacceptBody": "We have updated our terms and privacy policy. Review them to continue.",
+  "consentSubmitRejected": "Your acceptance could not be recorded because the request was invalid. Try again, and contact support if it keeps happening.",
 
   "doctorsTitle": "Doctors",
   "doctorsSearchHint": "Search by doctor name or specialty",
@@ -181,8 +182,10 @@
   "applicationReviewerNote": "Reviewer's note:",
 
   "dashboardTitle": "Dashboard",
-  "dashboardWelcome": "Welcome, Dr {name}",
+  "dashboardWelcome": "Welcome {name}",
   "@dashboardWelcome": { "placeholders": { "name": { "type": "String" } } },
+  "dashboardWelcomeDoctor": "Welcome Dr. {name}",
+  "@dashboardWelcomeDoctor": { "placeholders": { "name": { "type": "String" } } },
   "dashboardStatPatients": "Patients",
   "dashboardStatVisits": "Visits",
   "dashboardStatRating": "Rating",

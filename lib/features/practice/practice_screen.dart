@@ -6,6 +6,7 @@ import '../../app/router.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/endpoints.dart';
 import '../../core/api/envelope.dart';
+import '../../core/auth/greeting.dart';
 import '../../core/providers.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/async_value_view.dart';
@@ -142,7 +143,7 @@ class PracticeScreen extends ConsumerWidget {
           children: [
             if (user != null)
               Text(
-                l.dashboardWelcome(user.shortName),
+                welcomeGreeting(l, user),
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             const SizedBox(height: AppSpacing.lg),

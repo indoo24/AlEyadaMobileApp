@@ -451,6 +451,12 @@ abstract class L {
   /// **'حدّثنا الشروط وسياسة الخصوصية. راجعها للمتابعة.'**
   String get consentReacceptBody;
 
+  /// No description provided for @consentSubmitRejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تسجيل موافقتك بسبب خطأ في الطلب. حاول مرة أخرى، وإن تكرر ذلك فتواصل مع الدعم.'**
+  String get consentSubmitRejected;
+
   /// No description provided for @doctorsTitle.
   ///
   /// In ar, this message translates to:
@@ -1048,8 +1054,14 @@ abstract class L {
   /// No description provided for @dashboardWelcome.
   ///
   /// In ar, this message translates to:
-  /// **'أهلًا د. {name}'**
+  /// **'أهلاً {name}'**
   String dashboardWelcome(String name);
+
+  /// No description provided for @dashboardWelcomeDoctor.
+  ///
+  /// In ar, this message translates to:
+  /// **'أهلاً د. {name}'**
+  String dashboardWelcomeDoctor(String name);
 
   /// No description provided for @dashboardStatPatients.
   ///

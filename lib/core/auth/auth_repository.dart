@@ -54,8 +54,12 @@ class AuthRepository {
   }
 
   /// Re-accept policies whose version moved on. Clears `requires_reacceptance`.
+  ///
+  /// The key is `policy_version_ids` (`AcceptConsentRequest`), not the
+  /// `accepted_policy_versions` that the registration endpoints take. Sending
+  /// the registration key here is rejected as a missing required field.
   Future<void> acceptConsents(List<String> versionIds) =>
-      _api.post(Endpoints.consents, body: {'accepted_policy_versions': versionIds});
+      _api.post(Endpoints.consents, body: {'policy_version_ids': versionIds});
 
   // --- registration -------------------------------------------------------
 

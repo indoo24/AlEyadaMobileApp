@@ -1,4 +1,5 @@
 import 'package:aleyada_mobile/core/api/api_client.dart';
+import 'package:aleyada_mobile/core/api/api_error.dart';
 import 'package:aleyada_mobile/core/auth/auth_controller.dart';
 import 'package:aleyada_mobile/core/auth/auth_repository.dart';
 import 'package:aleyada_mobile/core/auth/models.dart';
@@ -207,6 +208,48 @@ void main() {
       // Blanking the screen because a refresh failed would be a regression.
       expect(h2.state.user, isNotNull);
       expect(h2.state.error?.isNetworkFailure, isTrue);
+    });
+  });
+
+  group('policy re-acceptance', () {
+    const ids = ['0b6f3c1e-2a4d-4e8b-9c11-5f7a2d9e8a01', '7d2e9a40-1b3c-4f5d-8e6a-0c9b8a7f6e02'];
+
+    test('sends policy_version_ids, the key AcceptConsentRequest requires', () async {
+      final h = _build(refresh: 'r');
+      // The default matcher compares bodies, so this only answers the exact
+      // contract payload — the registration key would fall through and fail.
+      h.adapter.onPost(
+        '/consents/',
+        (s) => s.reply(200, {
+          'data': {'policy_version_ids': ids},
+          'meta': <String, dynamic>{},
+          'errors': <dynamic>[],
+        }),
+        data: {'policy_version_ids': ids},
+      );
+      h.adapter.onGet('/auth/me/', (s) => s.reply(200, meResponse));
+
+      await h.controller.acceptPolicies(ids);
+
+      expect(h.controller.state.status, AuthStatus.authenticated);
+    });
+
+    test('a field-attributed rejection reaches the caller with its field', () async {
+      final h = _build(refresh: 'r');
+      h.adapter.onPost(
+        '/consents/',
+        (s) => s.reply(400, consentIdsRequiredError),
+        data: Matchers.any,
+      );
+
+      await expectLater(
+        h.controller.acceptPolicies(ids),
+        throwsA(
+          isA<ApiException>()
+              .having((e) => e.failure, 'failure', ApiFailure.validation)
+              .having((e) => e.fieldErrors.keys, 'fields', ['policy_version_ids']),
+        ),
+      );
     });
   });
 

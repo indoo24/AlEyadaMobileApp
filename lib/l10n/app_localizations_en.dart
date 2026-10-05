@@ -192,6 +192,10 @@ class LEn extends L {
       'We have updated our terms and privacy policy. Review them to continue.';
 
   @override
+  String get consentSubmitRejected =>
+      'Your acceptance could not be recorded because the request was invalid. Try again, and contact support if it keeps happening.';
+
+  @override
   String get doctorsTitle => 'Doctors';
 
   @override
@@ -526,7 +530,12 @@ class LEn extends L {
 
   @override
   String dashboardWelcome(String name) {
-    return 'Welcome, Dr $name';
+    return 'Welcome $name';
+  }
+
+  @override
+  String dashboardWelcomeDoctor(String name) {
+    return 'Welcome Dr. $name';
   }
 
   @override
