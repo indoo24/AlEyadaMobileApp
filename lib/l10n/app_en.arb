@@ -239,5 +239,27 @@
   "semanticRating": "Rated {value} out of 5",
   "@semanticRating": { "placeholders": { "value": { "type": "String" } } },
   "semanticBack": "Back",
-  "semanticClose": "Close"
+  "semanticClose": "Close",
+
+  "homeGreetingGuest": "Hello from AlEyada",
+  "homeLocationAll": "All cities",
+  "homeLocationPickerTitle": "Choose your city",
+  "homeSpecialtiesTitle": "Medical specialties",
+  "homeTopDoctorsTitle": "Top recommended doctors",
+  "homeSeeAllCount": "See all (+{count})",
+  "@homeSeeAllCount": { "placeholders": { "count": { "type": "int" } } },
+  "homeCentersTitle": "Medical centers & clinics",
+  "homeArticlesTitle": "Medical articles",
+  "homeFeeLabel": "Consultation fee",
+  "homeFeeAmount": "{fee} EGP",
+  "@homeFeeAmount": { "placeholders": { "fee": { "type": "String" } } },
+  "homeBookNow": "Book a visit",
+  "homeViewProfile": "View profile",
+  "homeBookingAvailable": "Online booking available",
+  "homeContactOnly": "Contact the clinic directly",
+  "homeNoDoctors": "No doctors in this city yet.",
+  "homeNoCenters": "No clinics in this city yet.",
+  "homeNoArticles": "No articles published yet.",
+  "homeSectionError": "This section could not be loaded.",
+  "homeArticleCertified": "Medically reviewed"
 }

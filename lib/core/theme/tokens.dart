@@ -87,6 +87,11 @@ class AppShadows {
     BoxShadow(color: Color(0x140F172A), blurRadius: 24, offset: Offset(0, 8)),
   ];
 
+  /// Resting cards on the home feed: a wide, faint lift rather than a hairline.
+  static const soft = <BoxShadow>[
+    BoxShadow(color: Color(0x0F0F172A), blurRadius: 16, offset: Offset(0, 4)),
+  ];
+
   /// The floating search card.
   static const float = <BoxShadow>[
     BoxShadow(color: Color(0x1A0F172A), blurRadius: 32, offset: Offset(0, 12)),

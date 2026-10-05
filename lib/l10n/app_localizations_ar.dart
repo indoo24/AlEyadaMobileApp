@@ -683,4 +683,65 @@ class LAr extends L {
 
   @override
   String get semanticClose => 'إغلاق';
+
+  @override
+  String get homeGreetingGuest => 'مرحباً بك في العيادة';
+
+  @override
+  String get homeLocationAll => 'كل المدن';
+
+  @override
+  String get homeLocationPickerTitle => 'اختر مدينتك';
+
+  @override
+  String get homeSpecialtiesTitle => 'التخصصات الطبية';
+
+  @override
+  String get homeTopDoctorsTitle => 'أفضل الأطباء الموصى بهم';
+
+  @override
+  String homeSeeAllCount(int count) {
+    return 'عرض الكل (+$count)';
+  }
+
+  @override
+  String get homeCentersTitle => 'المراكز الطبية والعيادات';
+
+  @override
+  String get homeArticlesTitle => 'مقالات العيادة الطبية';
+
+  @override
+  String get homeFeeLabel => 'قيمة الكشف';
+
+  @override
+  String homeFeeAmount(String fee) {
+    return '$fee ج.م';
+  }
+
+  @override
+  String get homeBookNow => 'احجز كشف';
+
+  @override
+  String get homeViewProfile => 'عرض الملف';
+
+  @override
+  String get homeBookingAvailable => 'الحجز الإلكتروني متاح';
+
+  @override
+  String get homeContactOnly => 'التواصل مباشرة مع العيادة';
+
+  @override
+  String get homeNoDoctors => 'لا يوجد أطباء في هذه المدينة بعد.';
+
+  @override
+  String get homeNoCenters => 'لا توجد مراكز أو عيادات في هذه المدينة بعد.';
+
+  @override
+  String get homeNoArticles => 'لا توجد مقالات منشورة حالياً.';
+
+  @override
+  String get homeSectionError => 'تعذّر تحميل هذا القسم.';
+
+  @override
+  String get homeArticleCertified => 'مراجَع طبياً';
 }

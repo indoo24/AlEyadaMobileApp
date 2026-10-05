@@ -30,5 +30,11 @@ void main() {
     await tester.pump(const Duration(seconds: 1)); // route transition
 
     expect(find.byType(AlEyadaSplash), findsNothing);
+
+    // Home starts its own requests on arrival; let them finish so no timer is
+    // left pending when the test ends.
+    for (var i = 0; i < 5; i++) {
+      await tester.pump(const Duration(milliseconds: 200));
+    }
   });
 }

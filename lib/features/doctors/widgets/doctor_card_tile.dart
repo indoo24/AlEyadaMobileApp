@@ -85,11 +85,14 @@ class DoctorCardTile extends StatelessWidget {
 
 /// A doctor's photo, or their initial when there is none.
 class DoctorAvatar extends StatelessWidget {
-  const DoctorAvatar({super.key, this.photo, required this.name, this.size = 56});
+  const DoctorAvatar({super.key, this.photo, required this.name, this.size = 56, this.radius});
 
   final String? photo;
   final String name;
   final double size;
+
+  /// Corner radius; defaults to the rounded square used in lists.
+  final double? radius;
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +105,7 @@ class DoctorAvatar extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           color: AppColors.bgSoft,
-          borderRadius: BorderRadius.circular(size * 0.28),
+          borderRadius: BorderRadius.circular(radius ?? size * 0.28),
           border: Border.all(color: AppColors.border),
         ),
         clipBehavior: Clip.antiAlias,
@@ -146,10 +149,18 @@ class DoctorAvatar extends StatelessWidget {
 /// communicated only by a gold glyph is invisible to a screen reader and
 /// ambiguous to anyone who cannot distinguish the colour.
 class RatingBadge extends StatelessWidget {
-  const RatingBadge({super.key, required this.rating, required this.count});
+  const RatingBadge({
+    super.key,
+    required this.rating,
+    required this.count,
+    this.compact = false,
+  });
 
   final double rating;
   final int count;
+
+  /// A smaller, neutral pill for dense feeds.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -159,20 +170,20 @@ class RatingBadge extends StatelessWidget {
       label: '${l.semanticRating(value)} — ${l.doctorReviewsCount(count)}',
       excludeSemantics: true,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
+        padding: EdgeInsets.symmetric(horizontal: compact ? 7 : AppSpacing.sm, vertical: compact ? 3 : 4),
         decoration: BoxDecoration(
-          color: AppColors.star.withValues(alpha: 0.12),
+          color: compact ? AppColors.bgSoft : AppColors.star.withValues(alpha: 0.12),
           borderRadius: AppRadii.pillRadius,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.star_rounded, size: 15, color: AppColors.star),
+            Icon(Icons.star_rounded, size: compact ? 13 : 15, color: AppColors.star),
             const SizedBox(width: 3),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 13,
+              style: TextStyle(
+                fontSize: compact ? 11.5 : 13,
                 fontWeight: FontWeight.w700,
                 color: AppColors.navy,
               ),
@@ -181,7 +192,7 @@ class RatingBadge extends StatelessWidget {
             const SizedBox(width: 3),
             Text(
               '($count)',
-              style: const TextStyle(fontSize: 12, color: AppColors.muted),
+              style: TextStyle(fontSize: compact ? 10.5 : 12, color: AppColors.muted),
               textDirection: TextDirection.ltr,
             ),
           ],

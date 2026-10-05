@@ -691,4 +691,65 @@ class LEn extends L {
 
   @override
   String get semanticClose => 'Close';
+
+  @override
+  String get homeGreetingGuest => 'Hello from AlEyada';
+
+  @override
+  String get homeLocationAll => 'All cities';
+
+  @override
+  String get homeLocationPickerTitle => 'Choose your city';
+
+  @override
+  String get homeSpecialtiesTitle => 'Medical specialties';
+
+  @override
+  String get homeTopDoctorsTitle => 'Top recommended doctors';
+
+  @override
+  String homeSeeAllCount(int count) {
+    return 'See all (+$count)';
+  }
+
+  @override
+  String get homeCentersTitle => 'Medical centers & clinics';
+
+  @override
+  String get homeArticlesTitle => 'Medical articles';
+
+  @override
+  String get homeFeeLabel => 'Consultation fee';
+
+  @override
+  String homeFeeAmount(String fee) {
+    return '$fee EGP';
+  }
+
+  @override
+  String get homeBookNow => 'Book a visit';
+
+  @override
+  String get homeViewProfile => 'View profile';
+
+  @override
+  String get homeBookingAvailable => 'Online booking available';
+
+  @override
+  String get homeContactOnly => 'Contact the clinic directly';
+
+  @override
+  String get homeNoDoctors => 'No doctors in this city yet.';
+
+  @override
+  String get homeNoCenters => 'No clinics in this city yet.';
+
+  @override
+  String get homeNoArticles => 'No articles published yet.';
+
+  @override
+  String get homeSectionError => 'This section could not be loaded.';
+
+  @override
+  String get homeArticleCertified => 'Medically reviewed';
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/providers.dart';
 import '../l10n/app_localizations.dart';
+import 'bottom_nav.dart';
 import 'router.dart';
 
 /// The tabbed frame.
@@ -44,21 +45,20 @@ class AppShell extends ConsumerWidget {
     if (index < 0) index = 0;
 
     return Scaffold(
+      // The dock floats over Home's feed (which pads itself to clear it). The
+      // other tabs have their own Scaffolds and list padding, so for them the
+      // dock keeps a strip of its own rather than covering their last rows.
+      extendBody: location == Routes.home,
       body: child,
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: GlassBottomNav(
         selectedIndex: index,
-        onDestinationSelected: (i) {
+        onSelected: (i) {
           final target = tabs[i].path;
           if (target != location) context.go(target);
         },
-        destinations: [
+        items: [
           for (final t in tabs)
-            NavigationDestination(
-              icon: Icon(t.icon),
-              selectedIcon: Icon(t.activeIcon),
-              label: t.label,
-              tooltip: t.label,
-            ),
+            BottomNavItem(icon: t.icon, activeIcon: t.activeIcon, label: t.label),
         ],
       ),
     );
