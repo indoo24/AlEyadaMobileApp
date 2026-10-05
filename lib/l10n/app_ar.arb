@@ -67,6 +67,7 @@
   "consentRequired": "يجب الموافقة على الشروط للمتابعة.",
   "consentReacceptTitle": "تحديث الشروط",
   "consentReacceptBody": "حدّثنا الشروط وسياسة الخصوصية. راجعها للمتابعة.",
+  "consentSubmitRejected": "تعذّر تسجيل موافقتك بسبب خطأ في الطلب. حاول مرة أخرى، وإن تكرر ذلك فتواصل مع الدعم.",
 
   "doctorsTitle": "الأطباء",
   "doctorsSearchHint": "ابحث باسم الطبيب أو التخصص",
@@ -181,8 +182,10 @@
   "applicationReviewerNote": "ملاحظة المراجع:",
 
   "dashboardTitle": "لوحة التحكم",
-  "dashboardWelcome": "أهلًا د. {name}",
+  "dashboardWelcome": "أهلاً {name}",
   "@dashboardWelcome": { "placeholders": { "name": { "type": "String" } } },
+  "dashboardWelcomeDoctor": "أهلاً د. {name}",
+  "@dashboardWelcomeDoctor": { "placeholders": { "name": { "type": "String" } } },
   "dashboardStatPatients": "المرضى",
   "dashboardStatVisits": "الزيارات",
   "dashboardStatRating": "التقييم",
@@ -236,5 +239,27 @@
   "semanticRating": "التقييم {value} من ٥",
   "@semanticRating": { "placeholders": { "value": { "type": "String" } } },
   "semanticBack": "رجوع",
-  "semanticClose": "إغلاق"
+  "semanticClose": "إغلاق",
+
+  "homeGreetingGuest": "مرحباً بك في العيادة",
+  "homeLocationAll": "كل المدن",
+  "homeLocationPickerTitle": "اختر مدينتك",
+  "homeSpecialtiesTitle": "التخصصات الطبية",
+  "homeTopDoctorsTitle": "أفضل الأطباء الموصى بهم",
+  "homeSeeAllCount": "عرض الكل (+{count})",
+  "@homeSeeAllCount": { "placeholders": { "count": { "type": "int" } } },
+  "homeCentersTitle": "المراكز الطبية والعيادات",
+  "homeArticlesTitle": "مقالات العيادة الطبية",
+  "homeFeeLabel": "قيمة الكشف",
+  "homeFeeAmount": "{fee} ج.م",
+  "@homeFeeAmount": { "placeholders": { "fee": { "type": "String" } } },
+  "homeBookNow": "احجز كشف",
+  "homeViewProfile": "عرض الملف",
+  "homeBookingAvailable": "الحجز الإلكتروني متاح",
+  "homeContactOnly": "التواصل مباشرة مع العيادة",
+  "homeNoDoctors": "لا يوجد أطباء في هذه المدينة بعد.",
+  "homeNoCenters": "لا توجد مراكز أو عيادات في هذه المدينة بعد.",
+  "homeNoArticles": "لا توجد مقالات منشورة حالياً.",
+  "homeSectionError": "تعذّر تحميل هذا القسم.",
+  "homeArticleCertified": "مراجَع طبياً"
 }

@@ -67,6 +67,7 @@
   "consentRequired": "You must accept the terms to continue.",
   "consentReacceptTitle": "Terms updated",
   "consentReacceptBody": "We have updated our terms and privacy policy. Review them to continue.",
+  "consentSubmitRejected": "Your acceptance could not be recorded because the request was invalid. Try again, and contact support if it keeps happening.",
 
   "doctorsTitle": "Doctors",
   "doctorsSearchHint": "Search by doctor name or specialty",
@@ -181,8 +182,10 @@
   "applicationReviewerNote": "Reviewer's note:",
 
   "dashboardTitle": "Dashboard",
-  "dashboardWelcome": "Welcome, Dr {name}",
+  "dashboardWelcome": "Welcome {name}",
   "@dashboardWelcome": { "placeholders": { "name": { "type": "String" } } },
+  "dashboardWelcomeDoctor": "Welcome Dr. {name}",
+  "@dashboardWelcomeDoctor": { "placeholders": { "name": { "type": "String" } } },
   "dashboardStatPatients": "Patients",
   "dashboardStatVisits": "Visits",
   "dashboardStatRating": "Rating",
@@ -236,5 +239,27 @@
   "semanticRating": "Rated {value} out of 5",
   "@semanticRating": { "placeholders": { "value": { "type": "String" } } },
   "semanticBack": "Back",
-  "semanticClose": "Close"
+  "semanticClose": "Close",
+
+  "homeGreetingGuest": "Hello from AlEyada",
+  "homeLocationAll": "All cities",
+  "homeLocationPickerTitle": "Choose your city",
+  "homeSpecialtiesTitle": "Medical specialties",
+  "homeTopDoctorsTitle": "Top recommended doctors",
+  "homeSeeAllCount": "See all (+{count})",
+  "@homeSeeAllCount": { "placeholders": { "count": { "type": "int" } } },
+  "homeCentersTitle": "Medical centers & clinics",
+  "homeArticlesTitle": "Medical articles",
+  "homeFeeLabel": "Consultation fee",
+  "homeFeeAmount": "{fee} EGP",
+  "@homeFeeAmount": { "placeholders": { "fee": { "type": "String" } } },
+  "homeBookNow": "Book a visit",
+  "homeViewProfile": "View profile",
+  "homeBookingAvailable": "Online booking available",
+  "homeContactOnly": "Contact the clinic directly",
+  "homeNoDoctors": "No doctors in this city yet.",
+  "homeNoCenters": "No clinics in this city yet.",
+  "homeNoArticles": "No articles published yet.",
+  "homeSectionError": "This section could not be loaded.",
+  "homeArticleCertified": "Medically reviewed"
 }

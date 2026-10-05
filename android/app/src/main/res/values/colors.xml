@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand navy behind the launch screen, matching the animated splash so
+         there is no colour flash before Flutter draws its first frame. -->
+    <color name="launch_background">#022253</color>
+
+    <!-- Navy of the app icon, sampled from the logo artwork. -->
+    <color name="ic_launcher_background">#012763</color>
+</resources>

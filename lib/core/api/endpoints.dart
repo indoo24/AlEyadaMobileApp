@@ -68,6 +68,9 @@ class Endpoints {
   static String clinic(String slug) => '/clinics/$slug/';
 
   static const home = '/home/';
+
+  /// GET published articles, newest first. `page_size` is honoured.
+  static const articles = '/articles/';
   static const publicSettings = '/settings/public/';
 
   /// POST a contact-click. Fire-and-forget analytics; a failure here must never

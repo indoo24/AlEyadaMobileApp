@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -32,6 +34,7 @@ class _ConsentScreenState extends ConsumerState<ConsentScreen> {
   String? _error;
 
   Future<void> _accept(List<LegalPolicy> policies) async {
+    if (!_accepted) return;
     setState(() {
       _busy = true;
       _error = null;
@@ -43,10 +46,20 @@ class _ConsentScreenState extends ConsumerState<ConsentScreen> {
       // The router redirects away as soon as requires_reacceptance clears.
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _error = messageForError(context, e));
+      setState(() => _error = _messageFor(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// This screen has no inputs, so an error the backend pins on a field means
+  /// the app built the request wrong — nothing the user can fix. Its bare
+  /// detail ("هذا الحقل مطلوب") would read as blaming the checkbox, so it is
+  /// logged for us and replaced with a sentence that says what actually failed.
+  String _messageFor(ApiException e) {
+    if (e.fieldErrors.isEmpty) return messageForError(context, e);
+    developer.log('consent rejected: ${e.fieldErrors}', name: 'aleyada.consent');
+    return L.of(context).consentSubmitRejected;
   }
 
   @override

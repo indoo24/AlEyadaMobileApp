@@ -58,7 +58,6 @@ flutter:
   generate: true
 
   assets:
-    - assets/brand/
     - assets/fonts/OFL.txt
 
   fonts:
@@ -68,3 +67,11 @@ flutter:
     - family: Cairo
       fonts:
         - asset: assets/fonts/Cairo-Variable.ttf
+
+    # Used only by the animated launch splash (features/splash), whose logo
+    # lock-up is Latin text. Bundled for the same reason as Cairo.
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+          weight: 600

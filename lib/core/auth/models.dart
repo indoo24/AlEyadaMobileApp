@@ -221,12 +221,30 @@ class Me {
     return phone;
   }
 
-  /// The first one or two words — what the dashboard greets a doctor with.
+  /// A doctor *account*, as the backend reports it in `role`. The only thing
+  /// that earns a "Dr." — never the name, the specialty or any profile text. A
+  /// missing or unrecognised role parses to [UserRole.unknown] and is not one.
+  bool get isDoctor => role == UserRole.doctor;
+
+  /// The first one or two words of the name, with any leading doctor title
+  /// removed. The title is the greeting's to add, and only for [isDoctor]; a
+  /// name that already carries one must not end up as "Dr. Dr. Ahmed", nor
+  /// hand a patient a title they do not hold.
   String get shortName {
-    final parts = displayName.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final name = displayName.replaceFirst(_leadingTitle, '');
+    final parts = name.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    // A name that was nothing but a title keeps it rather than greeting no one.
     if (parts.isEmpty) return displayName;
     return parts.take(2).join(' ');
   }
+
+  // "Dr", "Dr.", "Doctor", "د.", "د/", "دكتور(ة)", "الدكتور(ة)" at the start.
+  // A bare "د" is not matched: it opens real names (دعاء, دينا).
+  static final _leadingTitle = RegExp(
+    r'^\s*(?:(?:ال)?دكتور(?:ة)?|dr|doctor)(?![\p{L}])\.?\s*|^\s*د\s*[./]\s*',
+    caseSensitive: false,
+    unicode: true,
+  );
 
   factory Me.fromJson(Map<String, dynamic> j) {
     final patient = j['patient_profile'];

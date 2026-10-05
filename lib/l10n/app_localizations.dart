@@ -451,6 +451,12 @@ abstract class L {
   /// **'حدّثنا الشروط وسياسة الخصوصية. راجعها للمتابعة.'**
   String get consentReacceptBody;
 
+  /// No description provided for @consentSubmitRejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تسجيل موافقتك بسبب خطأ في الطلب. حاول مرة أخرى، وإن تكرر ذلك فتواصل مع الدعم.'**
+  String get consentSubmitRejected;
+
   /// No description provided for @doctorsTitle.
   ///
   /// In ar, this message translates to:
@@ -1048,8 +1054,14 @@ abstract class L {
   /// No description provided for @dashboardWelcome.
   ///
   /// In ar, this message translates to:
-  /// **'أهلًا د. {name}'**
+  /// **'أهلاً {name}'**
   String dashboardWelcome(String name);
+
+  /// No description provided for @dashboardWelcomeDoctor.
+  ///
+  /// In ar, this message translates to:
+  /// **'أهلاً د. {name}'**
+  String dashboardWelcomeDoctor(String name);
 
   /// No description provided for @dashboardStatPatients.
   ///
@@ -1332,6 +1344,120 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'إغلاق'**
   String get semanticClose;
+
+  /// No description provided for @homeGreetingGuest.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرحباً بك في العيادة'**
+  String get homeGreetingGuest;
+
+  /// No description provided for @homeLocationAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل المدن'**
+  String get homeLocationAll;
+
+  /// No description provided for @homeLocationPickerTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر مدينتك'**
+  String get homeLocationPickerTitle;
+
+  /// No description provided for @homeSpecialtiesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'التخصصات الطبية'**
+  String get homeSpecialtiesTitle;
+
+  /// No description provided for @homeTopDoctorsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أفضل الأطباء الموصى بهم'**
+  String get homeTopDoctorsTitle;
+
+  /// No description provided for @homeSeeAllCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض الكل (+{count})'**
+  String homeSeeAllCount(int count);
+
+  /// No description provided for @homeCentersTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المراكز الطبية والعيادات'**
+  String get homeCentersTitle;
+
+  /// No description provided for @homeArticlesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقالات العيادة الطبية'**
+  String get homeArticlesTitle;
+
+  /// No description provided for @homeFeeLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيمة الكشف'**
+  String get homeFeeLabel;
+
+  /// No description provided for @homeFeeAmount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{fee} ج.م'**
+  String homeFeeAmount(String fee);
+
+  /// No description provided for @homeBookNow.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز كشف'**
+  String get homeBookNow;
+
+  /// No description provided for @homeViewProfile.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض الملف'**
+  String get homeViewProfile;
+
+  /// No description provided for @homeBookingAvailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجز الإلكتروني متاح'**
+  String get homeBookingAvailable;
+
+  /// No description provided for @homeContactOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'التواصل مباشرة مع العيادة'**
+  String get homeContactOnly;
+
+  /// No description provided for @homeNoDoctors.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد أطباء في هذه المدينة بعد.'**
+  String get homeNoDoctors;
+
+  /// No description provided for @homeNoCenters.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد مراكز أو عيادات في هذه المدينة بعد.'**
+  String get homeNoCenters;
+
+  /// No description provided for @homeNoArticles.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد مقالات منشورة حالياً.'**
+  String get homeNoArticles;
+
+  /// No description provided for @homeSectionError.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل هذا القسم.'**
+  String get homeSectionError;
+
+  /// No description provided for @homeArticleCertified.
+  ///
+  /// In ar, this message translates to:
+  /// **'مراجَع طبياً'**
+  String get homeArticleCertified;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {

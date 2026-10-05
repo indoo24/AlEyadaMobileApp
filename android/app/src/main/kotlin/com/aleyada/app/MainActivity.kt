@@ -1,4 +1,4 @@
-package com.aleyada.aleyada_mobile
+package com.aleyada.app
 
 import io.flutter.embedding.android.FlutterActivity
 
