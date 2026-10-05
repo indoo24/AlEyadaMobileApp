@@ -81,6 +81,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         return loc == Routes.splash ? null : Routes.splash;
       }
       if (loc == Routes.splash) {
+        // Session settled, but let the launch animation finish before leaving.
+        if (!ref.read(splashAnimationDoneProvider)) return null;
         return auth.hasSession ? _homeFor(auth.user) : Routes.home;
       }
 
@@ -182,13 +184,21 @@ class _AuthRefresh extends ChangeNotifier {
       (_, __) => notifyListeners(),
       fireImmediately: false,
     );
+    // The splash is left when the animation ends, not only when auth changes.
+    _splashSub = ref.listen<bool>(
+      splashAnimationDoneProvider,
+      (_, __) => notifyListeners(),
+      fireImmediately: false,
+    );
   }
 
   late final ProviderSubscription<AuthState> _sub;
+  late final ProviderSubscription<bool> _splashSub;
 
   @override
   void dispose() {
     _sub.close();
+    _splashSub.close();
     super.dispose();
   }
 }
