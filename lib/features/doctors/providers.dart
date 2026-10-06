@@ -88,10 +88,10 @@ class DoctorListController extends StateNotifier<AsyncValue<Paginated<DoctorCard
 
     try {
       final page = await _ref.read(directoryRepositoryProvider).doctors(query, cancelToken: token);
-      if (generation != _generation) return;
+      if (generation != _generation || !mounted) return;
       state = AsyncValue.data(_withoutDuplicates(page));
     } catch (e, st) {
-      if (generation != _generation) return;
+      if (generation != _generation || !mounted) return;
       // The query stays in doctorQueryProvider, so retrying does not lose it.
       state = AsyncValue.error(e, st);
     }
@@ -112,7 +112,7 @@ class DoctorListController extends StateNotifier<AsyncValue<Paginated<DoctorCard
       final next = await _ref
           .read(directoryRepositoryProvider)
           .doctors(_query.copyWith(page: current.pagination.page + 1), cancelToken: _cancel);
-      if (generation != _generation) return;
+      if (generation != _generation || !mounted) return;
       final seen = current.items.map((d) => d.id).toSet();
       state = AsyncValue.data(
         Paginated(

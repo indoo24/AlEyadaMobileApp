@@ -109,6 +109,18 @@ class Endpoints {
   static const doctorVerificationStatus = '/doctor/verification-status/';
   static const doctorClinics = '/doctor/clinics/';
   static const doctorClinicCreate = '/doctor/clinics/create/';
+  static String doctorClinicTerms(String id) => '/doctor/clinics/$id/terms/';
+  static String doctorClinicWorkingHours(String id) => '/doctor/clinics/$id/working-hours/';
+  static String doctorClinicInvitations(String id) => '/doctor/clinics/$id/invitations/';
+
+  // --- doctor: assistants -------------------------------------------------
+  static const doctorAssistants = '/doctor/assistants/';
+  static const doctorAssistantCreate = '/doctor/assistants/create/';
+  static String doctorAssignment(String id) => '/doctor/assignments/$id/';
+
+  // --- doctor: availability -----------------------------------------------
+  static const doctorAvailabilityWindows = '/doctor/availability-windows/';
+  static String doctorAvailabilityWindow(String id) => '/doctor/availability-windows/$id/';
   static const doctorSchedule = '/doctor/schedule/';
   static const doctorBookings = '/doctor/bookings/';
   static String doctorBookingConfirm(String id) => '/doctor/bookings/$id/confirm/';

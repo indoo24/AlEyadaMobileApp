@@ -50,7 +50,8 @@ lib/
 │   ├── doctors/               discovery, filters, profile
 │   ├── bookings/              availability, booking sheet, my bookings
 │   ├── onboarding/            doctor join + claim candidates
-│   ├── practice/              approved-doctor dashboard
+│   ├── management/            approved-doctor management (stats, clinics, assistants, schedule)
+│   ├── practice/              activation + stats models shared with management
 │   ├── profile/               account, edit details
 │   ├── notifications/         in-app notifications
 │   └── home/                  home + application status card
@@ -257,8 +258,15 @@ Named rather than left to be discovered:
   applies, which is the point at which duplicates are avoided, but filing the
   claim needs an authenticated session that does not exist until the phone is
   verified. `POST /doctor/claim-requests/` is unwired.
-- **Doctor clinic and availability management**, assistants, and articles — the
-  larger half of the web dashboard.
+- **Parts of the web dashboard.** The doctor's *Management* tab covers statistics,
+  clinics (terms, opening hours, invitations), assistants and the schedule
+  (appointments, weekly availability). Still web-only: articles, days off and
+  clinic holidays, clinic contact methods, adding an existing assistant to
+  another clinic, and payment-proof review. The "open management system" button
+  opens `https://scenariomnchnl.tech/` — the API does not report the web system's
+  address, so it is the `ALEYADA_MANAGEMENT_URL` default in `lib/core/config/env.dart`,
+  overridable with `--dart-define=ALEYADA_MANAGEMENT_URL=https://…` (an empty or
+  non-http(s) value hides the button).
 - **Standalone clinic directory.** Clinic details appear inside a doctor's
   profile; `/clinics/` as a browsable list is not built.
 - **Integration tests.** None: this machine has no emulator or device, so

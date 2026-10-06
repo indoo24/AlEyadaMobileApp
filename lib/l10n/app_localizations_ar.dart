@@ -913,4 +913,417 @@ class LAr extends L {
 
   @override
   String get ratingNone => 'لا توجد تقييمات';
+
+  @override
+  String get navManagement => 'الإدارة';
+
+  @override
+  String get managementTitle => 'الإدارة';
+
+  @override
+  String get managementStatsTitle => 'إحصاءاتك';
+
+  @override
+  String managementStatsPeriod(int days) {
+    return 'آخر $days يوم';
+  }
+
+  @override
+  String get statPatients => 'عدد المرضى';
+
+  @override
+  String get statCompletedVisits => 'زيارات مكتملة';
+
+  @override
+  String get statRating => 'متوسط التقييم';
+
+  @override
+  String get statContactRate => 'معدل التواصل';
+
+  @override
+  String get statViews => 'مشاهدات الصفحة';
+
+  @override
+  String get statContacts => 'مرات التواصل';
+
+  @override
+  String get statBookings => 'حجوزات';
+
+  @override
+  String get statBookingsDone => 'تمت';
+
+  @override
+  String statViewsSub(int count) {
+    return 'مشاهدات الصفحة: $count';
+  }
+
+  @override
+  String get managementPortalButton => 'فتح نظام إدارة العيادة';
+
+  @override
+  String get managementPortalFailed => 'تعذّر فتح نظام الإدارة.';
+
+  @override
+  String get managementModulesTitle => 'إدارة العيادة';
+
+  @override
+  String get managementClinicsTitle => 'العيادات';
+
+  @override
+  String get managementClinicsDesc =>
+      'إدارة العيادات وأسعار الكشف ومواعيد العمل';
+
+  @override
+  String get managementAssistantsTitle => 'المساعدون';
+
+  @override
+  String get managementAssistantsDesc => 'إدارة مساعدي العيادة وصلاحياتهم';
+
+  @override
+  String get managementScheduleTitle => 'الجدول';
+
+  @override
+  String get managementScheduleDesc => 'المواعيد وأوقات التوفّر';
+
+  @override
+  String get managementSaved => 'تم الحفظ';
+
+  @override
+  String get managementDelete => 'حذف';
+
+  @override
+  String get managementFailed => 'تعذّر إتمام العملية. حاول مرة أخرى.';
+
+  @override
+  String get weekday1 => 'الاثنين';
+
+  @override
+  String get weekday2 => 'الثلاثاء';
+
+  @override
+  String get weekday3 => 'الأربعاء';
+
+  @override
+  String get weekday4 => 'الخميس';
+
+  @override
+  String get weekday5 => 'الجمعة';
+
+  @override
+  String get weekday6 => 'السبت';
+
+  @override
+  String get weekday7 => 'الأحد';
+
+  @override
+  String get clinicsTitle => 'العيادات';
+
+  @override
+  String get clinicsAdd => 'إضافة عيادة';
+
+  @override
+  String get clinicsEmptyTitle => 'لم تُضف أي عيادة بعد';
+
+  @override
+  String get clinicsEmptyBody => 'أضف عيادتك لتبدأ باستقبال الحجوزات.';
+
+  @override
+  String get clinicBadgePrimary => 'العيادة الرئيسية';
+
+  @override
+  String get clinicBadgeOwner => 'أنشأتها';
+
+  @override
+  String get clinicBadgeInactive => 'معطّلة';
+
+  @override
+  String get clinicReady => 'جاهزة لاستقبال الحجوزات';
+
+  @override
+  String get clinicNotReady => 'غير جاهزة لاستقبال الحجوزات بعد';
+
+  @override
+  String get clinicTermsTitle => 'شروطي في هذه العيادة';
+
+  @override
+  String get clinicFeeConsult => 'سعر الكشف';
+
+  @override
+  String get clinicFeeFollowup => 'سعر الاستشارة/المتابعة';
+
+  @override
+  String get clinicAcceptBookings => 'استقبال الحجوزات';
+
+  @override
+  String get clinicSaveTerms => 'حفظ الشروط';
+
+  @override
+  String get clinicHoursTitle => 'مواعيد العمل';
+
+  @override
+  String get clinicHoursHint =>
+      'حدد مواعيد فتح العيادة لكل يوم. الحجوزات تُولَّد داخل هذه المواعيد فقط.';
+
+  @override
+  String get clinicHoursNone => 'لم تُحدَّد مواعيد العمل بعد.';
+
+  @override
+  String get clinicHoursFrom => 'من';
+
+  @override
+  String get clinicHoursTo => 'إلى';
+
+  @override
+  String get clinicAddShift => 'إضافة فترة';
+
+  @override
+  String get clinicSaveHours => 'حفظ المواعيد';
+
+  @override
+  String get clinicInviteTitle => 'دعوة طبيب';
+
+  @override
+  String get clinicInvitePhone => 'رقم هاتف الطبيب';
+
+  @override
+  String get clinicInviteMessage => 'رسالة (اختياري)';
+
+  @override
+  String get clinicInviteSend => 'إرسال الدعوة';
+
+  @override
+  String get clinicInviteSent => 'تم إرسال الدعوة';
+
+  @override
+  String get clinicInvitesSent => 'الدعوات المرسلة';
+
+  @override
+  String get clinicInvitesNone => 'لا توجد دعوات مرسلة.';
+
+  @override
+  String get invitationPending => 'قيد الانتظار';
+
+  @override
+  String get invitationAccepted => 'مقبولة';
+
+  @override
+  String get invitationDeclined => 'مرفوضة';
+
+  @override
+  String get invitationCancelled => 'ملغاة';
+
+  @override
+  String get clinicFormName => 'اسم العيادة';
+
+  @override
+  String get clinicFormAddress => 'العنوان';
+
+  @override
+  String get clinicFormPhone => 'هاتف العيادة';
+
+  @override
+  String get clinicFormCreate => 'إنشاء العيادة';
+
+  @override
+  String get assistantsTitle => 'المساعدون';
+
+  @override
+  String get assistantsAdd => 'إضافة مساعد';
+
+  @override
+  String get assistantsEmptyTitle => 'لم يتم إضافة أي مساعد بعد';
+
+  @override
+  String get assistantsEmptyBody =>
+      'أضف مساعدًا ليتولى الحجوزات نيابةً عنك، وحدد ما يُسمح له به.';
+
+  @override
+  String get assistantAllClinics => 'كل العيادات';
+
+  @override
+  String get assistantInactive => 'غير نشط';
+
+  @override
+  String get assistantPermissions => 'الصلاحيات';
+
+  @override
+  String assistantPermissionsCount(int count) {
+    return '$count صلاحية';
+  }
+
+  @override
+  String get assistantRevoke => 'سحب الوصول';
+
+  @override
+  String assistantRevokeConfirm(String clinic) {
+    return 'سحب وصول هذا المساعد إلى «$clinic»؟';
+  }
+
+  @override
+  String get assistantFormName => 'اسم المساعد';
+
+  @override
+  String get assistantFormPhone => 'رقم الهاتف';
+
+  @override
+  String get assistantFormNotes => 'ملاحظات (اختياري)';
+
+  @override
+  String get assistantFormClinic => 'العيادة';
+
+  @override
+  String get assistantCreate => 'إضافة المساعد';
+
+  @override
+  String get flag_can_view_bookings => 'عرض الحجوزات';
+
+  @override
+  String get flag_can_create_bookings => 'إنشاء حجوزات';
+
+  @override
+  String get flag_can_update_bookings => 'تعديل الحجوزات';
+
+  @override
+  String get flag_can_cancel_bookings => 'إلغاء الحجوزات';
+
+  @override
+  String get flag_can_manage_schedule => 'إدارة الجدول';
+
+  @override
+  String get flag_can_view_patient_phone => 'رؤية هاتف المريض';
+
+  @override
+  String get flag_can_create_patient_next_visit => 'حجز زيارة تالية للمريض';
+
+  @override
+  String get flag_can_request_duration_verification => 'طلب توثيق مدة الزيارة';
+
+  @override
+  String get flag_can_review_payment_proofs => 'مراجعة إثباتات الدفع';
+
+  @override
+  String get scheduleTitle => 'الجدول';
+
+  @override
+  String get scheduleTabBookings => 'المواعيد';
+
+  @override
+  String get scheduleTabAvailability => 'أوقات التوفّر';
+
+  @override
+  String get scheduleView => 'العرض';
+
+  @override
+  String get scheduleViewUpcoming => 'القادمة';
+
+  @override
+  String get scheduleViewAll => 'الكل';
+
+  @override
+  String get scheduleDate => 'يوم محدد';
+
+  @override
+  String get scheduleDateAny => 'كل الأيام';
+
+  @override
+  String get scheduleStatus => 'الحالة';
+
+  @override
+  String get scheduleStatusAll => 'كل الحالات';
+
+  @override
+  String scheduleCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count موعد',
+      few: '$count مواعيد',
+      two: 'موعدان',
+      one: 'موعد واحد',
+      zero: 'لا مواعيد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleEmpty => 'لا توجد مواعيد.';
+
+  @override
+  String get scheduleEmptyHint => 'جرّب تغيير العرض أو الحالة أو اليوم.';
+
+  @override
+  String get scheduleConfirm => 'تأكيد';
+
+  @override
+  String get scheduleComplete => 'اكتملت';
+
+  @override
+  String get scheduleNoShow => 'لم يحضر';
+
+  @override
+  String get scheduleCancel => 'إلغاء الموعد';
+
+  @override
+  String get scheduleCancelReason => 'سبب الإلغاء (اختياري)';
+
+  @override
+  String get scheduleNoShowHint =>
+      'خيار «لم يحضر» يظهر بعد مرور موعد الكشف بعشر دقائق.';
+
+  @override
+  String get scheduleUpdated => 'تم تحديث الموعد';
+
+  @override
+  String get windowsAdd => 'إضافة فترة توفّر';
+
+  @override
+  String get windowsEmpty => 'لم تحدد أوقات توفّر بعد.';
+
+  @override
+  String get windowsEmptyHint => 'أضف الأيام والساعات التي تستقبل فيها المرضى.';
+
+  @override
+  String windowMinutes(int minutes) {
+    return '$minutes دقيقة للموعد';
+  }
+
+  @override
+  String get windowDeleteConfirm => 'حذف فترة التوفّر هذه؟';
+
+  @override
+  String get windowFormWeekday => 'اليوم';
+
+  @override
+  String get windowFormClinic => 'العيادة';
+
+  @override
+  String get windowFormDuration => 'مدة الموعد (بالدقائق)';
+
+  @override
+  String get windowCreate => 'إضافة';
+
+  @override
+  String get statusCancelledByPatient => 'ألغاه المريض';
+
+  @override
+  String get statusCancelledByClinic => 'ألغته العيادة';
+
+  @override
+  String scheduleDuration(int minutes) {
+    return '$minutes دقيقة';
+  }
+
+  @override
+  String get scheduleDatePick => 'اختر اليوم';
+
+  @override
+  String get blockClinicHoursNotSet => 'لم تُحدَّد مواعيد عمل العيادة بعد';
+
+  @override
+  String get blockBookingDisabled =>
+      'استقبال الحجوزات الإلكترونية متوقف في شروطك';
+
+  @override
+  String get blockNoAvailabilityWindows =>
+      'لم تحدد أوقات توفّرك بعد (من الجدول ← أوقات التوفّر)';
 }

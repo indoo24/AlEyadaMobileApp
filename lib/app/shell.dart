@@ -10,7 +10,7 @@ import 'router.dart';
 /// The tabbed frame.
 ///
 /// The tabs a user gets depend on their role, the same way the website's do:
-/// a patient browses and tracks bookings; an approved doctor gets their practice
+/// a patient browses and tracks bookings; an approved doctor gets management
 /// instead. Route guards enforce this too — the bar only decides what is
 /// *offered*, never what is *permitted*.
 class AppShell extends ConsumerWidget {
@@ -28,8 +28,15 @@ class AppShell extends ConsumerWidget {
     final tabs = <_Tab>[
       _Tab(Routes.home, Icons.home_outlined, Icons.home_rounded, l.navHome),
       _Tab(Routes.doctors, Icons.search_outlined, Icons.search_rounded, l.navDoctors),
+      // An approved doctor manages their practice here; everyone else tracks
+      // their own appointments. The role comes from the backend, via the auth state.
       if (isDoctor)
-        _Tab(Routes.practice, Icons.event_note_outlined, Icons.event_note_rounded, l.navSchedule)
+        _Tab(
+          Routes.management,
+          Icons.space_dashboard_outlined,
+          Icons.space_dashboard_rounded,
+          l.navManagement,
+        )
       else
         _Tab(
           Routes.bookings,

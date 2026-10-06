@@ -918,4 +918,419 @@ class LEn extends L {
 
   @override
   String get ratingNone => 'No reviews yet';
+
+  @override
+  String get navManagement => 'Management';
+
+  @override
+  String get managementTitle => 'Management';
+
+  @override
+  String get managementStatsTitle => 'Your stats';
+
+  @override
+  String managementStatsPeriod(int days) {
+    return 'Last $days days';
+  }
+
+  @override
+  String get statPatients => 'Patients';
+
+  @override
+  String get statCompletedVisits => 'Completed visits';
+
+  @override
+  String get statRating => 'Average rating';
+
+  @override
+  String get statContactRate => 'Contact rate';
+
+  @override
+  String get statViews => 'Profile views';
+
+  @override
+  String get statContacts => 'Contacts';
+
+  @override
+  String get statBookings => 'Bookings';
+
+  @override
+  String get statBookingsDone => 'Completed';
+
+  @override
+  String statViewsSub(int count) {
+    return 'Profile views: $count';
+  }
+
+  @override
+  String get managementPortalButton => 'Open the clinic management system';
+
+  @override
+  String get managementPortalFailed => 'Couldn\'t open the management system.';
+
+  @override
+  String get managementModulesTitle => 'Manage your practice';
+
+  @override
+  String get managementClinicsTitle => 'Clinics';
+
+  @override
+  String get managementClinicsDesc =>
+      'Clinics, consultation fees and opening hours';
+
+  @override
+  String get managementAssistantsTitle => 'Assistants';
+
+  @override
+  String get managementAssistantsDesc =>
+      'Your clinic assistants and what they may do';
+
+  @override
+  String get managementScheduleTitle => 'Schedule';
+
+  @override
+  String get managementScheduleDesc => 'Appointments and availability';
+
+  @override
+  String get managementSaved => 'Saved';
+
+  @override
+  String get managementDelete => 'Delete';
+
+  @override
+  String get managementFailed => 'That didn\'t go through. Please try again.';
+
+  @override
+  String get weekday1 => 'Monday';
+
+  @override
+  String get weekday2 => 'Tuesday';
+
+  @override
+  String get weekday3 => 'Wednesday';
+
+  @override
+  String get weekday4 => 'Thursday';
+
+  @override
+  String get weekday5 => 'Friday';
+
+  @override
+  String get weekday6 => 'Saturday';
+
+  @override
+  String get weekday7 => 'Sunday';
+
+  @override
+  String get clinicsTitle => 'Clinics';
+
+  @override
+  String get clinicsAdd => 'Add a clinic';
+
+  @override
+  String get clinicsEmptyTitle => 'You haven\'t added a clinic yet';
+
+  @override
+  String get clinicsEmptyBody => 'Add your clinic to start taking bookings.';
+
+  @override
+  String get clinicBadgePrimary => 'Main clinic';
+
+  @override
+  String get clinicBadgeOwner => 'Created by you';
+
+  @override
+  String get clinicBadgeInactive => 'Disabled';
+
+  @override
+  String get clinicReady => 'Ready to take bookings';
+
+  @override
+  String get clinicNotReady => 'Not ready to take bookings yet';
+
+  @override
+  String get clinicTermsTitle => 'My terms at this clinic';
+
+  @override
+  String get clinicFeeConsult => 'Consultation fee';
+
+  @override
+  String get clinicFeeFollowup => 'Follow-up fee';
+
+  @override
+  String get clinicAcceptBookings => 'Accept bookings';
+
+  @override
+  String get clinicSaveTerms => 'Save terms';
+
+  @override
+  String get clinicHoursTitle => 'Opening hours';
+
+  @override
+  String get clinicHoursHint =>
+      'Set when the clinic is open each day. Bookings are generated inside these hours only.';
+
+  @override
+  String get clinicHoursNone => 'No opening hours set yet.';
+
+  @override
+  String get clinicHoursFrom => 'From';
+
+  @override
+  String get clinicHoursTo => 'To';
+
+  @override
+  String get clinicAddShift => 'Add a shift';
+
+  @override
+  String get clinicSaveHours => 'Save hours';
+
+  @override
+  String get clinicInviteTitle => 'Invite a doctor';
+
+  @override
+  String get clinicInvitePhone => 'Doctor\'s phone number';
+
+  @override
+  String get clinicInviteMessage => 'Message (optional)';
+
+  @override
+  String get clinicInviteSend => 'Send invitation';
+
+  @override
+  String get clinicInviteSent => 'Invitation sent';
+
+  @override
+  String get clinicInvitesSent => 'Sent invitations';
+
+  @override
+  String get clinicInvitesNone => 'No invitations sent.';
+
+  @override
+  String get invitationPending => 'Pending';
+
+  @override
+  String get invitationAccepted => 'Accepted';
+
+  @override
+  String get invitationDeclined => 'Declined';
+
+  @override
+  String get invitationCancelled => 'Cancelled';
+
+  @override
+  String get clinicFormName => 'Clinic name';
+
+  @override
+  String get clinicFormAddress => 'Address';
+
+  @override
+  String get clinicFormPhone => 'Clinic phone';
+
+  @override
+  String get clinicFormCreate => 'Create clinic';
+
+  @override
+  String get assistantsTitle => 'Assistants';
+
+  @override
+  String get assistantsAdd => 'Add an assistant';
+
+  @override
+  String get assistantsEmptyTitle => 'No assistants added yet';
+
+  @override
+  String get assistantsEmptyBody =>
+      'Add an assistant to handle bookings for you, and choose what they may do.';
+
+  @override
+  String get assistantAllClinics => 'All clinics';
+
+  @override
+  String get assistantInactive => 'Inactive';
+
+  @override
+  String get assistantPermissions => 'Permissions';
+
+  @override
+  String assistantPermissionsCount(int count) {
+    return '$count permissions';
+  }
+
+  @override
+  String get assistantRevoke => 'Revoke access';
+
+  @override
+  String assistantRevokeConfirm(String clinic) {
+    return 'Revoke this assistant\'s access to \"$clinic\"?';
+  }
+
+  @override
+  String get assistantFormName => 'Assistant\'s name';
+
+  @override
+  String get assistantFormPhone => 'Phone number';
+
+  @override
+  String get assistantFormNotes => 'Notes (optional)';
+
+  @override
+  String get assistantFormClinic => 'Clinic';
+
+  @override
+  String get assistantCreate => 'Add assistant';
+
+  @override
+  String get flag_can_view_bookings => 'View bookings';
+
+  @override
+  String get flag_can_create_bookings => 'Create bookings';
+
+  @override
+  String get flag_can_update_bookings => 'Edit bookings';
+
+  @override
+  String get flag_can_cancel_bookings => 'Cancel bookings';
+
+  @override
+  String get flag_can_manage_schedule => 'Manage the schedule';
+
+  @override
+  String get flag_can_view_patient_phone => 'See patients\' phone numbers';
+
+  @override
+  String get flag_can_create_patient_next_visit =>
+      'Book a patient\'s next visit';
+
+  @override
+  String get flag_can_request_duration_verification =>
+      'Request visit-length verification';
+
+  @override
+  String get flag_can_review_payment_proofs => 'Review payment proofs';
+
+  @override
+  String get scheduleTitle => 'Schedule';
+
+  @override
+  String get scheduleTabBookings => 'Appointments';
+
+  @override
+  String get scheduleTabAvailability => 'Availability';
+
+  @override
+  String get scheduleView => 'View';
+
+  @override
+  String get scheduleViewUpcoming => 'Upcoming';
+
+  @override
+  String get scheduleViewAll => 'All';
+
+  @override
+  String get scheduleDate => 'Specific day';
+
+  @override
+  String get scheduleDateAny => 'Any day';
+
+  @override
+  String get scheduleStatus => 'Status';
+
+  @override
+  String get scheduleStatusAll => 'All statuses';
+
+  @override
+  String scheduleCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count appointments',
+      one: '1 appointment',
+      zero: 'No appointments',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleEmpty => 'No appointments.';
+
+  @override
+  String get scheduleEmptyHint => 'Try another view, status or day.';
+
+  @override
+  String get scheduleConfirm => 'Confirm';
+
+  @override
+  String get scheduleComplete => 'Completed';
+
+  @override
+  String get scheduleNoShow => 'No-show';
+
+  @override
+  String get scheduleCancel => 'Cancel appointment';
+
+  @override
+  String get scheduleCancelReason => 'Reason for cancelling (optional)';
+
+  @override
+  String get scheduleNoShowHint =>
+      '\"No-show\" appears ten minutes after the appointment time.';
+
+  @override
+  String get scheduleUpdated => 'Appointment updated';
+
+  @override
+  String get windowsAdd => 'Add availability';
+
+  @override
+  String get windowsEmpty => 'No availability set yet.';
+
+  @override
+  String get windowsEmptyHint => 'Add the days and hours you see patients.';
+
+  @override
+  String windowMinutes(int minutes) {
+    return '$minutes min per visit';
+  }
+
+  @override
+  String get windowDeleteConfirm => 'Delete this availability window?';
+
+  @override
+  String get windowFormWeekday => 'Day';
+
+  @override
+  String get windowFormClinic => 'Clinic';
+
+  @override
+  String get windowFormDuration => 'Visit length (minutes)';
+
+  @override
+  String get windowCreate => 'Add';
+
+  @override
+  String get statusCancelledByPatient => 'Cancelled by patient';
+
+  @override
+  String get statusCancelledByClinic => 'Cancelled by clinic';
+
+  @override
+  String scheduleDuration(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get scheduleDatePick => 'Choose a day';
+
+  @override
+  String get blockClinicHoursNotSet =>
+      'The clinic\'s opening hours are not set yet';
+
+  @override
+  String get blockBookingDisabled =>
+      'Online booking is switched off in your terms';
+
+  @override
+  String get blockNoAvailabilityWindows =>
+      'You haven\'t set your availability yet (Schedule → Availability)';
 }
