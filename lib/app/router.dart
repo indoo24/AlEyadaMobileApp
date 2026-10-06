@@ -13,6 +13,7 @@ import '../features/bookings/booking_detail_screen.dart';
 import '../features/bookings/bookings_screen.dart';
 import '../features/doctors/doctor_detail_screen.dart';
 import '../features/doctors/doctors_screen.dart';
+import '../features/favorites/favorites_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/notifications/notifications_screen.dart';
 import '../features/onboarding/join_doctor_screen.dart';
@@ -31,6 +32,7 @@ class Routes {
   static const doctors = '/doctors';
   static const doctor = '/doctors/:slug';
   static const bookings = '/bookings';
+  static const favorites = '/favorites';
   static const bookingDetail = '/bookings/:id';
   static const account = '/account';
   static const editProfile = '/account/edit';
@@ -140,8 +142,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __, child) => AppShell(child: child),
         routes: [
           GoRoute(path: Routes.home, builder: (_, __) => const HomeScreen()),
-          GoRoute(path: Routes.doctors, builder: (_, __) => const DoctorsScreen()),
+          GoRoute(
+            path: Routes.doctors,
+            builder: (_, state) =>
+                DoctorsScreen(autofocus: state.uri.queryParameters['focus'] == '1'),
+          ),
           GoRoute(path: Routes.bookings, builder: (_, __) => const BookingsScreen()),
+          GoRoute(path: Routes.favorites, builder: (_, __) => const FavoritesScreen()),
           GoRoute(path: Routes.practice, builder: (_, __) => const PracticeScreen()),
           GoRoute(path: Routes.account, builder: (_, __) => const AccountScreen()),
         ],

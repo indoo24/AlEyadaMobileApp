@@ -9,7 +9,9 @@ import '../../l10n/app_localizations.dart';
 import '../bookings/booking_sheet.dart';
 import 'models.dart';
 import 'providers.dart';
+import '../favorites/widgets/favorite_button.dart';
 import 'widgets/doctor_card_tile.dart';
+import 'widgets/doctor_rating.dart';
 
 /// A doctor's public profile.
 ///
@@ -28,7 +30,14 @@ class DoctorDetailScreen extends ConsumerWidget {
     final detail = ref.watch(doctorDetailProvider(slug));
 
     return Scaffold(
-      appBar: AppBar(title: Text(detail.valueOrNull?.displayName ?? l.doctorsTitle)),
+      appBar: AppBar(
+        title: Text(detail.valueOrNull?.displayName ?? l.doctorsTitle),
+        actions: [
+          if (detail.valueOrNull != null)
+            FavoriteButton(doctorId: detail.requireValue.card.id, slug: detail.requireValue.slug),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: AsyncValueView<DoctorDetail>(
         value: detail,
         onRetry: () => ref.invalidate(doctorDetailProvider(slug)),
@@ -80,8 +89,7 @@ class _Body extends ConsumerWidget {
                     spacing: AppSpacing.sm,
                     runSpacing: 6,
                     children: [
-                      if (card.reviewsCount > 0)
-                        RatingBadge(rating: card.rating, count: card.reviewsCount),
+                      DoctorRating(doctor: card, fontSize: 13),
                       if (card.yearsOfExperience != null && card.yearsOfExperience! > 0)
                         MetaChip(
                           icon: Icons.workspace_premium_outlined,

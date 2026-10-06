@@ -41,7 +41,8 @@ class HomeSearchBar extends ConsumerWidget {
         children: [
           Expanded(
             child: InkWell(
-              onTap: () => context.go(Routes.doctors),
+              // `focus=1`: arrive with the cursor in the search box.
+              onTap: () => context.go('${Routes.doctors}?focus=1'),
               borderRadius: BorderRadius.circular(10),
               child: SizedBox(
                 height: 36,

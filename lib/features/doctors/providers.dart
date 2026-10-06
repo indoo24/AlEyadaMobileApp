@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/envelope.dart';
@@ -42,47 +43,108 @@ final doctorPageProvider = FutureProvider.family<Paginated<DoctorCard>, DoctorQu
 
 /// The doctor list as the user scrolls it: accumulated pages for the active
 /// query, resetting whenever the query changes.
+///
+/// Three guarantees the search experience depends on:
+///
+///  * **The latest query wins.** Every load takes a generation number, and a
+///    response is only applied if its generation is still the current one. A slow
+///    answer for "احمد" can therefore never overwrite the answer for "احمد جمال",
+///    whatever order the network returns them in. The superseded request is also
+///    cancelled so it stops costing bandwidth.
+///  * **Nothing is reloaded for nothing.** Setting a query equal to the one
+///    already shown is ignored, so a repeated tap or an unchanged filter sheet
+///    sends no request.
+///  * **Results survive a reload.** While a new query loads, the previous page
+///    stays in [state] (as a loading value that still has data), so the list can
+///    dim instead of blanking to a skeleton on every keystroke that gets through.
 class DoctorListController extends StateNotifier<AsyncValue<Paginated<DoctorCard>>> {
   DoctorListController(this._ref) : super(const AsyncValue.loading()) {
-    _load(reset: true);
+    _load();
     // Refetch from page one whenever a filter moves.
-    _ref.listen<DoctorQuery>(doctorQueryProvider, (_, __) => _load(reset: true));
+    _ref.listen<DoctorQuery>(doctorQueryProvider, (previous, next) {
+      if (previous == next) return;
+      _load();
+    });
   }
 
   final Ref _ref;
+  int _generation = 0;
+  CancelToken? _cancel;
   bool _loadingMore = false;
 
   DoctorQuery get _query => _ref.read(doctorQueryProvider);
 
-  Future<void> _load({bool reset = false}) async {
-    if (reset) state = const AsyncValue.loading();
+  Future<void> _load() async {
+    final query = _query.copyWith(page: 1);
+    final generation = ++_generation;
+    _cancel?.cancel();
+    final token = _cancel = CancelToken();
+    _loadingMore = false;
+
+    // Keep showing the previous results while this loads.
+    state = state.hasValue
+        ? const AsyncLoading<Paginated<DoctorCard>>().copyWithPrevious(state)
+        : const AsyncValue.loading();
+
     try {
-      final page = await _ref.read(directoryRepositoryProvider).doctors(_query.copyWith(page: 1));
-      state = AsyncValue.data(page);
+      final page = await _ref.read(directoryRepositoryProvider).doctors(query, cancelToken: token);
+      if (generation != _generation) return;
+      state = AsyncValue.data(_withoutDuplicates(page));
     } catch (e, st) {
+      if (generation != _generation) return;
+      // The query stays in doctorQueryProvider, so retrying does not lose it.
       state = AsyncValue.error(e, st);
     }
   }
 
-  Future<void> refresh() => _load(reset: false);
+  /// Reload the current query — pull-to-refresh and "retry".
+  Future<void> refresh() => _load();
 
   /// Fetch the next page and append. Guarded so a fast scroll cannot fire
-  /// several overlapping requests for the same page.
+  /// several overlapping requests for the same page, and so a page that
+  /// arrives after the query changed is discarded.
   Future<void> loadMore() async {
     final current = state.valueOrNull;
-    if (current == null || !current.hasMore || _loadingMore) return;
+    if (current == null || state.isLoading || !current.hasMore || _loadingMore) return;
     _loadingMore = true;
+    final generation = _generation;
     try {
       final next = await _ref
           .read(directoryRepositoryProvider)
-          .doctors(_query.copyWith(page: current.pagination.page + 1));
-      state = AsyncValue.data(current.append(next));
+          .doctors(_query.copyWith(page: current.pagination.page + 1), cancelToken: _cancel);
+      if (generation != _generation) return;
+      final seen = current.items.map((d) => d.id).toSet();
+      state = AsyncValue.data(
+        Paginated(
+          items: [...current.items, ...next.items.where((d) => !seen.contains(d.id))],
+          pagination: next.pagination,
+        ),
+      );
     } catch (_) {
       // Keep what is already on screen. A failed "load more" should not empty
       // the list the user is reading.
     } finally {
-      _loadingMore = false;
+      if (generation == _generation) _loadingMore = false;
     }
+  }
+
+  /// A page can repeat a doctor (a list shifting under the user as it grows);
+  /// the first occurrence wins.
+  Paginated<DoctorCard> _withoutDuplicates(Paginated<DoctorCard> page) {
+    final seen = <String>{};
+    return Paginated(
+      items: [
+        for (final d in page.items)
+          if (seen.add(d.id)) d,
+      ],
+      pagination: page.pagination,
+    );
+  }
+
+  @override
+  void dispose() {
+    _cancel?.cancel();
+    super.dispose();
   }
 }
 

@@ -37,6 +37,8 @@ class AppShell extends ConsumerWidget {
           Icons.calendar_today_rounded,
           l.navBookings,
         ),
+      // Public: a guest keeps a favourites list of their own on this device.
+      _Tab(Routes.favorites, Icons.favorite_border_rounded, Icons.favorite_rounded, l.navFavorites),
       _Tab(Routes.account, Icons.person_outline_rounded, Icons.person_rounded, l.navAccount),
     ];
 

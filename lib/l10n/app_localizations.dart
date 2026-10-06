@@ -1458,6 +1458,288 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'مراجَع طبياً'**
   String get homeArticleCertified;
+
+  /// No description provided for @searchRecentTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'عمليات البحث الأخيرة'**
+  String get searchRecentTitle;
+
+  /// No description provided for @searchClearAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح الكل'**
+  String get searchClearAll;
+
+  /// No description provided for @searchRemoveRecent.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة من عمليات البحث الأخيرة'**
+  String get searchRemoveRecent;
+
+  /// No description provided for @searchBrowseTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفح حسب التخصص'**
+  String get searchBrowseTitle;
+
+  /// No description provided for @searchSuggestionsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اقتراحات'**
+  String get searchSuggestionsTitle;
+
+  /// No description provided for @searchSuggestSpecialty.
+  ///
+  /// In ar, this message translates to:
+  /// **'تخصص'**
+  String get searchSuggestSpecialty;
+
+  /// No description provided for @searchSuggestCity.
+  ///
+  /// In ar, this message translates to:
+  /// **'مدينة'**
+  String get searchSuggestCity;
+
+  /// No description provided for @searchSuggestArea.
+  ///
+  /// In ar, this message translates to:
+  /// **'منطقة'**
+  String get searchSuggestArea;
+
+  /// No description provided for @searchSuggestClinic.
+  ///
+  /// In ar, this message translates to:
+  /// **'عيادة أو مركز'**
+  String get searchSuggestClinic;
+
+  /// No description provided for @searchResultsCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =0{لا يوجد أطباء} =1{تم العثور على طبيب واحد} other{تم العثور على {count} طبيب}}'**
+  String searchResultsCount(int count);
+
+  /// No description provided for @searchSortLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الترتيب'**
+  String get searchSortLabel;
+
+  /// No description provided for @searchSortFeatured.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأنسب'**
+  String get searchSortFeatured;
+
+  /// No description provided for @searchSortRating.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأعلى تقييماً'**
+  String get searchSortRating;
+
+  /// No description provided for @searchSortNewest.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأحدث'**
+  String get searchSortNewest;
+
+  /// No description provided for @searchSortFeeAsc.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأقل سعراً'**
+  String get searchSortFeeAsc;
+
+  /// No description provided for @searchFilterButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفية متقدمة'**
+  String get searchFilterButton;
+
+  /// No description provided for @searchFilterTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفية النتائج'**
+  String get searchFilterTitle;
+
+  /// No description provided for @searchFilterRating.
+  ///
+  /// In ar, this message translates to:
+  /// **'التقييم'**
+  String get searchFilterRating;
+
+  /// No description provided for @searchFilterMaxFee.
+  ///
+  /// In ar, this message translates to:
+  /// **'أقصى سعر للكشف'**
+  String get searchFilterMaxFee;
+
+  /// No description provided for @searchFilterBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجز الإلكتروني'**
+  String get searchFilterBooking;
+
+  /// No description provided for @searchFilterBookingOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتاحون للحجز الإلكتروني فقط'**
+  String get searchFilterBookingOnly;
+
+  /// No description provided for @searchAny.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get searchAny;
+
+  /// No description provided for @searchAnyPrice.
+  ///
+  /// In ar, this message translates to:
+  /// **'أي سعر'**
+  String get searchAnyPrice;
+
+  /// No description provided for @searchGenderMale.
+  ///
+  /// In ar, this message translates to:
+  /// **'طبيب'**
+  String get searchGenderMale;
+
+  /// No description provided for @searchGenderFemale.
+  ///
+  /// In ar, this message translates to:
+  /// **'طبيبة'**
+  String get searchGenderFemale;
+
+  /// No description provided for @searchChipRating.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقييم {value}+'**
+  String searchChipRating(String value);
+
+  /// No description provided for @searchChipMaxFee.
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى {fee} ج.م'**
+  String searchChipMaxFee(String fee);
+
+  /// No description provided for @searchChipBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجز إلكتروني'**
+  String get searchChipBooking;
+
+  /// No description provided for @searchClearField.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح البحث'**
+  String get searchClearField;
+
+  /// No description provided for @searchEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نجد أطباء مطابقين لبحثك'**
+  String get searchEmptyTitle;
+
+  /// No description provided for @searchEmptyHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب تغيير التخصص أو المنطقة أو إزالة بعض عوامل التصفية.'**
+  String get searchEmptyHint;
+
+  /// No description provided for @searchClearFilters.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح الفلاتر'**
+  String get searchClearFilters;
+
+  /// No description provided for @searchBookAppointment.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز موعد كشف'**
+  String get searchBookAppointment;
+
+  /// No description provided for @searchCall.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصال'**
+  String get searchCall;
+
+  /// No description provided for @searchYearsShort.
+  ///
+  /// In ar, this message translates to:
+  /// **'{years} سنة خبرة'**
+  String searchYearsShort(int years);
+
+  /// No description provided for @navFavorites.
+  ///
+  /// In ar, this message translates to:
+  /// **'المفضلة'**
+  String get navFavorites;
+
+  /// No description provided for @favoritesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأطباء المفضلون'**
+  String get favoritesTitle;
+
+  /// No description provided for @favoritesCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{طبيب واحد} =2{طبيبان} few{{count} أطباء} many{{count} طبيباً} other{{count} طبيب}}'**
+  String favoritesCount(int count);
+
+  /// No description provided for @favoritesEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تقم بإضافة أطباء للمفضلة بعد'**
+  String get favoritesEmptyTitle;
+
+  /// No description provided for @favoritesEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف الأطباء الذين تفضلهم للوصول إليهم بسهولة لاحقًا.'**
+  String get favoritesEmptyBody;
+
+  /// No description provided for @favoritesFindDoctor.
+  ///
+  /// In ar, this message translates to:
+  /// **'البحث عن طبيب'**
+  String get favoritesFindDoctor;
+
+  /// No description provided for @favoritesDoctorError.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل بيانات هذا الطبيب.'**
+  String get favoritesDoctorError;
+
+  /// No description provided for @favoritesLoadError.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل قائمة المفضلة.'**
+  String get favoritesLoadError;
+
+  /// No description provided for @favoriteAdd.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة إلى المفضلة'**
+  String get favoriteAdd;
+
+  /// No description provided for @favoriteRemove.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة من المفضلة'**
+  String get favoriteRemove;
+
+  /// No description provided for @favoriteFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر حفظ التغيير. حاول مرة أخرى.'**
+  String get favoriteFailed;
+
+  /// No description provided for @ratingNone.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد تقييمات'**
+  String get ratingNone;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {

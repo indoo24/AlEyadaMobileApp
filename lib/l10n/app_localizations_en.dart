@@ -752,4 +752,170 @@ class LEn extends L {
 
   @override
   String get homeArticleCertified => 'Medically reviewed';
+
+  @override
+  String get searchRecentTitle => 'Recent searches';
+
+  @override
+  String get searchClearAll => 'Clear all';
+
+  @override
+  String get searchRemoveRecent => 'Remove from recent searches';
+
+  @override
+  String get searchBrowseTitle => 'Browse by specialty';
+
+  @override
+  String get searchSuggestionsTitle => 'Suggestions';
+
+  @override
+  String get searchSuggestSpecialty => 'Specialty';
+
+  @override
+  String get searchSuggestCity => 'City';
+
+  @override
+  String get searchSuggestArea => 'Area';
+
+  @override
+  String get searchSuggestClinic => 'Clinic or center';
+
+  @override
+  String searchResultsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count doctors found',
+      one: '1 doctor found',
+      zero: 'No doctors',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchSortLabel => 'Sort';
+
+  @override
+  String get searchSortFeatured => 'Best match';
+
+  @override
+  String get searchSortRating => 'Top rated';
+
+  @override
+  String get searchSortNewest => 'Newest';
+
+  @override
+  String get searchSortFeeAsc => 'Lowest fee';
+
+  @override
+  String get searchFilterButton => 'Filters';
+
+  @override
+  String get searchFilterTitle => 'Filter results';
+
+  @override
+  String get searchFilterRating => 'Rating';
+
+  @override
+  String get searchFilterMaxFee => 'Maximum fee';
+
+  @override
+  String get searchFilterBooking => 'Online booking';
+
+  @override
+  String get searchFilterBookingOnly => 'Only doctors who take online bookings';
+
+  @override
+  String get searchAny => 'Any';
+
+  @override
+  String get searchAnyPrice => 'Any price';
+
+  @override
+  String get searchGenderMale => 'Male doctor';
+
+  @override
+  String get searchGenderFemale => 'Female doctor';
+
+  @override
+  String searchChipRating(String value) {
+    return 'Rating $value+';
+  }
+
+  @override
+  String searchChipMaxFee(String fee) {
+    return 'Up to $fee EGP';
+  }
+
+  @override
+  String get searchChipBooking => 'Online booking';
+
+  @override
+  String get searchClearField => 'Clear search';
+
+  @override
+  String get searchEmptyTitle => 'No doctors match your search';
+
+  @override
+  String get searchEmptyHint =>
+      'Try another specialty or area, or remove some filters.';
+
+  @override
+  String get searchClearFilters => 'Clear filters';
+
+  @override
+  String get searchBookAppointment => 'Book an appointment';
+
+  @override
+  String get searchCall => 'Call';
+
+  @override
+  String searchYearsShort(int years) {
+    return '$years yrs experience';
+  }
+
+  @override
+  String get navFavorites => 'Favorites';
+
+  @override
+  String get favoritesTitle => 'Favorite doctors';
+
+  @override
+  String favoritesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count doctors',
+      one: '1 doctor',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get favoritesEmptyTitle => 'You haven\'t added any doctors yet';
+
+  @override
+  String get favoritesEmptyBody =>
+      'Add the doctors you like so you can reach them easily later.';
+
+  @override
+  String get favoritesFindDoctor => 'Find a doctor';
+
+  @override
+  String get favoritesDoctorError => 'This doctor could not be loaded.';
+
+  @override
+  String get favoritesLoadError => 'Your favorites could not be loaded.';
+
+  @override
+  String get favoriteAdd => 'Add to favorites';
+
+  @override
+  String get favoriteRemove => 'Remove from favorites';
+
+  @override
+  String get favoriteFailed => 'Couldn\'t save that change. Please try again.';
+
+  @override
+  String get ratingNone => 'No reviews yet';
 }

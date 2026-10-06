@@ -192,6 +192,24 @@ class DoctorCard {
 
   double get rating => parseDouble(avgRating) ?? 0;
 
+  /// The average rating exactly as the backend sent it, or null when it sent
+  /// nothing usable.
+  ///
+  /// Unlike [rating], this never turns "missing" into 0.0 — a doctor with no
+  /// rating must not look like a doctor with a terrible one.
+  double? get ratingValue => parseDouble(avgRating);
+
+  /// Whether there is a rating worth showing.
+  ///
+  /// The backend sends `"0.00"` with `reviews_count: 0` for an unrated doctor, so
+  /// a zero average only counts when reviews back it up. A non-zero average
+  /// always counts, even if the count is missing.
+  bool get hasRating {
+    final v = ratingValue;
+    if (v == null) return false;
+    return v > 0 || reviewsCount > 0;
+  }
+
   /// City and area as one line, in reading order for the current locale.
   String get locationLabel {
     final parts = [area?.nameAr, city?.nameAr].where((p) => (p ?? '').isNotEmpty).cast<String>();

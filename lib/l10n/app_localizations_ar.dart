@@ -744,4 +744,173 @@ class LAr extends L {
 
   @override
   String get homeArticleCertified => 'مراجَع طبياً';
+
+  @override
+  String get searchRecentTitle => 'عمليات البحث الأخيرة';
+
+  @override
+  String get searchClearAll => 'مسح الكل';
+
+  @override
+  String get searchRemoveRecent => 'إزالة من عمليات البحث الأخيرة';
+
+  @override
+  String get searchBrowseTitle => 'تصفح حسب التخصص';
+
+  @override
+  String get searchSuggestionsTitle => 'اقتراحات';
+
+  @override
+  String get searchSuggestSpecialty => 'تخصص';
+
+  @override
+  String get searchSuggestCity => 'مدينة';
+
+  @override
+  String get searchSuggestArea => 'منطقة';
+
+  @override
+  String get searchSuggestClinic => 'عيادة أو مركز';
+
+  @override
+  String searchResultsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'تم العثور على $count طبيب',
+      one: 'تم العثور على طبيب واحد',
+      zero: 'لا يوجد أطباء',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchSortLabel => 'الترتيب';
+
+  @override
+  String get searchSortFeatured => 'الأنسب';
+
+  @override
+  String get searchSortRating => 'الأعلى تقييماً';
+
+  @override
+  String get searchSortNewest => 'الأحدث';
+
+  @override
+  String get searchSortFeeAsc => 'الأقل سعراً';
+
+  @override
+  String get searchFilterButton => 'تصفية متقدمة';
+
+  @override
+  String get searchFilterTitle => 'تصفية النتائج';
+
+  @override
+  String get searchFilterRating => 'التقييم';
+
+  @override
+  String get searchFilterMaxFee => 'أقصى سعر للكشف';
+
+  @override
+  String get searchFilterBooking => 'الحجز الإلكتروني';
+
+  @override
+  String get searchFilterBookingOnly => 'المتاحون للحجز الإلكتروني فقط';
+
+  @override
+  String get searchAny => 'الكل';
+
+  @override
+  String get searchAnyPrice => 'أي سعر';
+
+  @override
+  String get searchGenderMale => 'طبيب';
+
+  @override
+  String get searchGenderFemale => 'طبيبة';
+
+  @override
+  String searchChipRating(String value) {
+    return 'تقييم $value+';
+  }
+
+  @override
+  String searchChipMaxFee(String fee) {
+    return 'حتى $fee ج.م';
+  }
+
+  @override
+  String get searchChipBooking => 'حجز إلكتروني';
+
+  @override
+  String get searchClearField => 'مسح البحث';
+
+  @override
+  String get searchEmptyTitle => 'لم نجد أطباء مطابقين لبحثك';
+
+  @override
+  String get searchEmptyHint =>
+      'جرّب تغيير التخصص أو المنطقة أو إزالة بعض عوامل التصفية.';
+
+  @override
+  String get searchClearFilters => 'مسح الفلاتر';
+
+  @override
+  String get searchBookAppointment => 'احجز موعد كشف';
+
+  @override
+  String get searchCall => 'اتصال';
+
+  @override
+  String searchYearsShort(int years) {
+    return '$years سنة خبرة';
+  }
+
+  @override
+  String get navFavorites => 'المفضلة';
+
+  @override
+  String get favoritesTitle => 'الأطباء المفضلون';
+
+  @override
+  String favoritesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count طبيب',
+      many: '$count طبيباً',
+      few: '$count أطباء',
+      two: 'طبيبان',
+      one: 'طبيب واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get favoritesEmptyTitle => 'لم تقم بإضافة أطباء للمفضلة بعد';
+
+  @override
+  String get favoritesEmptyBody =>
+      'أضف الأطباء الذين تفضلهم للوصول إليهم بسهولة لاحقًا.';
+
+  @override
+  String get favoritesFindDoctor => 'البحث عن طبيب';
+
+  @override
+  String get favoritesDoctorError => 'تعذّر تحميل بيانات هذا الطبيب.';
+
+  @override
+  String get favoritesLoadError => 'تعذّر تحميل قائمة المفضلة.';
+
+  @override
+  String get favoriteAdd => 'إضافة إلى المفضلة';
+
+  @override
+  String get favoriteRemove => 'إزالة من المفضلة';
+
+  @override
+  String get favoriteFailed => 'تعذّر حفظ التغيير. حاول مرة أخرى.';
+
+  @override
+  String get ratingNone => 'لا توجد تقييمات';
 }

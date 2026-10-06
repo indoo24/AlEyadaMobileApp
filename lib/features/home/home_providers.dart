@@ -13,7 +13,7 @@ import '../doctors/repository.dart';
 final homeCitySlugProvider = StateProvider<String?>((ref) => null);
 
 /// Highest-rated first, as the backend orders it, within the chosen city.
-DoctorQuery featuredDoctorQuery(String? city) => DoctorQuery(ordering: '-avg_rating', city: city);
+DoctorQuery featuredDoctorQuery(String? city) => DoctorQuery(sort: DoctorSort.rating, city: city);
 
 /// The selected city as a full object (for its name), once the city list loads.
 final homeCityProvider = Provider<City?>((ref) {

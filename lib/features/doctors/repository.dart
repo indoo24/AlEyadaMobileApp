@@ -6,12 +6,33 @@ import '../../core/api/envelope.dart';
 import '../bookings/models.dart';
 import 'models.dart';
 
+/// The sort orders `GET /doctors/?sort=` accepts.
+///
+/// `nearest` exists on the backend too, but it needs the device's coordinates
+/// (`lat`/`lng`) and the app does not request location permission, so it is not
+/// offered. There is no "highest fee first" and no "soonest appointment" either —
+/// the list endpoint cannot do those, so the app does not pretend to.
+class DoctorSort {
+  const DoctorSort._();
+
+  static const featured = 'featured';
+  static const rating = 'rating';
+  static const newest = 'newest';
+  static const feeAsc = 'fee_asc';
+
+  static const all = [featured, rating, newest, feeAsc];
+}
+
+/// Shortest typed query that is sent to the server. A single letter matches too
+/// much to be useful and costs a request on the first keystroke.
+const kMinSearchChars = 2;
+
 /// Filters the directory list accepts.
 ///
-/// These map onto the backend's own query parameters. Filtering is done
-/// server-side throughout: the app never fetches a page and then hides rows from
-/// it, because a page is 20 of a possibly large set and locally filtering it
-/// would silently drop matches that were on page two.
+/// These map onto the backend's own query parameters (see `GET /doctors/` in the
+/// API spec). Filtering is done server-side throughout: the app never fetches a
+/// page and then hides rows from it, because a page is 20 of a possibly large set
+/// and locally filtering it would silently drop matches that were on page two.
 class DoctorQuery {
   const DoctorQuery({
     this.search,
@@ -22,10 +43,13 @@ class DoctorQuery {
     this.minRating,
     this.maxFee,
     this.bookingEnabled,
-    this.ordering,
+    this.sort,
+    this.clinic,
+    this.clinicName,
     this.page = 1,
   });
 
+  /// Free text, sent as `q` (the backend's fuzzy name search).
   final String? search;
 
   /// Specialty **slug**. Matching a parent also surfaces its sub-specialties,
@@ -37,9 +61,20 @@ class DoctorQuery {
   final String? area;
   final String? gender;
   final double? minRating;
+
+  /// Upper bound on the consultation fee. The backend has no lower bound.
   final String? maxFee;
   final bool? bookingEnabled;
-  final String? ordering;
+
+  /// One of [DoctorSort]; null is the backend default (featured first).
+  final String? sort;
+
+  /// Clinic slug, for "doctors at this clinic".
+  final String? clinic;
+
+  /// The clinic's display name. Never sent — only so a filter chip can say which
+  /// clinic the slug means without another request.
+  final String? clinicName;
   final int page;
 
   DoctorQuery copyWith({
@@ -51,7 +86,9 @@ class DoctorQuery {
     Object? minRating = _unset,
     Object? maxFee = _unset,
     Object? bookingEnabled = _unset,
-    Object? ordering = _unset,
+    Object? sort = _unset,
+    Object? clinic = _unset,
+    Object? clinicName = _unset,
     int? page,
   }) => DoctorQuery(
     search: search == _unset ? this.search : search as String?,
@@ -62,14 +99,28 @@ class DoctorQuery {
     minRating: minRating == _unset ? this.minRating : minRating as double?,
     maxFee: maxFee == _unset ? this.maxFee : maxFee as String?,
     bookingEnabled: bookingEnabled == _unset ? this.bookingEnabled : bookingEnabled as bool?,
-    ordering: ordering == _unset ? this.ordering : ordering as String?,
+    sort: sort == _unset ? this.sort : sort as String?,
+    clinic: clinic == _unset ? this.clinic : clinic as String?,
+    clinicName: clinicName == _unset ? this.clinicName : clinicName as String?,
     page: page ?? this.page,
   );
 
   static const _unset = Object();
 
+  /// This query with [raw] typed into the search box.
+  ///
+  /// Whitespace-only clears the search. Text shorter than [kMinSearchChars] is
+  /// not applied at all — the previous results stay on screen until the person
+  /// has typed enough to mean something.
+  DoctorQuery withSearchText(String raw) {
+    final text = raw.trim();
+    if (text.isEmpty) return search == null ? this : copyWith(search: null, page: 1);
+    if (text.length < kMinSearchChars) return this;
+    return text == search ? this : copyWith(search: text, page: 1);
+  }
+
   Map<String, dynamic> toQuery() => {
-    if (search != null && search!.trim().isNotEmpty) 'search': search!.trim(),
+    if (search != null && search!.trim().isNotEmpty) 'q': search!.trim(),
     if (specialization != null) 'specialization': specialization,
     if (city != null) 'city': city,
     if (area != null) 'area': area,
@@ -77,22 +128,33 @@ class DoctorQuery {
     if (minRating != null) 'min_rating': minRating,
     if (maxFee != null) 'max_fee': maxFee,
     if (bookingEnabled != null) 'booking_enabled': bookingEnabled,
-    if (ordering != null) 'ordering': ordering,
+    if (sort != null && sort != DoctorSort.featured) 'sort': sort,
+    if (clinic != null) 'clinic': clinic,
     'page': page,
   };
 
-  /// Whether any filter beyond the page number is set — drives the "clear
-  /// filters" affordance.
-  bool get hasFilters =>
-      (search ?? '').isNotEmpty ||
-      specialization != null ||
-      city != null ||
-      area != null ||
-      gender != null ||
-      minRating != null ||
-      maxFee != null;
+  /// How many filters (not counting the search text or the sort) are applied —
+  /// the number on the filter button.
+  int get activeFilterCount => [
+    specialization,
+    city,
+    area,
+    gender,
+    minRating,
+    maxFee,
+    bookingEnabled,
+    clinic,
+  ].where((f) => f != null).length;
 
-  /// Value equality so Riverpod can cache a page per distinct query.
+  /// Whether anything narrows the list: search text or any filter. Drives the
+  /// "clear" affordances; the sort order alone does not count.
+  bool get hasFilters => (search ?? '').isNotEmpty || activeFilterCount > 0;
+
+  /// This query with every filter removed but the search text and sort kept.
+  DoctorQuery withoutFilters() => DoctorQuery(search: search, sort: sort);
+
+  /// Value equality so Riverpod can cache a page per distinct query, and so an
+  /// identical query is recognised as "nothing to reload".
   @override
   bool operator ==(Object other) =>
       other is DoctorQuery &&
@@ -104,7 +166,9 @@ class DoctorQuery {
       other.minRating == minRating &&
       other.maxFee == maxFee &&
       other.bookingEnabled == bookingEnabled &&
-      other.ordering == ordering &&
+      other.sort == sort &&
+      other.clinic == clinic &&
+      other.clinicName == clinicName &&
       other.page == page;
 
   @override
@@ -117,7 +181,9 @@ class DoctorQuery {
     minRating,
     maxFee,
     bookingEnabled,
-    ordering,
+    sort,
+    clinic,
+    clinicName,
     page,
   );
 }
