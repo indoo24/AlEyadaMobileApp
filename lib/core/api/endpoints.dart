@@ -105,6 +105,9 @@ class Endpoints {
 
   // --- doctor (own account) ----------------------------------------------
   static const doctorProfile = '/doctor/profile/';
+  static const doctorEducation = '/doctor/education/';
+  static const doctorCertificates = '/doctor/certificates/';
+  static const doctorServices = '/doctor/services/';
   static const doctorActivation = '/doctor/activation/';
   static const doctorVerificationStatus = '/doctor/verification-status/';
   static const doctorClinics = '/doctor/clinics/';

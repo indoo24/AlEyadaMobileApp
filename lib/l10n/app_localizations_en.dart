@@ -1333,4 +1333,189 @@ class LEn extends L {
   @override
   String get blockNoAvailabilityWindows =>
       'You haven\'t set your availability yet (Schedule → Availability)';
+
+  @override
+  String get dpTitle => 'Professional profile';
+
+  @override
+  String get dpEdit => 'Edit';
+
+  @override
+  String get dpSaved => 'Professional profile saved';
+
+  @override
+  String get dpSentForReview =>
+      'Some changes were sent to the administration for review before they show.';
+
+  @override
+  String get dpReviewNote =>
+      'A change to this field is reviewed by the administration before it applies.';
+
+  @override
+  String get dpInvalidNumber => 'Enter a valid number';
+
+  @override
+  String get dpNothingChanged => 'Nothing was changed.';
+
+  @override
+  String get dpSectionBasic => 'Basic information';
+
+  @override
+  String get dpSectionProfessional => 'Professional information';
+
+  @override
+  String get dpSectionBio => 'Biography and vision';
+
+  @override
+  String get dpSectionExperience => 'Experience';
+
+  @override
+  String get dpSectionQualifications => 'Qualifications and certificates';
+
+  @override
+  String get dpSectionServices => 'Services and prices';
+
+  @override
+  String get dpSectionContact => 'Contact';
+
+  @override
+  String get dpSectionLinks => 'Links and social accounts';
+
+  @override
+  String get dpSectionSearch => 'Search appearance';
+
+  @override
+  String get dpEducationTitle => 'Education';
+
+  @override
+  String get dpCertificatesTitle => 'Certificates';
+
+  @override
+  String get dpCertPublic => 'Visible to patients';
+
+  @override
+  String get dpServiceInactive => 'Not active';
+
+  @override
+  String get dpSpecializations => 'Specialties';
+
+  @override
+  String get dpPrimarySpec => 'Primary';
+
+  @override
+  String get dpStatusDraft => 'Draft';
+
+  @override
+  String get dpStatusPending => 'Under review';
+
+  @override
+  String get dpStatusApproved => 'Approved';
+
+  @override
+  String get dpStatusRejected => 'Rejected';
+
+  @override
+  String get dpRejectionReason => 'Reason for rejection';
+
+  @override
+  String get dpAccountTile => 'Account details';
+
+  @override
+  String get dpAccountTileHint => 'First name, last name and email';
+
+  @override
+  String get dpOpenLink => 'Open link';
+
+  @override
+  String get dpLinkFailed => 'Couldn\'t open the link.';
+
+  @override
+  String get dpField_full_name_ar => 'Name in Arabic';
+
+  @override
+  String get dpField_full_name_en => 'Name in English';
+
+  @override
+  String get dpField_display_title => 'Title (Dr. / Prof.)';
+
+  @override
+  String get dpField_gender => 'Gender';
+
+  @override
+  String get dpField_city => 'Governorate';
+
+  @override
+  String get dpField_area => 'Area';
+
+  @override
+  String get dpField_professional_title_ar => 'Professional title in Arabic';
+
+  @override
+  String get dpField_professional_title_en => 'Professional title in English';
+
+  @override
+  String get dpField_academic_degree_ar => 'Academic degree';
+
+  @override
+  String get dpField_years_of_experience => 'Years of experience';
+
+  @override
+  String get dpField_default_consultation_fee => 'Default consultation fee';
+
+  @override
+  String get dpField_bio_ar => 'Biography in Arabic';
+
+  @override
+  String get dpField_bio_en => 'Biography in English';
+
+  @override
+  String get dpField_vision_ar => 'Medical vision or professional mission';
+
+  @override
+  String get dpField_current_positions_ar => 'Current positions';
+
+  @override
+  String get dpField_past_positions_ar => 'Past positions';
+
+  @override
+  String get dpField_certifications_ar => 'Certificates / medical licence';
+
+  @override
+  String get dpField_fellowships_ar => 'Fellowships and diplomas';
+
+  @override
+  String get dpField_phone => 'Phone number';
+
+  @override
+  String get dpField_whatsapp => 'WhatsApp';
+
+  @override
+  String get dpField_website => 'Website';
+
+  @override
+  String get dpField_external_booking_url => 'External booking link';
+
+  @override
+  String get dpField_google_maps_url => 'Google Maps link';
+
+  @override
+  String get dpField_facebook => 'Facebook';
+
+  @override
+  String get dpField_instagram => 'Instagram';
+
+  @override
+  String get dpField_linkedin => 'LinkedIn';
+
+  @override
+  String get dpField_youtube => 'YouTube';
+
+  @override
+  String get dpField_tiktok => 'TikTok';
+
+  @override
+  String get dpField_seo_title => 'Search result title';
+
+  @override
+  String get dpField_seo_description => 'Search result description';
 }

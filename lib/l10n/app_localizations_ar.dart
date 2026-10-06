@@ -1326,4 +1326,188 @@ class LAr extends L {
   @override
   String get blockNoAvailabilityWindows =>
       'لم تحدد أوقات توفّرك بعد (من الجدول ← أوقات التوفّر)';
+
+  @override
+  String get dpTitle => 'الملف المهني';
+
+  @override
+  String get dpEdit => 'تعديل';
+
+  @override
+  String get dpSaved => 'تم حفظ الملف المهني';
+
+  @override
+  String get dpSentForReview =>
+      'بعض التغييرات أُرسلت لمراجعة الإدارة قبل أن تظهر.';
+
+  @override
+  String get dpReviewNote => 'يراجع تغيير هذا الحقل من الإدارة قبل تطبيقه.';
+
+  @override
+  String get dpInvalidNumber => 'أدخل رقمًا صحيحًا';
+
+  @override
+  String get dpNothingChanged => 'لم تغيّر شيئًا.';
+
+  @override
+  String get dpSectionBasic => 'المعلومات الأساسية';
+
+  @override
+  String get dpSectionProfessional => 'المعلومات المهنية';
+
+  @override
+  String get dpSectionBio => 'النبذة والرؤية';
+
+  @override
+  String get dpSectionExperience => 'الخبرات';
+
+  @override
+  String get dpSectionQualifications => 'المؤهلات والشهادات';
+
+  @override
+  String get dpSectionServices => 'الخدمات والأسعار';
+
+  @override
+  String get dpSectionContact => 'التواصل';
+
+  @override
+  String get dpSectionLinks => 'الروابط وحسابات التواصل';
+
+  @override
+  String get dpSectionSearch => 'الظهور في نتائج البحث';
+
+  @override
+  String get dpEducationTitle => 'المؤهلات العلمية';
+
+  @override
+  String get dpCertificatesTitle => 'الشهادات';
+
+  @override
+  String get dpCertPublic => 'ظاهرة للمرضى';
+
+  @override
+  String get dpServiceInactive => 'غير مفعّلة';
+
+  @override
+  String get dpSpecializations => 'التخصصات';
+
+  @override
+  String get dpPrimarySpec => 'الرئيسي';
+
+  @override
+  String get dpStatusDraft => 'مسودة';
+
+  @override
+  String get dpStatusPending => 'قيد المراجعة';
+
+  @override
+  String get dpStatusApproved => 'معتمد';
+
+  @override
+  String get dpStatusRejected => 'مرفوض';
+
+  @override
+  String get dpRejectionReason => 'سبب الرفض';
+
+  @override
+  String get dpAccountTile => 'بيانات الحساب';
+
+  @override
+  String get dpAccountTileHint => 'الاسم الأول واسم العائلة والبريد الإلكتروني';
+
+  @override
+  String get dpOpenLink => 'فتح الرابط';
+
+  @override
+  String get dpLinkFailed => 'تعذّر فتح الرابط.';
+
+  @override
+  String get dpField_full_name_ar => 'الاسم بالعربية';
+
+  @override
+  String get dpField_full_name_en => 'الاسم بالإنجليزية';
+
+  @override
+  String get dpField_display_title => 'اللقب (د. / أ.د.)';
+
+  @override
+  String get dpField_gender => 'النوع';
+
+  @override
+  String get dpField_city => 'المحافظة';
+
+  @override
+  String get dpField_area => 'المنطقة';
+
+  @override
+  String get dpField_professional_title_ar => 'المسمى المهني بالعربية';
+
+  @override
+  String get dpField_professional_title_en => 'المسمى المهني بالإنجليزية';
+
+  @override
+  String get dpField_academic_degree_ar => 'الدرجة العلمية';
+
+  @override
+  String get dpField_years_of_experience => 'سنوات الخبرة';
+
+  @override
+  String get dpField_default_consultation_fee => 'سعر الكشف الافتراضي';
+
+  @override
+  String get dpField_bio_ar => 'نبذة تعريفية بالعربية';
+
+  @override
+  String get dpField_bio_en => 'نبذة تعريفية بالإنجليزية';
+
+  @override
+  String get dpField_vision_ar => 'الرؤية الطبية أو الرسالة المهنية';
+
+  @override
+  String get dpField_current_positions_ar => 'المناصب الحالية';
+
+  @override
+  String get dpField_past_positions_ar => 'المناصب السابقة';
+
+  @override
+  String get dpField_certifications_ar => 'الشهادات / الترخيص الطبي';
+
+  @override
+  String get dpField_fellowships_ar => 'الزمالات والدبلومات';
+
+  @override
+  String get dpField_phone => 'رقم الهاتف';
+
+  @override
+  String get dpField_whatsapp => 'واتساب';
+
+  @override
+  String get dpField_website => 'الموقع الإلكتروني';
+
+  @override
+  String get dpField_external_booking_url => 'رابط الحجز الخارجي';
+
+  @override
+  String get dpField_google_maps_url => 'رابط خرائط جوجل';
+
+  @override
+  String get dpField_facebook => 'فيسبوك';
+
+  @override
+  String get dpField_instagram => 'إنستجرام';
+
+  @override
+  String get dpField_linkedin => 'لينكد إن';
+
+  @override
+  String get dpField_youtube => 'يوتيوب';
+
+  @override
+  String get dpField_tiktok => 'تيك توك';
+
+  @override
+  String get dpField_seo_title => 'عنوان الصفحة في البحث';
+
+  @override
+  String get dpField_seo_description => 'وصف الصفحة في البحث';
 }

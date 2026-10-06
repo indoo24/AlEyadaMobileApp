@@ -2508,6 +2508,372 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'لم تحدد أوقات توفّرك بعد (من الجدول ← أوقات التوفّر)'**
   String get blockNoAvailabilityWindows;
+
+  /// No description provided for @dpTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الملف المهني'**
+  String get dpTitle;
+
+  /// No description provided for @dpEdit.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل'**
+  String get dpEdit;
+
+  /// No description provided for @dpSaved.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم حفظ الملف المهني'**
+  String get dpSaved;
+
+  /// No description provided for @dpSentForReview.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعض التغييرات أُرسلت لمراجعة الإدارة قبل أن تظهر.'**
+  String get dpSentForReview;
+
+  /// No description provided for @dpReviewNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'يراجع تغيير هذا الحقل من الإدارة قبل تطبيقه.'**
+  String get dpReviewNote;
+
+  /// No description provided for @dpInvalidNumber.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رقمًا صحيحًا'**
+  String get dpInvalidNumber;
+
+  /// No description provided for @dpNothingChanged.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تغيّر شيئًا.'**
+  String get dpNothingChanged;
+
+  /// No description provided for @dpSectionBasic.
+  ///
+  /// In ar, this message translates to:
+  /// **'المعلومات الأساسية'**
+  String get dpSectionBasic;
+
+  /// No description provided for @dpSectionProfessional.
+  ///
+  /// In ar, this message translates to:
+  /// **'المعلومات المهنية'**
+  String get dpSectionProfessional;
+
+  /// No description provided for @dpSectionBio.
+  ///
+  /// In ar, this message translates to:
+  /// **'النبذة والرؤية'**
+  String get dpSectionBio;
+
+  /// No description provided for @dpSectionExperience.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخبرات'**
+  String get dpSectionExperience;
+
+  /// No description provided for @dpSectionQualifications.
+  ///
+  /// In ar, this message translates to:
+  /// **'المؤهلات والشهادات'**
+  String get dpSectionQualifications;
+
+  /// No description provided for @dpSectionServices.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخدمات والأسعار'**
+  String get dpSectionServices;
+
+  /// No description provided for @dpSectionContact.
+  ///
+  /// In ar, this message translates to:
+  /// **'التواصل'**
+  String get dpSectionContact;
+
+  /// No description provided for @dpSectionLinks.
+  ///
+  /// In ar, this message translates to:
+  /// **'الروابط وحسابات التواصل'**
+  String get dpSectionLinks;
+
+  /// No description provided for @dpSectionSearch.
+  ///
+  /// In ar, this message translates to:
+  /// **'الظهور في نتائج البحث'**
+  String get dpSectionSearch;
+
+  /// No description provided for @dpEducationTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المؤهلات العلمية'**
+  String get dpEducationTitle;
+
+  /// No description provided for @dpCertificatesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشهادات'**
+  String get dpCertificatesTitle;
+
+  /// No description provided for @dpCertPublic.
+  ///
+  /// In ar, this message translates to:
+  /// **'ظاهرة للمرضى'**
+  String get dpCertPublic;
+
+  /// No description provided for @dpServiceInactive.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير مفعّلة'**
+  String get dpServiceInactive;
+
+  /// No description provided for @dpSpecializations.
+  ///
+  /// In ar, this message translates to:
+  /// **'التخصصات'**
+  String get dpSpecializations;
+
+  /// No description provided for @dpPrimarySpec.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرئيسي'**
+  String get dpPrimarySpec;
+
+  /// No description provided for @dpStatusDraft.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسودة'**
+  String get dpStatusDraft;
+
+  /// No description provided for @dpStatusPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد المراجعة'**
+  String get dpStatusPending;
+
+  /// No description provided for @dpStatusApproved.
+  ///
+  /// In ar, this message translates to:
+  /// **'معتمد'**
+  String get dpStatusApproved;
+
+  /// No description provided for @dpStatusRejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض'**
+  String get dpStatusRejected;
+
+  /// No description provided for @dpRejectionReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الرفض'**
+  String get dpRejectionReason;
+
+  /// No description provided for @dpAccountTile.
+  ///
+  /// In ar, this message translates to:
+  /// **'بيانات الحساب'**
+  String get dpAccountTile;
+
+  /// No description provided for @dpAccountTileHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم الأول واسم العائلة والبريد الإلكتروني'**
+  String get dpAccountTileHint;
+
+  /// No description provided for @dpOpenLink.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح الرابط'**
+  String get dpOpenLink;
+
+  /// No description provided for @dpLinkFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر فتح الرابط.'**
+  String get dpLinkFailed;
+
+  /// No description provided for @dpField_full_name_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم بالعربية'**
+  String get dpField_full_name_ar;
+
+  /// No description provided for @dpField_full_name_en.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم بالإنجليزية'**
+  String get dpField_full_name_en;
+
+  /// No description provided for @dpField_display_title.
+  ///
+  /// In ar, this message translates to:
+  /// **'اللقب (د. / أ.د.)'**
+  String get dpField_display_title;
+
+  /// No description provided for @dpField_gender.
+  ///
+  /// In ar, this message translates to:
+  /// **'النوع'**
+  String get dpField_gender;
+
+  /// No description provided for @dpField_city.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحافظة'**
+  String get dpField_city;
+
+  /// No description provided for @dpField_area.
+  ///
+  /// In ar, this message translates to:
+  /// **'المنطقة'**
+  String get dpField_area;
+
+  /// No description provided for @dpField_professional_title_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسمى المهني بالعربية'**
+  String get dpField_professional_title_ar;
+
+  /// No description provided for @dpField_professional_title_en.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسمى المهني بالإنجليزية'**
+  String get dpField_professional_title_en;
+
+  /// No description provided for @dpField_academic_degree_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدرجة العلمية'**
+  String get dpField_academic_degree_ar;
+
+  /// No description provided for @dpField_years_of_experience.
+  ///
+  /// In ar, this message translates to:
+  /// **'سنوات الخبرة'**
+  String get dpField_years_of_experience;
+
+  /// No description provided for @dpField_default_consultation_fee.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر الكشف الافتراضي'**
+  String get dpField_default_consultation_fee;
+
+  /// No description provided for @dpField_bio_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'نبذة تعريفية بالعربية'**
+  String get dpField_bio_ar;
+
+  /// No description provided for @dpField_bio_en.
+  ///
+  /// In ar, this message translates to:
+  /// **'نبذة تعريفية بالإنجليزية'**
+  String get dpField_bio_en;
+
+  /// No description provided for @dpField_vision_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرؤية الطبية أو الرسالة المهنية'**
+  String get dpField_vision_ar;
+
+  /// No description provided for @dpField_current_positions_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'المناصب الحالية'**
+  String get dpField_current_positions_ar;
+
+  /// No description provided for @dpField_past_positions_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'المناصب السابقة'**
+  String get dpField_past_positions_ar;
+
+  /// No description provided for @dpField_certifications_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشهادات / الترخيص الطبي'**
+  String get dpField_certifications_ar;
+
+  /// No description provided for @dpField_fellowships_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'الزمالات والدبلومات'**
+  String get dpField_fellowships_ar;
+
+  /// No description provided for @dpField_phone.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهاتف'**
+  String get dpField_phone;
+
+  /// No description provided for @dpField_whatsapp.
+  ///
+  /// In ar, this message translates to:
+  /// **'واتساب'**
+  String get dpField_whatsapp;
+
+  /// No description provided for @dpField_website.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموقع الإلكتروني'**
+  String get dpField_website;
+
+  /// No description provided for @dpField_external_booking_url.
+  ///
+  /// In ar, this message translates to:
+  /// **'رابط الحجز الخارجي'**
+  String get dpField_external_booking_url;
+
+  /// No description provided for @dpField_google_maps_url.
+  ///
+  /// In ar, this message translates to:
+  /// **'رابط خرائط جوجل'**
+  String get dpField_google_maps_url;
+
+  /// No description provided for @dpField_facebook.
+  ///
+  /// In ar, this message translates to:
+  /// **'فيسبوك'**
+  String get dpField_facebook;
+
+  /// No description provided for @dpField_instagram.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنستجرام'**
+  String get dpField_instagram;
+
+  /// No description provided for @dpField_linkedin.
+  ///
+  /// In ar, this message translates to:
+  /// **'لينكد إن'**
+  String get dpField_linkedin;
+
+  /// No description provided for @dpField_youtube.
+  ///
+  /// In ar, this message translates to:
+  /// **'يوتيوب'**
+  String get dpField_youtube;
+
+  /// No description provided for @dpField_tiktok.
+  ///
+  /// In ar, this message translates to:
+  /// **'تيك توك'**
+  String get dpField_tiktok;
+
+  /// No description provided for @dpField_seo_title.
+  ///
+  /// In ar, this message translates to:
+  /// **'عنوان الصفحة في البحث'**
+  String get dpField_seo_title;
+
+  /// No description provided for @dpField_seo_description.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصف الصفحة في البحث'**
+  String get dpField_seo_description;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {

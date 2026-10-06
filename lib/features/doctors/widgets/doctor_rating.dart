@@ -22,16 +22,34 @@ String formatRating(double value) {
 ///  * rated but no review count → `★ 4.9`
 ///  * not rated → "no reviews yet" in muted text — never `★ 0.0`
 class DoctorRating extends StatelessWidget {
-  const DoctorRating({super.key, required this.doctor, this.fontSize = 12.5});
+  DoctorRating({super.key, required DoctorCard doctor, this.fontSize = 12.5})
+    : _value = doctor.ratingValue,
+      _count = doctor.reviewsCount,
+      _has = doctor.hasRating;
 
-  final DoctorCard doctor;
+  /// The same rule, from the two raw values the API sends (the doctor's own
+  /// profile has no card to read them from).
+  DoctorRating.values({
+    super.key,
+    required String avgRating,
+    required int reviewsCount,
+    this.fontSize = 12.5,
+  }) : _value = double.tryParse(avgRating.trim()),
+       _count = reviewsCount,
+       _has = _hasRating(double.tryParse(avgRating.trim()), reviewsCount);
+
+  final double? _value;
+  final int _count;
+  final bool _has;
   final double fontSize;
+
+  static bool _hasRating(double? v, int count) => v != null && (v > 0 || count > 0);
 
   @override
   Widget build(BuildContext context) {
     final l = L.of(context);
 
-    if (!doctor.hasRating) {
+    if (!_has) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -49,8 +67,8 @@ class DoctorRating extends StatelessWidget {
       );
     }
 
-    final value = formatRating(doctor.ratingValue!);
-    final count = doctor.reviewsCount;
+    final value = formatRating(_value!);
+    final count = _count;
 
     return Semantics(
       label: count > 0

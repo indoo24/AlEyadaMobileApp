@@ -100,7 +100,8 @@ class AppTextField extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 6),
           child: Row(
             children: [
-              Text(label, style: Theme.of(context).textTheme.labelLarge),
+              // Flexible: a long label wraps instead of overflowing at large text.
+              Flexible(child: Text(label, style: Theme.of(context).textTheme.labelLarge)),
               if (required)
                 const Text(' *', style: TextStyle(color: AppColors.danger, fontSize: 15)),
             ],

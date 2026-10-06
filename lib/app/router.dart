@@ -23,6 +23,7 @@ import '../features/management/management_screen.dart';
 import '../features/management/schedule_screen.dart';
 import '../features/profile/account_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
+import '../features/profile/profile_screen.dart';
 import 'shell.dart';
 import 'splash.dart';
 
@@ -39,6 +40,10 @@ class Routes {
   static const bookingDetail = '/bookings/:id';
   static const account = '/account';
   static const editProfile = '/account/edit';
+
+  /// The account's own details (names, email) — a doctor's professional profile
+  /// lives at [editProfile]; this keeps the original editor reachable.
+  static const editAccount = '/account/edit/account';
   static const notifications = '/notifications';
 
   static const signIn = '/sign-in';
@@ -177,7 +182,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.bookingDetail,
         builder: (_, state) => BookingDetailScreen(id: state.pathParameters['id'] ?? ''),
       ),
-      GoRoute(path: Routes.editProfile, builder: (_, __) => const EditProfileScreen()),
+      GoRoute(path: Routes.editProfile, builder: (_, __) => const ProfileScreen()),
+      GoRoute(path: Routes.editAccount, builder: (_, __) => const EditProfileScreen()),
       GoRoute(path: Routes.managementClinics, builder: (_, __) => const ClinicsScreen()),
       GoRoute(path: Routes.managementAssistants, builder: (_, __) => const AssistantsScreen()),
       GoRoute(path: Routes.managementSchedule, builder: (_, __) => const ScheduleScreen()),
