@@ -7,288 +7,321 @@ import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
 import '../bookings/booking_sheet.dart';
+import '../favorites/widgets/favorite_button.dart';
+import '../home/home_style.dart';
+import 'doctor_detail_logic.dart';
 import 'models.dart';
 import 'providers.dart';
-import '../favorites/widgets/favorite_button.dart';
-import 'widgets/doctor_card_tile.dart';
-import 'widgets/doctor_rating.dart';
+import 'widgets/doctor_profile_sections.dart';
+import 'widgets/doctor_reviews_section.dart';
 
 /// A doctor's public profile.
 ///
 /// Only public fields are shown. Nothing here surfaces moderation metadata — no
 /// verification status text, no rejection reasons, no internal notes — because
 /// the public serializer does not carry them and this screen must not imply
-/// otherwise.
-class DoctorDetailScreen extends ConsumerWidget {
+/// otherwise. Every section is drawn from `GET /doctors/{slug}/` (plus the
+/// reviews and availability endpoints) and disappears when its data is absent.
+class DoctorDetailScreen extends ConsumerStatefulWidget {
   const DoctorDetailScreen({super.key, required this.slug});
 
   final String slug;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DoctorDetailScreen> createState() => _DoctorDetailScreenState();
+}
+
+class _DoctorDetailScreenState extends ConsumerState<DoctorDetailScreen> {
+  final _scroll = ScrollController();
+
+  /// Whether the hero has scrolled away, so the name moves into the bar.
+  final _collapsed = ValueNotifier(false);
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(() => _collapsed.value = _scroll.hasClients && _scroll.offset > 170);
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    _collapsed.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l = L.of(context);
-    final detail = ref.watch(doctorDetailProvider(slug));
+    final detail = ref.watch(doctorDetailProvider(widget.slug));
+    final d = detail.valueOrNull;
+
+    if (d == null) {
+      return Scaffold(
+        backgroundColor: AppColors.bg,
+        appBar: AppBar(title: Text(l.doctorsTitle)),
+        body: AsyncValueView<DoctorDetail>(
+          value: detail,
+          onRetry: () => ref.invalidate(doctorDetailProvider(widget.slug)),
+          data: (_) => const SizedBox.shrink(),
+        ),
+      );
+    }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(detail.valueOrNull?.displayName ?? l.doctorsTitle),
-        actions: [
-          if (detail.valueOrNull != null)
-            FavoriteButton(doctorId: detail.requireValue.card.id, slug: detail.requireValue.slug),
-          const SizedBox(width: 4),
-        ],
+      backgroundColor: AppColors.bg,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(doctorReviewsProvider(d.slug));
+          final hint = availabilityHintClinic(d);
+          if (hint != null) {
+            ref.invalidate(availabilityProvider((slug: d.slug, clinicId: hint.clinic.id)));
+          }
+          return ref.refresh(doctorDetailProvider(widget.slug).future);
+        },
+        child: CustomScrollView(
+          controller: _scroll,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              backgroundColor: profileNavy,
+              surfaceTintColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              title: ValueListenableBuilder<bool>(
+                valueListenable: _collapsed,
+                builder: (_, collapsed, __) => AnimatedOpacity(
+                  opacity: collapsed ? 1 : 0,
+                  duration: const Duration(milliseconds: 180),
+                  child: Text(
+                    d.displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 8),
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    child: FavoriteButton(doctorId: d.card.id, slug: d.slug),
+                  ),
+                ),
+              ],
+            ),
+            // One sliver, not two: a viewport paints earlier slivers on top, which
+            // would hide the stats card where it overlaps the hero's edge.
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  DoctorHero(detail: d),
+                  _Sections(detail: d),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-      body: AsyncValueView<DoctorDetail>(
-        value: detail,
-        onRetry: () => ref.invalidate(doctorDetailProvider(slug)),
-        data: (d) => _Body(detail: d),
-      ),
-      bottomNavigationBar: detail.valueOrNull == null
-          ? null
-          : _ActionBar(detail: detail.requireValue),
+      bottomNavigationBar: _BookingBar(detail: d),
     );
   }
 }
 
-class _Body extends ConsumerWidget {
-  const _Body({required this.detail});
+/// Everything under the hero, in reading order.
+class _Sections extends ConsumerWidget {
+  const _Sections({required this.detail});
 
   final DoctorDetail detail;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = L.of(context);
-    final text = Theme.of(context).textTheme;
-    final card = detail.card;
-    final reviews = ref.watch(doctorReviewsProvider(detail.slug));
+    final bookable = bookableClinics(detail);
+    final hint = availabilityHintClinic(detail);
+    const gap = SizedBox(height: 14);
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
+    final sections = <Widget>[
+      if (hint != null)
+        _NextAvailableCard(detail: detail, clinic: hint, multipleClinics: bookable.length > 1),
+      if (bookable.isEmpty)
+        InfoNote(text: l.doctorBookingUnavailable, icon: Icons.phone_in_talk_outlined),
+      if (DoctorAboutSection.hasAny(detail)) DoctorAboutSection(detail: detail),
+      if (detail.specializations.isNotEmpty) DoctorChipsSection.specialties(detail: detail),
+      if (DoctorProfessionalSection.hasAny(detail)) DoctorProfessionalSection(detail: detail),
+      if (detail.services.isNotEmpty) DoctorChipsSection.services(detail: detail),
+      if (detail.clinics.isNotEmpty)
+        _ClinicsBlock(detail: detail, bookableIds: {for (final c in bookable) c.clinic.id}),
+      if (DoctorLinksSection.hasAny(detail)) DoctorLinksSection(detail: detail),
+      DoctorReviewsSection(detail: detail),
+    ];
+
+    final hasStats = DoctorStatsCard.hasAny(detail);
+    final content = Column(
+      children: [
+        if (hasStats) ...[DoctorStatsCard(detail: detail), gap],
+        for (var i = 0; i < sections.length; i++) ...[if (i > 0) gap, sections[i]],
+      ],
+    );
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
         AppSpacing.gutter,
-        AppSpacing.lg,
+        hasStats ? 0 : AppSpacing.lg,
         AppSpacing.gutter,
         AppSpacing.xl,
       ),
+      // The stats card is pulled up over the hero's rounded bottom edge.
+      child: hasStats ? Transform.translate(offset: const Offset(0, -30), child: content) : content,
+    );
+  }
+}
+
+class _ClinicsBlock extends ConsumerWidget {
+  const _ClinicsBlock({required this.detail, required this.bookableIds});
+
+  final DoctorDetail detail;
+  final Set<String> bookableIds;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = L.of(context);
+    // Primary clinic first; the rest in the order the API sent.
+    final clinics = [...detail.clinics]
+      ..sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DoctorAvatar(photo: card.photo, name: card.displayName, size: 84),
-            const SizedBox(width: AppSpacing.lg),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(card.displayName, style: text.headlineMedium),
-                  if (card.professionalTitleAr.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(card.professionalTitleAr, style: text.bodyMedium),
-                  ],
-                  const SizedBox(height: AppSpacing.sm),
-                  Wrap(
-                    spacing: AppSpacing.sm,
-                    runSpacing: 6,
-                    children: [
-                      DoctorRating(doctor: card, fontSize: 13),
-                      if (card.yearsOfExperience != null && card.yearsOfExperience! > 0)
-                        MetaChip(
-                          icon: Icons.workspace_premium_outlined,
-                          label: l.doctorYearsExperience(card.yearsOfExperience!),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsetsDirectional.only(start: 4, bottom: 10, top: 4),
+          child: Semantics(
+            header: true,
+            child: Text(l.doctorClinics, style: HomeType.sectionTitle.copyWith(fontSize: 17)),
+          ),
         ),
-
-        if (card.minFee != null) ...[
-          const SizedBox(height: AppSpacing.lg),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(color: AppColors.bgSoft, borderRadius: AppRadii.cardRadius),
-            child: Row(
-              children: [
-                const Icon(Icons.payments_outlined, color: AppColors.primary),
-                const SizedBox(width: AppSpacing.sm),
-                Text(l.bookingFee, style: text.titleSmall),
-                const Spacer(),
-                Text(
-                  l.doctorFeeFrom(card.minFee!),
-                  style: text.titleMedium?.copyWith(color: AppColors.primary),
-                ),
-              ],
-            ),
+        for (var i = 0; i < clinics.length; i++) ...[
+          if (i > 0) const SizedBox(height: 12),
+          DoctorClinicCard(
+            link: clinics[i],
+            bookable: bookableIds.contains(clinics[i].clinic.id),
+            onBook: () => showBookingSheet(context, detail, clinicId: clinics[i].clinic.id),
+            onCall: clinics[i].clinic.contact.canCall
+                ? () => openContact(
+                    ref,
+                    detail: detail,
+                    url: clinics[i].clinic.contact.telUrl!,
+                    type: 'phone',
+                    clinicId: clinics[i].clinic.id,
+                  )
+                : null,
           ),
         ],
-
-        if (detail.specializations.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xl),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              for (final s in detail.specializations)
-                Chip(label: Text(s.nameAr), backgroundColor: AppColors.bgSoft),
-            ],
-          ),
-        ],
-
-        if ((detail.bioAr ?? '').isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xl),
-          _SectionTitle(l.doctorAbout),
-          const SizedBox(height: AppSpacing.sm),
-          Text(detail.bioAr!, style: text.bodyMedium),
-        ],
-
-        if (detail.clinics.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xl),
-          _SectionTitle(l.doctorClinics),
-          const SizedBox(height: AppSpacing.md),
-          for (final link in detail.clinics) _ClinicCard(link: link),
-        ],
-
-        if (detail.services.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xl),
-          _SectionTitle(l.dashboardProfile),
-          const SizedBox(height: AppSpacing.sm),
-          for (final s in detail.services)
-            ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              title: Text(s.nameAr, style: text.bodyMedium),
-              trailing: s.price == null ? null : Text(s.price!, style: text.titleSmall),
-            ),
-        ],
-
-        const SizedBox(height: AppSpacing.xl),
-        _SectionTitle(l.doctorReviews),
-        const SizedBox(height: AppSpacing.sm),
-        reviews.when(
-          loading: () => const Skeleton(height: 72, radius: AppRadii.card),
-          error: (_, __) => Text(l.doctorNoReviews, style: text.bodySmall),
-          data: (page) => page.isEmpty
-              ? Text(l.doctorNoReviews, style: text.bodySmall)
-              : Column(
-                  children: [
-                    for (final r in page.items.take(5))
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSpacing.lg),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    RatingBadge(rating: r.rating.toDouble(), count: 0),
-                                    const SizedBox(width: AppSpacing.sm),
-                                    Expanded(child: Text(r.reviewerName, style: text.labelMedium)),
-                                  ],
-                                ),
-                                if (r.comment.isNotEmpty) ...[
-                                  const SizedBox(height: AppSpacing.sm),
-                                  Text(r.comment, style: text.bodySmall),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-        ),
       ],
     );
   }
 }
 
-class _ClinicCard extends StatelessWidget {
-  const _ClinicCard({required this.link});
+/// "Next available: Saturday 10 October · 09:00", straight from the
+/// availability endpoint for the doctor's primary bookable clinic.
+class _NextAvailableCard extends ConsumerWidget {
+  const _NextAvailableCard({
+    required this.detail,
+    required this.clinic,
+    required this.multipleClinics,
+  });
 
-  final DoctorClinicLink link;
+  final DoctorDetail detail;
+  final DoctorClinicLink clinic;
+  final bool multipleClinics;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = L.of(context);
-    final text = Theme.of(context).textTheme;
-    final c = link.clinic;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final availability = ref.watch(
+      availabilityProvider((slug: detail.slug, clinicId: clinic.clinic.id)),
+    );
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.local_hospital_outlined, color: AppColors.primary, size: 20),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(child: Text(c.nameAr, style: text.titleSmall)),
-                if (link.isPrimary)
-                  Chip(
-                    label: Text(l.doctorVerified),
-                    visualDensity: VisualDensity.compact,
-                    backgroundColor: AppColors.bgSoft,
-                  ),
-              ],
-            ),
-            if (c.addressLine.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Text(c.addressLine, style: text.bodySmall),
-            ],
-            if (link.consultationFee != null) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                '${l.bookingFee}: ${link.consultationFee}',
-                style: text.labelMedium?.copyWith(color: AppColors.primary),
+    return availability.when(
+      skipLoadingOnRefresh: false,
+      loading: () => const Skeleton(height: 68, radius: AppRadii.card),
+      // A hint, not a gate: if it cannot be fetched the booking button still works.
+      error: (_, __) => const SizedBox.shrink(),
+      data: (a) {
+        final first = a.bookingEnabled ? firstFreeSlot(a) : null;
+        final subtitle = first == null
+            ? l.ddNoSlotsShort
+            : '${longDayLabel(first.date, locale)}  •  ${first.slot.displayTime}';
+        return Material(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(homeCardRadius),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(homeCardRadius),
+            onTap: () => showBookingSheet(context, detail, clinicId: clinic.clinic.id),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(homeCardRadius),
+                border: Border.all(color: AppColors.border),
               ),
-            ],
-            if (c.workingHours.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.md),
-              Text(l.doctorWorkingHours, style: text.labelLarge),
-              const SizedBox(height: 4),
-              for (final h in c.workingHours)
-                Text(
-                  '${_weekdayName(context, h.weekday)}  ${h.openTime} – ${h.closeTime}',
-                  style: text.bodySmall,
-                ),
-            ],
-            if (!link.bookingEnabled) ...[
-              const SizedBox(height: AppSpacing.md),
-              InfoNote(text: l.doctorBookingUnavailable),
-            ],
-          ],
-        ),
-      ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      // Green: the tokens reserve it for availability.
+                      color: (first == null ? AppColors.muted : AppColors.success).withValues(
+                        alpha: 0.1,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      first == null ? Icons.event_busy_outlined : Icons.event_available_rounded,
+                      color: first == null ? AppColors.muted : AppColors.success,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l.ddNextAvailable,
+                          style: HomeType.meta.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(subtitle, style: HomeType.cardTitle.copyWith(fontSize: 14.5)),
+                        if (multipleClinics)
+                          Text(
+                            clinic.clinic.nameAr,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: HomeType.meta,
+                          ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
-
-  /// ISO weekday names, using the platform's own localized list rather than a
-  /// hand-written one — Monday is 1 on the backend and index 0 here.
-  String _weekdayName(BuildContext context, int isoWeekday) {
-    final symbols = MaterialLocalizations.of(context);
-    // DateTime.monday == 1, matching the backend's ISO numbering.
-    final date = DateTime(2024, 1, 1).add(Duration(days: isoWeekday - 1));
-    return symbols.formatFullDate(date).split(RegExp(r'[,،]')).first;
-  }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.title);
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) => Text(title, style: Theme.of(context).textTheme.titleLarge);
-}
-
-/// Call, WhatsApp and Book, pinned to the bottom.
-class _ActionBar extends ConsumerWidget {
-  const _ActionBar({required this.detail});
+/// The sticky bottom bar: starting fee and "book", plus call and WhatsApp.
+class _BookingBar extends ConsumerWidget {
+  const _BookingBar({required this.detail});
 
   final DoctorDetail detail;
 
@@ -296,69 +329,135 @@ class _ActionBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = L.of(context);
     final contact = detail.card.contact;
-    final bookable = detail.anyClinicBookable;
+    final bookable = bookableClinics(detail).isNotEmpty;
+    if (!bookable && !contact.canCall && !contact.canWhatsapp) return const SizedBox.shrink();
 
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.gutter),
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.border)),
-        ),
-        child: Row(
-          children: [
-            if (contact.canCall)
-              _CircleAction(
-                icon: Icons.phone_rounded,
-                tooltip: l.doctorCall,
-                color: AppColors.primary,
-                onTap: () => _open(ref, contact.telUrl!, 'phone'),
-              ),
-            if (contact.canWhatsapp) ...[
-              const SizedBox(width: AppSpacing.sm),
-              _CircleAction(
-                icon: Icons.chat_rounded,
-                tooltip: l.doctorWhatsapp,
-                // Green is reserved for WhatsApp and availability by the design
-                // tokens' identity rule — this is one of the two places it is
-                // allowed.
-                color: AppColors.whatsapp,
-                onTap: () => _open(ref, contact.whatsappUrl!, 'whatsapp'),
-              ),
-            ],
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: FilledButton(
-                onPressed: bookable ? () => showBookingSheet(context, detail) : null,
-                child: Text(
-                  bookable ? l.doctorBookNow : l.doctorBookingUnavailable,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+    final call = contact.canCall
+        ? () => openContact(ref, detail: detail, url: contact.telUrl!, type: 'phone')
+        : null;
+    final whatsapp = contact.canWhatsapp
+        ? () => openContact(ref, detail: detail, url: contact.whatsappUrl!, type: 'whatsapp')
+        : null;
+
+    final width = MediaQuery.sizeOf(context).width - 2 * AppSpacing.gutter;
+    final roomy = width / MediaQuery.textScalerOf(context).scale(1) >= 330;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [BoxShadow(color: Color(0x140F172A), blurRadius: 20, offset: Offset(0, -4))],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 12, AppSpacing.gutter, 12),
+          child: Row(
+            children: [
+              if (bookable) ...[
+                // The starting fee yields first when the bar is tight (small
+                // phone, large text): it is also in the stats card, while the
+                // book button must stay readable.
+                if (detail.card.minFee != null && roomy) ...[
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l.ddStatFee, style: HomeType.feeLabel),
+                      Text(
+                        l.ddMoney(detail.card.minFee!),
+                        style: HomeType.feeAmount.copyWith(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => showBookingSheet(context, detail),
+                    icon: const Icon(Icons.calendar_month_rounded, size: 20),
+                    label: Text(l.doctorBookNow, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, 52),
+                      textStyle: HomeType.button.copyWith(fontSize: 15),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ],
+                if (call != null) ...[
+                  const SizedBox(width: 8),
+                  _CircleAction(
+                    icon: Icons.phone_rounded,
+                    tooltip: l.doctorCall,
+                    color: AppColors.primary,
+                    onTap: call,
+                  ),
+                ],
+                if (whatsapp != null) ...[
+                  const SizedBox(width: 8),
+                  _CircleAction(
+                    icon: Icons.chat_rounded,
+                    tooltip: l.doctorWhatsapp,
+                    // Green is reserved for WhatsApp and availability.
+                    color: AppColors.whatsapp,
+                    onTap: whatsapp,
+                  ),
+                ],
+              ] else ...[
+                if (call != null)
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: call,
+                      icon: const Icon(Icons.phone_rounded, size: 20),
+                      label: Text(l.doctorCall),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 52),
+                        textStyle: HomeType.button.copyWith(fontSize: 15),
+                      ),
+                    ),
+                  ),
+                if (call != null && whatsapp != null) const SizedBox(width: 8),
+                if (whatsapp != null)
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: whatsapp,
+                      icon: const Icon(Icons.chat_rounded, size: 20),
+                      label: Text(l.doctorWhatsapp),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.whatsapp,
+                        minimumSize: const Size(0, 52),
+                        textStyle: HomeType.button.copyWith(fontSize: 15),
+                      ),
+                    ),
+                  ),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  /// Open a tel:/wa.me URL the API built, and record the click.
-  ///
-  /// The tracking call is fired without awaiting and cannot block the launch:
-  /// connecting a patient to a clinic matters, an analytics row does not.
-  Future<void> _open(WidgetRef ref, String url, String type) async {
-    ref
-        .read(directoryRepositoryProvider)
-        .trackContactClick(
-          doctorId: detail.card.id,
-          contactType: type,
-          clinicId: detail.primaryClinic?.clinic.id,
-        );
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
+/// Open a tel:/wa.me URL the API built, and record the click.
+///
+/// The tracking call is fired without awaiting and cannot block the launch:
+/// connecting a patient to a clinic matters, an analytics row does not.
+Future<void> openContact(
+  WidgetRef ref, {
+  required DoctorDetail detail,
+  required String url,
+  required String type,
+  String? clinicId,
+}) async {
+  ref
+      .read(directoryRepositoryProvider)
+      .trackContactClick(
+        doctorId: detail.card.id,
+        contactType: type,
+        clinicId: clinicId ?? detail.primaryClinic?.clinic.id,
+      );
+  final uri = Uri.tryParse(url);
+  if (uri == null) return;
+  await launchUrl(uri, mode: LaunchMode.externalApplication);
 }
 
 class _CircleAction extends StatelessWidget {

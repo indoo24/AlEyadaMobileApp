@@ -278,34 +278,37 @@ class DirectoryRepository {
   }
 }
 
-/// A public review on a doctor's page.
+/// A public review on a doctor's page — the spec's `PublicReview`.
 class PublicReview {
   const PublicReview({
     required this.id,
     required this.rating,
     required this.comment,
     required this.reviewerName,
+    this.verifiedVisit = false,
     this.createdAt,
   });
 
   final String id;
+
+  /// 1–5 stars.
   final int rating;
   final String comment;
 
-  /// The backend anonymises this; whatever it sends is what may be shown.
+  /// `patient_name`: the backend sends the first name only, so a full name never
+  /// sits next to a medical complaint on a public page. Shown exactly as sent.
   final String reviewerName;
+
+  /// The patient attended a completed appointment.
+  final bool verifiedVisit;
   final DateTime? createdAt;
 
-  factory PublicReview.fromJson(Map<String, dynamic> j) {
-    final reviewer = j['reviewer'];
-    return PublicReview(
-      id: parseString(j['id']),
-      rating: parseInt(j['rating']) ?? 0,
-      comment: parseString(j['comment']),
-      reviewerName: reviewer is Map
-          ? parseString(Map<String, dynamic>.from(reviewer)['display_name'])
-          : parseString(j['reviewer_name']),
-      createdAt: parseUtc(j['created_at']),
-    );
-  }
+  factory PublicReview.fromJson(Map<String, dynamic> j) => PublicReview(
+    id: parseString(j['id']),
+    rating: (parseInt(j['rating']) ?? 0).clamp(0, 5),
+    comment: parseString(j['comment']).trim(),
+    reviewerName: parseString(j['patient_name']).trim(),
+    verifiedVisit: j['verified_visit'] == true,
+    createdAt: parseUtc(j['created_at']),
+  );
 }

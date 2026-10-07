@@ -158,19 +158,136 @@ final doctorDetailProvider = FutureProvider.family<DoctorDetail, String>((ref, s
   return ref.watch(directoryRepositoryProvider).doctor(slug);
 });
 
-/// Which clinic the booking screen is looking at. Null means "the doctor's
-/// primary", which is what the backend defaults to.
+/// Which clinic the booking sheet is looking at. Null means "not chosen yet".
 final selectedClinicProvider = StateProvider.family<String?, String>((ref, slug) => null);
 
-/// A doctor's availability at the selected clinic.
-final availabilityProvider =
-    FutureProvider.family<DoctorAvailability, ({String slug, String? clinicId})>((ref, arg) async {
-      return ref.watch(directoryRepositoryProvider).availability(arg.slug, clinicId: arg.clinicId);
+/// A doctor's availability at one clinic.
+///
+/// Keyed by clinic, so switching clinics can never show the previous clinic's
+/// late answer: the sheet only ever reads the key it is on (latest wins by
+/// construction). Auto-disposed, so closing the profile and coming back later
+/// asks again rather than offering times that have since been taken.
+final availabilityProvider = FutureProvider.autoDispose
+    .family<DoctorAvailability, ({String slug, String? clinicId})>((ref, arg) async {
+      final token = CancelToken();
+      ref.onDispose(token.cancel);
+      return ref
+          .watch(directoryRepositoryProvider)
+          .availability(arg.slug, clinicId: arg.clinicId, cancelToken: token);
     });
 
-final doctorReviewsProvider = FutureProvider.family<Paginated<PublicReview>, String>((
-  ref,
-  slug,
-) async {
-  return ref.watch(directoryRepositoryProvider).doctorReviews(slug);
-});
+/// A doctor's public reviews, loaded a page at a time.
+class ReviewsState {
+  const ReviewsState({
+    this.items = const [],
+    this.total = 0,
+    this.page = 0,
+    this.hasMore = false,
+    this.loading = false,
+    this.loadingMore = false,
+    this.error,
+    this.moreError,
+  });
+
+  final List<PublicReview> items;
+
+  /// The server's `count` — every published review, not only the loaded ones.
+  final int total;
+  final int page;
+  final bool hasMore;
+
+  /// The first page is on its way.
+  final bool loading;
+
+  /// A further page is on its way.
+  final bool loadingMore;
+
+  /// The first page failed; nothing to show.
+  final Object? error;
+
+  /// A further page failed; what is loaded stays on screen.
+  final Object? moreError;
+
+  ReviewsState copyWith({
+    List<PublicReview>? items,
+    int? total,
+    int? page,
+    bool? hasMore,
+    bool? loading,
+    bool? loadingMore,
+    Object? error = _keep,
+    Object? moreError = _keep,
+  }) => ReviewsState(
+    items: items ?? this.items,
+    total: total ?? this.total,
+    page: page ?? this.page,
+    hasMore: hasMore ?? this.hasMore,
+    loading: loading ?? this.loading,
+    loadingMore: loadingMore ?? this.loadingMore,
+    error: identical(error, _keep) ? this.error : error,
+    moreError: identical(moreError, _keep) ? this.moreError : moreError,
+  );
+
+  static const _keep = Object();
+}
+
+class DoctorReviewsController extends StateNotifier<ReviewsState> {
+  DoctorReviewsController(this._repo, this._slug) : super(const ReviewsState(loading: true)) {
+    _loadFirst();
+  }
+
+  final DirectoryRepository _repo;
+  final String _slug;
+
+  /// Bumped by every reload, so an answer to an older request is dropped.
+  int _generation = 0;
+
+  Future<void> _loadFirst() async {
+    final gen = ++_generation;
+    state = const ReviewsState(loading: true);
+    try {
+      final page = await _repo.doctorReviews(_slug);
+      if (!mounted || gen != _generation) return;
+      state = ReviewsState(
+        items: page.items,
+        total: page.pagination.count,
+        page: 1,
+        hasMore: page.hasMore,
+      );
+    } catch (e) {
+      if (!mounted || gen != _generation) return;
+      state = ReviewsState(error: e);
+    }
+  }
+
+  Future<void> reload() => _loadFirst();
+
+  /// The next page. Ignored while anything is loading or when there is none.
+  Future<void> loadMore() async {
+    final s = state;
+    if (s.loading || s.loadingMore || !s.hasMore) return;
+    final gen = _generation;
+    state = s.copyWith(loadingMore: true, moreError: null);
+    try {
+      final page = await _repo.doctorReviews(_slug, page: s.page + 1);
+      if (!mounted || gen != _generation) return;
+      // A review published meanwhile shifts the pages by one; never list it twice.
+      final seen = {for (final r in state.items) r.id};
+      state = state.copyWith(
+        items: [...state.items, ...page.items.where((r) => seen.add(r.id))],
+        total: page.pagination.count,
+        page: s.page + 1,
+        hasMore: page.hasMore,
+        loadingMore: false,
+      );
+    } catch (e) {
+      if (!mounted || gen != _generation) return;
+      state = state.copyWith(loadingMore: false, moreError: e);
+    }
+  }
+}
+
+final doctorReviewsProvider = StateNotifierProvider.autoDispose
+    .family<DoctorReviewsController, ReviewsState, String>(
+      (ref, slug) => DoctorReviewsController(ref.watch(directoryRepositoryProvider), slug),
+    );

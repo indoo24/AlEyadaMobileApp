@@ -8,17 +8,22 @@ class BookingRepository {
 
   final ApiClient _api;
 
-  /// The patient's own bookings. `scope=upcoming` is the backend's own filter.
+  /// One page of the patient's own bookings.
+  ///
+  /// `page`, `page_size` and `status` are the only filters `GET /bookings/`
+  /// documents. Upcoming / past / cancelled is worked out from each booking's
+  /// own `status` and UTC `end_at` (see `groupBookings`), not from a filter the
+  /// contract does not promise.
   Future<Paginated<PatientBooking>> myBookings({
     int page = 1,
-    String? scope,
+    int? pageSize,
     String? status,
   }) async {
     final body = await _api.get(
       Endpoints.bookings,
       query: {
         'page': page,
-        if (scope != null) 'scope': scope,
+        if (pageSize != null) 'page_size': pageSize,
         if (status != null) 'status': status,
       },
     );
@@ -38,14 +43,15 @@ class BookingRepository {
   Future<PatientBooking> create({
     required String doctorSlug,
     required String slotId,
-    String? clinicId,
+    // Required by `BookingCreateRequest`: the clinic's id, never its name.
+    required String clinicId,
     VisitType? visitType,
     String? reasonForVisit,
     String? notesForDoctor,
   }) async {
     final body = <String, dynamic>{
       'slot': slotId,
-      if (clinicId != null) 'clinic': clinicId,
+      'clinic': clinicId,
       if (visitType != null) 'visit_type': visitType.wire,
       if (reasonForVisit != null && reasonForVisit.isNotEmpty) 'reason_for_visit': reasonForVisit,
       if (notesForDoctor != null && notesForDoctor.isNotEmpty) 'notes_for_doctor': notesForDoctor,

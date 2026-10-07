@@ -1518,4 +1518,356 @@ class LEn extends L {
 
   @override
   String get dpField_seo_description => 'Search result description';
+
+  @override
+  String get ddStatExperience => 'Experience';
+
+  @override
+  String ddStatYears(int years) {
+    return '$years yrs';
+  }
+
+  @override
+  String get ddStatRating => 'Rating';
+
+  @override
+  String get ddStatFee => 'Fees from';
+
+  @override
+  String get ddStatClinics => 'Clinics';
+
+  @override
+  String ddMoney(String amount) {
+    return '$amount EGP';
+  }
+
+  @override
+  String get ddShowMore => 'Show more';
+
+  @override
+  String get ddShowLess => 'Show less';
+
+  @override
+  String get ddServices => 'Services';
+
+  @override
+  String get ddBookAtClinic => 'Book';
+
+  @override
+  String get ddOpenLocation => 'Open location';
+
+  @override
+  String get ddPhoneOnly => 'Phone bookings only';
+
+  @override
+  String get ddLinksTitle => 'Location & links';
+
+  @override
+  String get ddMapLink => 'Location on map';
+
+  @override
+  String get ddNextAvailable => 'Next available';
+
+  @override
+  String get ddNoSlotsShort => 'No times available right now';
+
+  @override
+  String get ddReviewsMore => 'More reviews';
+
+  @override
+  String get ddReviewVerified => 'Verified visit';
+
+  @override
+  String get ddReviewPatient => 'Patient';
+
+  @override
+  String get ddReviewsFailed => 'Couldn\'t load reviews.';
+
+  @override
+  String get ddReviewsMoreFailed => 'Couldn\'t load more reviews.';
+
+  @override
+  String get ddBackTooltip => 'Back';
+
+  @override
+  String get bkChooseClinic => 'Choose a clinic';
+
+  @override
+  String get bkChooseClinicHint =>
+      'This doctor works at more than one clinic. Choose the one that suits you.';
+
+  @override
+  String get bkChangeClinic => 'Change';
+
+  @override
+  String bkSlotsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times',
+      one: '1 time',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bkPickTimeHint => 'Pick a time to continue';
+
+  @override
+  String get bkTimezoneNote => 'Times are shown in the clinic\'s time zone.';
+
+  @override
+  String get bkSlotUnavailable => 'Unavailable';
+
+  @override
+  String get bkPaymentRequired => 'This clinic requires payment in advance.';
+
+  @override
+  String get bkSignInToBook => 'Sign in to book';
+
+  @override
+  String get bkViewBooking => 'View booking';
+
+  @override
+  String get bkDone => 'Done';
+
+  @override
+  String get bkDoctor => 'Doctor';
+
+  @override
+  String bkDuration(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get bkDurationLabel => 'Duration';
+
+  @override
+  String get bkClose => 'Close';
+
+  @override
+  String get bkTime => 'Time';
+
+  @override
+  String get bkVerifyPhoneTitle => 'Verify your phone to book';
+
+  @override
+  String bkVerifyPhoneBody(String phone) {
+    return 'Booking needs a verified phone number. We will send a code to $phone.';
+  }
+
+  @override
+  String get bkVerifyPhoneAction => 'Verify phone number';
+
+  @override
+  String get errorDoctorBusy =>
+      'The doctor is booked at that time. Please pick another.';
+
+  @override
+  String get mbSubtitle => 'Keep track of your appointments';
+
+  @override
+  String get mbTabCancelled => 'Cancelled';
+
+  @override
+  String get mbNextAppointment => 'Your next appointment';
+
+  @override
+  String get mbMoreUpcoming => 'More upcoming';
+
+  @override
+  String get mbViewDetails => 'View booking';
+
+  @override
+  String get mbFindDoctor => 'Find a doctor';
+
+  @override
+  String get mbEmptyUpcomingTitle => 'No upcoming bookings';
+
+  @override
+  String get mbEmptyUpcomingBody =>
+      'Book your next visit with the right doctor in a few taps.';
+
+  @override
+  String get mbEmptyPastTitle => 'No past bookings';
+
+  @override
+  String get mbEmptyPastBody =>
+      'Your visits will appear here once they have taken place.';
+
+  @override
+  String get mbEmptyCancelledTitle => 'No cancelled bookings';
+
+  @override
+  String get mbEmptyCancelledBody =>
+      'Any booking that is cancelled will appear here.';
+
+  @override
+  String get mbErrorTitle => 'Couldn\'t load your bookings';
+
+  @override
+  String get mbErrorBody =>
+      'Something went wrong while loading your bookings. Please try again.';
+
+  @override
+  String get mbOfflineBody => 'Check your internet connection and try again.';
+
+  @override
+  String get mbNow => 'Now';
+
+  @override
+  String mbInMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'In $count minutes',
+      one: 'In 1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mbInHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'In $count hours',
+      one: 'In 1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mbInDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'In $count days',
+      one: 'In 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bdTitle => 'Booking details';
+
+  @override
+  String get bdYourAppointment => 'Your appointment';
+
+  @override
+  String get bdInfoTitle => 'Booking information';
+
+  @override
+  String get bdSpecialty => 'Specialty';
+
+  @override
+  String get bdDate => 'Date';
+
+  @override
+  String get bdFee => 'Visit fee';
+
+  @override
+  String get bdReason => 'Reason for visit';
+
+  @override
+  String get bdNotes => 'Your notes for the doctor';
+
+  @override
+  String get bdPayment => 'Payment';
+
+  @override
+  String get bdPayNotRequired => 'No advance payment';
+
+  @override
+  String get bdPayProofPending => 'Awaiting proof of payment';
+
+  @override
+  String get bdPayProofUploaded => 'Proof of payment uploaded';
+
+  @override
+  String get bdPayAccepted => 'Payment accepted';
+
+  @override
+  String get bdPayRejected => 'Proof of payment not accepted';
+
+  @override
+  String get bdVisitConsultation => 'Consultation';
+
+  @override
+  String get bdVisitProcedure => 'Procedure';
+
+  @override
+  String get bdVisitCustom => 'Visit';
+
+  @override
+  String get bdClinicTitle => 'Clinic & location';
+
+  @override
+  String get bdTimelineTitle => 'Booking status';
+
+  @override
+  String get bdStepBooked => 'Booked';
+
+  @override
+  String get bdStepAwaiting => 'Awaiting clinic confirmation';
+
+  @override
+  String get bdStepConfirmed => 'Booking confirmed';
+
+  @override
+  String get bdStepAppointment => 'Appointment';
+
+  @override
+  String get bdStepCompleted => 'Visit completed';
+
+  @override
+  String get bdStepNoShow => 'Did not attend';
+
+  @override
+  String get bdStepCancelledByPatient => 'You cancelled this booking';
+
+  @override
+  String get bdStepCancelledByClinic => 'The clinic cancelled this booking';
+
+  @override
+  String get bdStepExpired => 'Booking expired';
+
+  @override
+  String get bdStepRescheduled => 'This appointment was moved';
+
+  @override
+  String bdCancelBefore(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You can cancel up to $count hours before your appointment.',
+      one: 'You can cancel up to 1 hour before your appointment.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bdCancelClosed =>
+      'Online cancellation has closed. Contact the clinic to cancel.';
+
+  @override
+  String get bdCancellationReason => 'Cancellation reason';
+
+  @override
+  String get bdCancelKeep => 'Keep booking';
+
+  @override
+  String get bdCancelConfirm => 'Cancel booking';
+
+  @override
+  String get bdBookAgain => 'Book again';
+
+  @override
+  String get bdBookNew => 'Book a new appointment';
+
+  @override
+  String get bdCallClinic => 'Call the clinic';
+
+  @override
+  String get bdViewDoctor => 'View doctor\'s page';
 }

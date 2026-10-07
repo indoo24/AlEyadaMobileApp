@@ -1,85 +1,106 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/async_value_view.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../doctors/doctor_detail_logic.dart';
+import '../../doctors/models.dart';
+import '../../doctors/providers.dart';
+import '../../doctors/widgets/doctor_card_tile.dart';
+import '../../doctors/widgets/doctor_profile_sections.dart' show profileNavy;
+import '../../home/home_style.dart';
+import '../booking_logic.dart';
 import '../models.dart';
 
-/// One appointment in a list.
-class BookingTile extends StatelessWidget {
-  const BookingTile({super.key, required this.booking, this.onTap});
+/// The pieces My Bookings and Booking Details are built from.
+///
+/// Every value shown comes from the booking itself (`GET /bookings/`), except a
+/// doctor's specialty, which is read from the doctor's public profile through
+/// the same cached provider the doctor page uses — one request per doctor, not
+/// per card, and nothing at all when the booking carries no doctor slug.
 
-  final PatientBooking booking;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = L.of(context);
-    final text = Theme.of(context).textTheme;
-
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadii.cardRadius,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      booking.doctorName,
-                      style: text.titleMedium,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  BookingStatusChip(status: booking.status),
-                ],
-              ),
-              if (booking.clinicName.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(booking.clinicName, style: text.bodySmall),
-              ],
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  const Icon(Icons.event_outlined, size: 17, color: AppColors.muted),
-                  const SizedBox(width: 6),
-                  // Both strings come pre-formatted from the backend in the
-                  // clinic's timezone.
-                  Text(booking.displayDate, style: text.bodyMedium),
-                  const SizedBox(width: AppSpacing.md),
-                  const Icon(Icons.schedule_outlined, size: 17, color: AppColors.muted),
-                  const SizedBox(width: 6),
-                  Text(
-                    booking.displayTime,
-                    style: text.bodyMedium,
-                    textDirection: TextDirection.ltr,
-                  ),
-                ],
-              ),
-              if (booking.feeSnapshot != null) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  '${l.bookingFee}: ${booking.feeSnapshot}',
-                  style: text.labelMedium?.copyWith(color: AppColors.primary),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+/// The doctor's specialty from their public profile, or null while it loads,
+/// when it fails, or when the profile has none.
+String? specialtyOf(DoctorDetail? d) {
+  if (d == null) return null;
+  final primary = d.card.primarySpecialization?.nameAr.trim();
+  if (primary != null && primary.isNotEmpty) return primary;
+  final title = d.card.professionalTitleAr.trim();
+  return title.isEmpty ? null : title;
 }
 
-/// A booking's state, as a label plus a colour.
-///
-/// The text carries the meaning; the colour only reinforces it. A status shown
-/// by colour alone would be unreadable to a screen reader and ambiguous to anyone
-/// who cannot separate the hues.
+/// The public profile behind a booking, when there is a slug to look it up by.
+AsyncValue<DoctorDetail>? doctorOf(WidgetRef ref, PatientBooking b) =>
+    b.doctorSlug.isEmpty ? null : ref.watch(doctorDetailProvider(b.doctorSlug));
+
+/// A countdown label, or null when there is nothing honest to say.
+String? countdownLabel(L l, PatientBooking b, DateTime nowUtc) {
+  final c = countdownTo(b.startAt, b.endAt, nowUtc);
+  if (c == null) return null;
+  return switch (c.unit) {
+    CountdownUnit.now => l.mbNow,
+    CountdownUnit.minutes => l.mbInMinutes(c.value),
+    CountdownUnit.hours => l.mbInHours(c.value),
+    CountdownUnit.days => l.mbInDays(c.value),
+  };
+}
+
+/// The visual identity of each status: a label, an icon, and a restrained
+/// colour pair. The label and icon carry the meaning; colour only echoes it.
+({String label, IconData icon, Color fg, Color bg}) statusStyle(L l, BookingStatus s) =>
+    switch (s) {
+      BookingStatus.pending => (
+        label: l.statusPending,
+        icon: Icons.hourglass_top_rounded,
+        fg: const Color(0xFFB45309),
+        bg: const Color(0xFFFEF3C7),
+      ),
+      BookingStatus.confirmed => (
+        label: l.statusConfirmed,
+        icon: Icons.check_circle_rounded,
+        fg: const Color(0xFF15803D),
+        bg: const Color(0xFFDCFCE7),
+      ),
+      BookingStatus.completed => (
+        label: l.statusCompleted,
+        icon: Icons.task_alt_rounded,
+        fg: AppColors.primary,
+        bg: AppColors.bgSoft,
+      ),
+      BookingStatus.cancelledByPatient || BookingStatus.cancelledByClinic => (
+        label: l.statusCancelled,
+        icon: Icons.cancel_rounded,
+        fg: const Color(0xFFB91C1C),
+        bg: const Color(0xFFFEE2E2),
+      ),
+      BookingStatus.noShow => (
+        label: l.statusNoShow,
+        icon: Icons.person_off_outlined,
+        fg: const Color(0xFFC2410C),
+        bg: const Color(0xFFFFEDD5),
+      ),
+      BookingStatus.rescheduled => (
+        label: l.statusRescheduled,
+        icon: Icons.update_rounded,
+        fg: AppColors.muted,
+        bg: const Color(0xFFEEF2F7),
+      ),
+      BookingStatus.expired => (
+        label: l.statusExpired,
+        icon: Icons.schedule_rounded,
+        fg: AppColors.muted,
+        bg: const Color(0xFFEEF2F7),
+      ),
+      BookingStatus.unknown => (
+        label: '—',
+        icon: Icons.help_outline_rounded,
+        fg: AppColors.muted,
+        bg: const Color(0xFFEEF2F7),
+      ),
+    };
+
+/// A booking's state as a pill: icon, label, tinted background.
 class BookingStatusChip extends StatelessWidget {
   const BookingStatusChip({super.key, required this.status});
 
@@ -87,29 +108,447 @@ class BookingStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = L.of(context);
-    final (label, color) = switch (status) {
-      BookingStatus.pending => (l.statusPending, AppColors.star),
-      BookingStatus.confirmed => (l.statusConfirmed, AppColors.whatsapp),
-      BookingStatus.completed => (l.statusCompleted, AppColors.muted),
-      BookingStatus.cancelledByPatient => (l.statusCancelled, AppColors.danger),
-      BookingStatus.cancelledByClinic => (l.statusCancelled, AppColors.danger),
-      BookingStatus.noShow => (l.statusNoShow, AppColors.danger),
-      BookingStatus.rescheduled => (l.statusRescheduled, AppColors.muted),
-      BookingStatus.expired => (l.statusExpired, AppColors.muted),
-      BookingStatus.unknown => ('—', AppColors.muted),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: AppRadii.pillRadius,
-      ),
-      child: Text(
-        label,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
+    final st = statusStyle(L.of(context), status);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(color: st.bg, borderRadius: AppRadii.pillRadius),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(st.icon, size: 13, color: st.fg),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              st.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: st.fg),
+            ),
+          ),
+        ],
       ),
     );
   }
+}
+
+/// The day-of-month block at the start of a booking's date row.
+class _DateBlock extends StatelessWidget {
+  const _DateBlock({required this.date, required this.locale, this.dark = false});
+
+  final String date;
+  final String locale;
+  final bool dark;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = calendarParts(date, locale);
+    final fg = dark ? Colors.white : AppColors.primary;
+    return Container(
+      width: 54,
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      decoration: BoxDecoration(
+        color: dark ? Colors.white.withValues(alpha: 0.14) : AppColors.bgSoft,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: p == null
+          ? Icon(Icons.event_rounded, color: fg)
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  p.day,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: fg,
+                    height: 1.1,
+                  ),
+                ),
+                Text(
+                  p.month,
+                  maxLines: 1,
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: dark ? Colors.white70 : AppColors.muted,
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+/// "السبت  •  13:00" — the clinic-local day and the backend's own time label.
+String dayAndTime(PatientBooking b, String locale) {
+  final p = calendarParts(b.displayDate, locale);
+  final day = p?.weekday ?? b.displayDate;
+  return b.displayTime.isEmpty ? day : '$day  •  ${b.displayTime}';
+}
+
+/// One appointment in the list.
+class BookingTile extends ConsumerWidget {
+  const BookingTile({super.key, required this.booking, this.onTap});
+
+  final PatientBooking booking;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final b = booking;
+    final specialty = specialtyOf(doctorOf(ref, b)?.valueOrNull);
+    final address = (b.clinicAddress ?? '').trim();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(homeCardRadius),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.soft,
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(homeCardRadius),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DoctorAvatar(photo: b.doctorPhoto, name: b.doctorName, size: 46, radius: 23),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            b.doctorName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: HomeType.doctorName,
+                          ),
+                          if (specialty != null)
+                            Text(
+                              specialty,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: HomeType.meta,
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(child: BookingStatusChip(status: b.status)),
+                  ],
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(height: 1, color: AppColors.border),
+                ),
+                Row(
+                  children: [
+                    _DateBlock(date: b.displayDate, locale: locale),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            dayAndTime(b, locale),
+                            style: HomeType.cardTitle.copyWith(fontSize: 15),
+                          ),
+                          if (b.clinicName.isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            _IconText(icon: Icons.local_hospital_outlined, text: b.clinicName),
+                          ],
+                          if (address.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            _IconText(icon: Icons.location_on_outlined, text: address),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _IconText extends StatelessWidget {
+  const _IconText({required this.icon, required this.text, this.color});
+
+  final IconData icon;
+  final String text;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Icon(icon, size: 15, color: color ?? AppColors.muted),
+      const SizedBox(width: 5),
+      Expanded(
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: HomeType.meta.copyWith(fontSize: 12.5, color: color),
+        ),
+      ),
+    ],
+  );
+}
+
+/// The soonest upcoming appointment, featured at the top of the list.
+class NextBookingCard extends ConsumerWidget {
+  const NextBookingCard({
+    super.key,
+    required this.booking,
+    required this.nowUtc,
+    required this.onOpen,
+  });
+
+  final PatientBooking booking;
+  final DateTime nowUtc;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = L.of(context);
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final b = booking;
+    final specialty = specialtyOf(doctorOf(ref, b)?.valueOrNull);
+    final countdown = countdownLabel(l, b, nowUtc);
+    final parts = calendarParts(b.displayDate, locale);
+
+    return Semantics(
+      container: true,
+      label: l.mbNextAppointment,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: AlignmentDirectional.topStart,
+            end: AlignmentDirectional.bottomEnd,
+            colors: [profileNavy, Color(0xFF0A4A9C)],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: AppShadows.float,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.event_available_rounded, color: Colors.white, size: 18),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    l.mbNextAppointment,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                if (countdown != null)
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.16),
+                        borderRadius: AppRadii.pillRadius,
+                      ),
+                      child: Text(
+                        countdown,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  child: DoctorAvatar(
+                    photo: b.doctorPhoto,
+                    name: b.doctorName,
+                    size: 44,
+                    radius: 22,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        b.doctorName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                      if (specialty != null)
+                        Text(
+                          specialty,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: Colors.white.withValues(alpha: 0.8),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (b.status != BookingStatus.confirmed) ...[
+                  const SizedBox(width: 8),
+                  Flexible(child: BookingStatusChip(status: b.status)),
+                ],
+              ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  _DateBlock(date: b.displayDate, locale: locale, dark: true),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          parts?.weekday ?? b.displayDate,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.85),
+                          ),
+                        ),
+                        Text(
+                          b.displayTime,
+                          textDirection: TextDirection.ltr,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            height: 1.25,
+                          ),
+                        ),
+                        if (b.clinicName.isNotEmpty)
+                          _IconText(
+                            icon: Icons.local_hospital_outlined,
+                            text: b.clinicName,
+                            color: Colors.white.withValues(alpha: 0.85),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: onOpen,
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.primary,
+                  minimumSize: const Size(0, 46),
+                  textStyle: HomeType.button.copyWith(fontSize: 14),
+                ),
+                child: Text(l.mbViewDetails, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A placeholder in the shape of a [BookingTile].
+class BookingCardSkeleton extends StatelessWidget {
+  const BookingCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(homeCardRadius),
+      border: Border.all(color: AppColors.border),
+    ),
+    child: const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Skeleton(height: 46, width: 46, radius: 23),
+            SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Skeleton(height: 14, width: 140),
+                  SizedBox(height: 6),
+                  Skeleton(height: 11, width: 90),
+                ],
+              ),
+            ),
+            Skeleton(height: 22, width: 64, radius: AppRadii.pill),
+          ],
+        ),
+        SizedBox(height: 24),
+        Row(
+          children: [
+            Skeleton(height: 52, width: 54, radius: 12),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Skeleton(height: 14, width: 150),
+                  SizedBox(height: 6),
+                  Skeleton(height: 11, width: 110),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
 }

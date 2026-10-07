@@ -277,6 +277,9 @@ class ClinicSummary {
   final ContactInfo contact;
   final List<ClinicWorkingHour> workingHours;
 
+  /// The clinic's own map link, when it has a safe one.
+  Uri? get mapsUri => webUri(googleMapsUrl);
+
   String get addressLine {
     final parts = [
       addressAr,
@@ -314,17 +317,26 @@ class ClinicSummary {
 }
 
 class ClinicWorkingHour {
-  const ClinicWorkingHour({required this.weekday, required this.openTime, required this.closeTime});
+  const ClinicWorkingHour({
+    required this.weekday,
+    required this.openTime,
+    required this.closeTime,
+    this.weekdayLabel = '',
+  });
 
   /// ISO weekday: Monday = 1 … Sunday = 7, matching the backend.
   final int weekday;
   final String openTime;
   final String closeTime;
 
+  /// The day's name as the backend labels it (`"السبت"`); empty when not sent.
+  final String weekdayLabel;
+
   factory ClinicWorkingHour.fromJson(Map<String, dynamic> j) => ClinicWorkingHour(
     weekday: parseInt(j['weekday']) ?? 1,
     openTime: parseString(j['open_time']),
     closeTime: parseString(j['close_time']),
+    weekdayLabel: parseString(j['weekday_label']).trim(),
   );
 }
 
@@ -371,6 +383,15 @@ class DoctorDetail {
     this.bioAr,
     this.bioEn,
     this.professionalTitleEn,
+    this.academicDegreeAr = '',
+    this.currentPositionsAr = '',
+    this.pastPositionsAr = '',
+    this.certificationsAr = '',
+    this.fellowshipsAr = '',
+    this.visionAr = '',
+    this.website,
+    this.googleMapsUrl,
+    this.socialLinks = const {},
   });
 
   /// The fields shared with the list representation, parsed once.
@@ -383,6 +404,29 @@ class DoctorDetail {
   final String? bioAr;
   final String? bioEn;
   final String? professionalTitleEn;
+
+  // The fields below are returned by `GET /doctors/{slug}/` but not (yet) listed
+  // in its OpenAPI schema. They are the same fields the doctor edits through
+  // `PATCH /doctor/profile/`, so their meaning is known; each is optional and an
+  // older server that omits it simply hides the matching section.
+
+  final String academicDegreeAr;
+  final String currentPositionsAr;
+  final String pastPositionsAr;
+  final String certificationsAr;
+  final String fellowshipsAr;
+  final String visionAr;
+
+  /// The doctor's own website — `website`, and nothing else. Not the external
+  /// booking link, not a maps link, not the clinic-management site.
+  final Uri? website;
+
+  /// The doctor's own map link. Not tied to any one clinic, so it is offered on
+  /// its own rather than attached to a clinic it may not belong to.
+  final Uri? googleMapsUrl;
+
+  /// Network → address, only the networks with a usable web address.
+  final Map<String, Uri> socialLinks;
 
   String get slug => card.slug;
   String get displayName => card.displayName;
@@ -414,8 +458,43 @@ class DoctorDetail {
       bioAr: j['bio_ar'] as String?,
       bioEn: j['bio_en'] as String?,
       professionalTitleEn: j['professional_title_en'] as String?,
+      academicDegreeAr: _text(j['academic_degree_ar']),
+      currentPositionsAr: _text(j['current_positions_ar']),
+      pastPositionsAr: _text(j['past_positions_ar']),
+      certificationsAr: _text(j['certifications_ar']),
+      fellowshipsAr: _text(j['fellowships_ar']),
+      visionAr: _text(j['vision_ar']),
+      website: webUri(j['website']),
+      googleMapsUrl: webUri(j['google_maps_url']),
+      socialLinks: _socialLinks(j['social_links']),
     );
   }
+
+  /// The networks the app knows how to label, in display order.
+  static const socialNetworks = ['facebook', 'instagram', 'linkedin', 'youtube', 'tiktok'];
+
+  static Map<String, Uri> _socialLinks(dynamic raw) {
+    if (raw is! Map) return const {};
+    return {
+      for (final k in socialNetworks)
+        if (webUri(raw[k]) case final uri?) k: uri,
+    };
+  }
+}
+
+/// Trimmed text, with Windows line breaks normalised; empty for null or a
+/// non-string.
+String _text(dynamic v) => v is String ? v.replaceAll('\r\n', '\n').trim() : '';
+
+/// A link that can be opened safely: an absolute http(s) address with a host.
+///
+/// Anything else — blank, a bare word, `javascript:`, a relative path — is
+/// treated as absent. The value is never repaired or guessed at.
+Uri? webUri(dynamic raw) {
+  if (raw is! String) return null;
+  final u = Uri.tryParse(raw.trim());
+  if (u == null || u.host.isEmpty) return null;
+  return (u.scheme == 'https' || u.scheme == 'http') ? u : null;
 }
 
 class DoctorService {
@@ -445,7 +524,12 @@ class DoctorCredential {
   factory DoctorCredential.fromJson(Map<String, dynamic> j) => DoctorCredential(
     id: parseString(j['id']),
     titleAr: parseString(j['title_ar'] ?? j['degree_ar'] ?? j['name_ar']),
-    subtitle: (j['institution_ar'] ?? j['issuer_ar']) as String?,
+    subtitle: _optionalText(j['institution_ar'] ?? j['issuer_ar'] ?? j['issuer']),
     year: j['year']?.toString(),
   );
+
+  static String? _optionalText(dynamic v) {
+    final t = _text(v);
+    return t.isEmpty ? null : t;
+  }
 }

@@ -100,15 +100,33 @@ void main() {
   });
 
   group('booking tile', () {
+    // The tile looks the doctor up for their specialty; this captured booking's
+    // doctor has no profile here, which the tile must take in its stride.
+    setUp(
+      () => h.adapter.onGet(
+        '/doctors/ahmed-reda/',
+        (s) => s.reply(404, {
+          'data': null,
+          'errors': [
+            {'code': 'not_found', 'detail': 'x', 'field': null},
+          ],
+        }),
+      ),
+    );
+
     testWidgets('shows the server-formatted date and time', (tester) async {
       final booking = PatientBooking.fromJson(bookingData);
       await tester.pumpWidget(h.wrap(Scaffold(body: BookingTile(booking: booking))));
+      await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('احمد رضا'), findsOneWidget);
-      expect(find.text('2026-10-01'), findsOneWidget);
+      // The clinic-local `display_date` 2026-10-01, read as a calendar day only:
+      // Thursday the 1st of October.
+      expect(find.text('1'), findsOneWidget);
+      expect(find.text('أكتوبر'), findsOneWidget);
       // 13:00 is the clinic's wall clock, not a conversion of 10:00 UTC into the
       // test machine's zone.
-      expect(find.text('13:00'), findsOneWidget);
+      expect(find.text('الخميس  •  13:00'), findsOneWidget);
     });
 
     testWidgets('each status gets its own label, not just a colour', (tester) async {
@@ -122,6 +140,7 @@ void main() {
             ),
           ),
         );
+        await tester.pump(const Duration(milliseconds: 100));
         expect(find.byType(BookingStatusChip), findsOneWidget, reason: status);
         final chip = tester.widget<BookingStatusChip>(find.byType(BookingStatusChip));
         expect(chip.status, BookingStatus.parse(status));
