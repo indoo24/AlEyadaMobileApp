@@ -88,6 +88,7 @@ class HomeType {
     color: AppColors.primary,
   );
   static const status = TextStyle(fontSize: 11, fontWeight: FontWeight.w600);
+
   /// Button text styles *replace* the theme's rather than merging with it, so
   /// the family must be named here or the label drops out of Cairo.
   static const button = TextStyle(
@@ -112,6 +113,25 @@ class HomeType {
   static const pill = TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600);
 
   static const navLabel = TextStyle(fontSize: 11, height: 1.2);
+
+  // The navy header.
+  static const heroGreeting = TextStyle(
+    fontSize: 19,
+    fontWeight: FontWeight.w800,
+    color: Colors.white,
+    height: 1.3,
+  );
+  static const heroTagline = TextStyle(fontSize: 12.5, color: Color(0xCCFFFFFF), height: 1.4);
+  static const heroSearch = TextStyle(fontSize: 14, color: AppColors.muted);
+
+  // Shortcut and specialty tiles: a short label under an icon.
+  static const tileLabel = TextStyle(
+    fontSize: 12.5,
+    fontWeight: FontWeight.w600,
+    color: AppColors.navy,
+    height: 1.35,
+  );
+  static const tileMeta = TextStyle(fontSize: 11, color: AppColors.muted, height: 1.3);
 }
 
 /// Card corner radius on the home feed.

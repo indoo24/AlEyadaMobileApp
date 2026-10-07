@@ -1,48 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
+import '../../core/api/api_error.dart';
 import '../../core/auth/models.dart';
 import '../../core/providers.dart';
 import '../../core/theme/tokens.dart';
-import '../../core/widgets/async_value_view.dart';
-import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
 import '../articles/providers.dart';
 import '../clinics/providers.dart';
 import '../doctors/providers.dart';
 import '../doctors/repository.dart';
+import '../doctors/widgets/doctor_profile_sections.dart' show profileNavy;
 import '../notifications/notifications_screen.dart';
 import 'home_providers.dart';
 import 'home_style.dart';
 import 'widgets/article_card.dart';
-import 'widgets/doctor_recommendation_card.dart';
-import 'widgets/greeting_section.dart';
-import 'widgets/home_header.dart';
-import 'widgets/home_search_bar.dart';
+import 'widgets/home_doctor_card.dart';
+import 'widgets/home_hero.dart';
 import 'widgets/home_section_header.dart';
 import 'widgets/home_section_message.dart';
+import 'widgets/horizontal_strip.dart';
 import 'widgets/medical_center_card.dart';
+import 'widgets/pressable.dart';
+import 'widgets/quick_discovery.dart';
 import 'widgets/specialty_section.dart';
 
-/// The patient home: a header, the greeting and city, search, specialties, top
-/// doctors, clinics and articles — plus, when relevant, where a join request
-/// stands.
+/// Home: greeting and search, shortcuts into the directory, specialties,
+/// recommended doctors, clinics and — when there are any — articles.
 ///
-/// Every list is the API's own data. A section that fails or comes back empty
-/// says so in place; it never takes the rest of the screen down with it.
+/// Every list is the API's own data, each section loads, fails and empties on
+/// its own, and a section with nothing to show takes no space. Only when every
+/// primary section has failed does the screen show one full error instead.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l = L.of(context);
     final user = ref.watch(currentUserProvider);
     final city = ref.watch(homeCitySlugProvider);
+    final featured = featuredDoctorQuery(city);
 
     Future<void> refresh() async {
-      final featured = featuredDoctorQuery(city);
       ref
         ..invalidate(specializationsProvider)
         ..invalidate(doctorPageProvider(featured))
@@ -52,88 +53,118 @@ class HomeScreen extends ConsumerWidget {
       await ref.read(authControllerProvider.notifier).refreshUser();
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.bg,
-      body: Column(
-        children: [
-          const HomeHeader(),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: refresh,
-              child: ListView(
-                padding: EdgeInsets.fromLTRB(
-                  AppSpacing.gutter,
-                  HomeSpacing.top,
-                  AppSpacing.gutter,
-                  // Clears the floating nav dock: under the shell the body's bottom
-                  // padding is the dock's height, and 0 anywhere else.
-                  MediaQuery.paddingOf(context).bottom + AppSpacing.xl,
-                ),
-                children: [
-                  const GreetingSection(),
-                  const SizedBox(height: HomeSpacing.afterGreeting),
-                  const HomeSearchBar(),
+    final failures = [
+      ref.watch(specializationsProvider),
+      ref.watch(doctorPageProvider(featured)),
+      ref.watch(homeClinicsProvider(city)),
+    ];
+    final allFailed = failures.every((v) => v.hasError && !v.isLoading);
+    final offline = failures.any(
+      (v) => v.error is ApiException && (v.error as ApiException).isNetworkFailure,
+    );
 
-                  // Where a doctor application or ownership claim stands. Shown
-                  // only when the backend reports one; approved doctors get their
-                  // practice instead and see nothing here.
-                  if (user?.doctorApplication != null) ...[
-                    const SizedBox(height: AppSpacing.lg),
-                    ApplicationStatusCard(application: user!.doctorApplication!),
-                  ],
+    final sections = <Widget>[
+      if (user?.doctorApplication != null &&
+          user!.doctorApplication!.status != ApplicationStatus.approved)
+        _Padded(ApplicationStatusCard(application: user.doctorApplication!)),
+      const _Padded(QuickDiscovery()),
+      // Sections that can have nothing to show are left out entirely, so they
+      // leave no gap behind.
+      if (!(ref.watch(specializationsProvider).valueOrNull?.isEmpty ?? false))
+        const SpecialtySection(),
+      const _DoctorsSection(),
+      const _ClinicsSection(),
+      if (ref.watch(homeArticlesProvider).valueOrNull?.items.isNotEmpty ?? false)
+        const _ArticlesSection(),
+      if (user == null) const _Padded(_GuestCard()),
+      // The join entry point, for anyone not already a doctor and with no
+      // request in flight.
+      if (user == null || (!user.isActiveDoctor && !user.hasOpenApplication))
+        const _Padded(_JoinCard()),
+    ];
 
-                  const SizedBox(height: HomeSpacing.section),
-                  const SpecialtySection(),
-
-                  const SizedBox(height: HomeSpacing.section),
-                  const _TopDoctorsSection(),
-
-                  const SizedBox(height: HomeSpacing.section),
-                  const _CentersSection(),
-
-                  const SizedBox(height: HomeSpacing.section),
-                  const _ArticlesSection(),
-
-                  if (user == null) ...[
-                    const SizedBox(height: AppSpacing.xl),
-                    InfoNote(text: l.authGuestPrompt, icon: Icons.login_rounded),
-                    const SizedBox(height: AppSpacing.sm),
-                    OutlinedButton(
-                      onPressed: () => context.push(Routes.signIn),
-                      child: Text(l.authSignIn),
-                    ),
-                  ],
-
-                  // The join entry point, for anyone who is not already a doctor
-                  // and has no request in flight.
-                  if (user == null || (!user.isActiveDoctor && !user.hasOpenApplication)) ...[
-                    const SizedBox(height: AppSpacing.lg),
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(
-                          Icons.medical_services_outlined,
-                          color: AppColors.primary,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // White status-bar icons over the navy strip.
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: AppColors.bg,
+        body: Column(
+          children: [
+            // The status bar always sits on navy, even after the header has
+            // scrolled away under it.
+            Container(color: profileNavy, height: MediaQuery.paddingOf(context).top),
+            Expanded(
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: true,
+                child: RefreshIndicator(
+                  onRefresh: refresh,
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      const SliverToBoxAdapter(child: HomeHero()),
+                      if (allFailed)
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: _HomeError(offline: offline, onRetry: refresh),
+                        )
+                      else
+                        SliverPadding(
+                          padding: const EdgeInsets.only(top: AppSpacing.lg),
+                          sliver: SliverList.list(
+                            children: [for (final s in sections) _Gap(child: s)],
+                          ),
                         ),
-                        title: Text(l.joinTitle, style: Theme.of(context).textTheme.titleSmall),
-                        subtitle: Text(l.joinIntro, style: Theme.of(context).textTheme.bodySmall),
-                        trailing: const Icon(Icons.chevron_left_rounded),
-                        onTap: () => context.push(Routes.join),
+                      // Clears the floating nav dock: under the shell the body's
+                      // bottom padding is the dock's height, and 0 anywhere else.
+                      SliverToBoxAdapter(
+                        child: SizedBox(
+                          height: MediaQuery.paddingOf(context).bottom + AppSpacing.lg,
+                        ),
                       ),
-                    ),
-                  ],
-                ],
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-/// Highest-rated doctors, scoped to the chosen city.
-class _TopDoctorsSection extends ConsumerWidget {
-  const _TopDoctorsSection();
+/// The page gutter, for sections that do not run edge to edge.
+class _Padded extends StatelessWidget {
+  const _Padded(this.child);
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.gutter),
+    child: child,
+  );
+}
+
+/// The rhythm between sections.
+class _Gap extends StatelessWidget {
+  const _Gap({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+    child: child,
+  );
+}
+
+/// Recommended doctors, in the Home city.
+class _DoctorsSection extends ConsumerWidget {
+  const _DoctorsSection();
+
+  static const _shown = 8;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -141,163 +172,299 @@ class _TopDoctorsSection extends ConsumerWidget {
     final city = ref.watch(homeCitySlugProvider);
     final query = featuredDoctorQuery(city);
     final featured = ref.watch(doctorPageProvider(query));
+    final width = (MediaQuery.sizeOf(context).width * 0.66).clamp(224.0, 272.0);
 
-    const shown = 5;
     final page = featured.valueOrNull;
-    final remaining = page == null ? 0 : page.pagination.count - page.items.take(shown).length;
-
-    void seeAll() {
-      ref.read(doctorQueryProvider.notifier).state = DoctorQuery(city: city);
-      context.go(Routes.doctors);
-    }
+    final remaining = page == null ? 0 : page.pagination.count - page.items.take(_shown).length;
+    void seeAll() => openDirectory(context, ref, const DoctorQuery());
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        HomeSectionHeader(
-          title: l.homeTopDoctorsTitle,
-          onSeeAll: seeAll,
-          seeAllLabel: remaining > 0 ? l.homeSeeAllCount(remaining) : null,
+        _Padded(
+          HomeSectionHeader(
+            title: l.hmRecommendedTitle,
+            onSeeAll: seeAll,
+            seeAllLabel: remaining > 0 ? l.homeSeeAllCount(remaining) : null,
+          ),
         ),
-        const SizedBox(height: HomeSpacing.heading),
-        featured.when(
-          loading: () => const Column(
-            children: [
-              Skeleton(height: 150, radius: homeCardRadius),
-              SizedBox(height: HomeSpacing.card),
-              Skeleton(height: 150, radius: homeCardRadius),
-            ],
-          ),
-          error: (_, __) => HomeSectionMessage(
-            icon: Icons.error_outline_rounded,
-            message: l.homeSectionError,
-            onRetry: () => ref.invalidate(doctorPageProvider(query)),
-          ),
-          data: (page) {
-            if (page.items.isEmpty) {
-              return HomeSectionMessage(
-                icon: Icons.person_search_outlined,
-                message: l.homeNoDoctors,
-              );
-            }
-            return Column(
-              children: [
-                for (final d in page.items.take(shown))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: HomeSpacing.card),
-                    child: DoctorRecommendationCard(
-                      doctor: d,
-                      onTap: () => context.push(Routes.doctorPath(d.slug)),
+        const SizedBox(height: AppSpacing.md),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: featured.when(
+            loading: () => HorizontalStrip(
+              key: const ValueKey('loading'),
+              scrollable: false,
+              children: [for (var i = 0; i < 3; i++) HomeDoctorCardSkeleton(width: width)],
+            ),
+            error: (_, __) => _Padded(
+              HomeSectionMessage(
+                key: const ValueKey('error'),
+                icon: Icons.error_outline_rounded,
+                message: l.homeSectionError,
+                onRetry: () => ref.invalidate(doctorPageProvider(query)),
+              ),
+            ),
+            data: (page) => page.items.isEmpty
+                ? _Padded(
+                    HomeSectionMessage(
+                      key: const ValueKey('empty'),
+                      icon: Icons.person_search_outlined,
+                      message: l.homeNoDoctors,
                     ),
+                  )
+                : HorizontalStrip(
+                    key: const ValueKey('data'),
+                    children: [
+                      for (final d in page.items.take(_shown))
+                        HomeDoctorCard(doctor: d, width: width),
+                      if (page.pagination.count > _shown || page.items.length > _shown)
+                        SeeAllDoctorsTile(label: l.hmSeeAllDoctors, onTap: seeAll),
+                    ],
                   ),
-              ],
-            );
-          },
+          ),
         ),
       ],
     );
   }
 }
 
-/// Clinics and medical centers, scoped to the chosen city.
-///
-/// The cards are not tappable: the app has no clinic page yet. They become so
-/// when that screen exists.
-class _CentersSection extends ConsumerWidget {
-  const _CentersSection();
+/// Clinics and medical centers in the Home city. Each opens its doctors.
+class _ClinicsSection extends ConsumerWidget {
+  const _ClinicsSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = L.of(context);
     final city = ref.watch(homeCitySlugProvider);
     final clinics = ref.watch(homeClinicsProvider(city));
-    final cardWidth = (MediaQuery.sizeOf(context).width * 0.8).clamp(240.0, 320.0);
+    final width = (MediaQuery.sizeOf(context).width * 0.74).clamp(240.0, 300.0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        HomeSectionHeader(title: l.homeCentersTitle),
-        const SizedBox(height: HomeSpacing.heading),
-        clinics.when(
-          loading: () => Skeleton(height: 110, width: cardWidth, radius: homeCardRadius),
-          error: (_, __) => HomeSectionMessage(
-            icon: Icons.error_outline_rounded,
-            message: l.homeSectionError,
-            onRetry: () => ref.invalidate(homeClinicsProvider(city)),
-          ),
-          data: (page) {
-            if (page.items.isEmpty) {
-              return HomeSectionMessage(
-                icon: Icons.local_hospital_outlined,
-                message: l.homeNoCenters,
-              );
-            }
-            // Natural height, so a larger text size grows the cards instead of
-            // overflowing a fixed-height strip.
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (final c in page.items) ...[
-                      MedicalCenterCard(clinic: c, width: cardWidth),
-                      const SizedBox(width: HomeSpacing.card),
-                    ],
-                  ],
-                ),
+        _Padded(HomeSectionHeader(title: l.homeCentersTitle)),
+        const SizedBox(height: AppSpacing.md),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: clinics.when(
+            loading: () => HorizontalStrip(
+              key: const ValueKey('loading'),
+              scrollable: false,
+              children: [for (var i = 0; i < 2; i++) MedicalCenterSkeleton(width: width)],
+            ),
+            error: (_, __) => _Padded(
+              HomeSectionMessage(
+                key: const ValueKey('error'),
+                icon: Icons.error_outline_rounded,
+                message: l.homeSectionError,
+                onRetry: () => ref.invalidate(homeClinicsProvider(city)),
               ),
-            );
-          },
+            ),
+            data: (page) => page.items.isEmpty
+                ? _Padded(
+                    HomeSectionMessage(
+                      key: const ValueKey('empty'),
+                      icon: Icons.local_hospital_outlined,
+                      message: l.homeNoCenters,
+                    ),
+                  )
+                : HorizontalStrip(
+                    key: const ValueKey('data'),
+                    children: [
+                      for (final c in page.items)
+                        MedicalCenterCard(
+                          clinic: c,
+                          width: width,
+                          onTap: () => openDirectory(
+                            context,
+                            ref,
+                            DoctorQuery(clinic: c.slug, clinicName: c.nameAr),
+                          ),
+                        ),
+                    ],
+                  ),
+          ),
         ),
       ],
     );
   }
 }
 
-/// The newest published articles.
-///
-/// Not tappable yet: the app has no article reader. See [ArticleCard].
+/// The newest published articles — only when there are some. A secondary
+/// section: while loading, on failure or with nothing published, it takes no
+/// space rather than leaving a placeholder at the bottom of the feed.
 class _ArticlesSection extends ConsumerWidget {
   const _ArticlesSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = L.of(context);
-    final articles = ref.watch(homeArticlesProvider);
+    final page = ref.watch(homeArticlesProvider).valueOrNull;
+    if (page == null || page.items.isEmpty) return const SizedBox.shrink();
+    final width = (MediaQuery.sizeOf(context).width * 0.78).clamp(250.0, 320.0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        HomeSectionHeader(title: l.homeArticlesTitle),
-        const SizedBox(height: HomeSpacing.heading),
-        articles.when(
-          loading: () => const Skeleton(height: 150, radius: homeCardRadius),
-          error: (_, __) => HomeSectionMessage(
-            icon: Icons.error_outline_rounded,
-            message: l.homeSectionError,
-            onRetry: () => ref.invalidate(homeArticlesProvider),
-          ),
-          data: (page) {
-            if (page.items.isEmpty) {
-              return HomeSectionMessage(
-                icon: Icons.article_outlined,
-                message: l.homeNoArticles,
-              );
-            }
-            return Column(
-              children: [
-                for (final a in page.items)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: HomeSpacing.card),
-                    child: ArticleCard(article: a),
-                  ),
-              ],
-            );
-          },
+        _Padded(HomeSectionHeader(title: l.homeArticlesTitle)),
+        const SizedBox(height: AppSpacing.md),
+        HorizontalStrip(
+          children: [
+            for (final a in page.items)
+              SizedBox(
+                width: width,
+                child: ArticleCard(article: a),
+              ),
+          ],
         ),
       ],
+    );
+  }
+}
+
+class _GuestCard extends StatelessWidget {
+  const _GuestCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(homeCardRadius),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.bgSoft,
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: const Icon(Icons.person_outline_rounded, color: AppColors.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.hmGuestTitle, style: HomeType.cardTitle),
+                Text(l.authGuestPrompt, style: HomeType.meta.copyWith(fontSize: 12.5)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          FilledButton(
+            onPressed: () => context.push(Routes.signIn),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(0, 42),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              textStyle: HomeType.button.copyWith(fontSize: 13),
+            ),
+            child: Text(l.authSignIn),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _JoinCard extends StatelessWidget {
+  const _JoinCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    return Pressable(
+      child: Material(
+        color: AppColors.bgSoft,
+        borderRadius: BorderRadius.circular(homeCardRadius),
+        child: InkWell(
+          onTap: () => context.push(Routes.join),
+          borderRadius: BorderRadius.circular(homeCardRadius),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: const Icon(Icons.medical_services_outlined, color: AppColors.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l.hmJoinCta, style: HomeType.cardTitle),
+                      Text(l.joinIntro, style: HomeType.meta.copyWith(fontSize: 12.5)),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded, color: AppColors.primary),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown only when every primary section failed to load.
+class _HomeError extends StatelessWidget {
+  const _HomeError({required this.offline, required this.onRetry});
+
+  final bool offline;
+  final Future<void> Function() onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 84,
+            height: 84,
+            decoration: const BoxDecoration(color: AppColors.bgSoft, shape: BoxShape.circle),
+            child: Icon(
+              offline ? Icons.wifi_off_rounded : Icons.cloud_off_rounded,
+              size: 38,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(l.hmLoadErrorTitle, textAlign: TextAlign.center, style: HomeType.sectionTitle),
+          const SizedBox(height: 6),
+          Text(
+            // A fixed, friendly sentence — never the server's wording.
+            l.hmLoadErrorBody,
+            textAlign: TextAlign.center,
+            style: HomeType.articleBody.copyWith(fontSize: 13),
+          ),
+          const SizedBox(height: 18),
+          FilledButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh_rounded, size: 20),
+            label: Text(l.actionRetry),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(170, 48),
+              textStyle: HomeType.button.copyWith(fontSize: 14),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

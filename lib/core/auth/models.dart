@@ -238,6 +238,29 @@ class Me {
     return parts.take(2).join(' ');
   }
 
+  /// The first name to greet this person by, or null when there is none.
+  ///
+  /// `first_name` when the backend sends a usable one; otherwise the first word
+  /// of the name the account goes by (patient profile, doctor profile, full
+  /// name). A leading title is removed from either — the greeting adds "د." /
+  /// "Dr." itself, and only for a doctor account — so a name stored as
+  /// "د. يوسف" never becomes "د. د. يوسف". Never the phone number.
+  String? get greetingName {
+    for (final source in [
+      firstName,
+      patientProfile?.fullName,
+      doctorProfile?.fullNameAr,
+      fullName,
+    ]) {
+      final words = (source ?? '')
+          .replaceFirst(_leadingTitle, '')
+          .split(RegExp(r'\s+'))
+          .where((w) => w.isNotEmpty);
+      if (words.isNotEmpty) return words.first;
+    }
+    return null;
+  }
+
   // "Dr", "Dr.", "Doctor", "د.", "د/", "دكتور(ة)", "الدكتور(ة)" at the start.
   // A bare "د" is not matched: it opens real names (دعاء, دينا).
   static final _leadingTitle = RegExp(

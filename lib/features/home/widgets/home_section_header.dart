@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../home_style.dart';
 
-/// A section title with the blue marker and a "see all" action.
+/// A section title with an optional "see all".
 ///
-/// Built from start-relative parts, so the marker sits at the reading start in
-/// Arabic and English alike.
+/// The chevron is `chevron_right`, which Flutter mirrors in right-to-left
+/// layouts: it points *forward* — left in Arabic, right in English.
 class HomeSectionHeader extends StatelessWidget {
   const HomeSectionHeader({super.key, required this.title, this.onSeeAll, this.seeAllLabel});
 
@@ -20,34 +19,26 @@ class HomeSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = L.of(context);
-    final rtl = Directionality.of(context) == TextDirection.rtl;
 
     return Row(
       children: [
-        Container(
-          width: 3,
-          height: 18,
-          decoration: BoxDecoration(color: AppColors.primary, borderRadius: AppRadii.pillRadius),
-        ),
-        const SizedBox(width: AppSpacing.sm),
         Expanded(
           // Wraps rather than truncating: the title is the point of the section,
           // and the action beside it can be wide.
-          child: Text(title, style: HomeType.sectionTitle),
+          child: Semantics(header: true, child: Text(title, style: HomeType.sectionTitle)),
         ),
         if (onSeeAll != null)
           TextButton(
             onPressed: onSeeAll,
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              minimumSize: const Size(0, 32),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              minimumSize: const Size(48, 36),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(seeAllLabel ?? l.actionSeeAll, style: HomeType.seeAll),
-                Icon(rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded, size: 18),
+                const Icon(Icons.chevron_right_rounded, size: 18),
               ],
             ),
           ),

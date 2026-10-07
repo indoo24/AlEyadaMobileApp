@@ -529,14 +529,20 @@ class LEn extends L {
   String get dashboardTitle => 'Dashboard';
 
   @override
-  String dashboardWelcome(String name) {
-    return 'Welcome $name';
+  String homeGreetingPatient(String name) {
+    return 'Welcome, $name. Stay well.';
   }
 
   @override
-  String dashboardWelcomeDoctor(String name) {
-    return 'Welcome Dr. $name';
+  String homeGreetingDoctor(String name) {
+    return 'Welcome, Dr. $name.';
   }
+
+  @override
+  String get homeGreetingPatientNoName => 'Welcome. Stay well.';
+
+  @override
+  String get homeGreetingDoctorNoName => 'Welcome.';
 
   @override
   String get dashboardStatPatients => 'Patients';
@@ -1870,4 +1876,183 @@ class LEn extends L {
 
   @override
   String get bdViewDoctor => 'View doctor\'s page';
+
+  @override
+  String get hmSearchHint => 'Search for a doctor or specialty';
+
+  @override
+  String get hmQuickDoctors => 'All doctors';
+
+  @override
+  String get hmQuickSpecialties => 'Specialties';
+
+  @override
+  String get hmQuickOnline => 'Book online';
+
+  @override
+  String get hmQuickLowestFee => 'Lowest fee';
+
+  @override
+  String get hmRecommendedTitle => 'Recommended doctors';
+
+  @override
+  String get hmAllSpecialties => 'All specialties';
+
+  @override
+  String hmSpecialtyDoctors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count doctors',
+      one: '1 doctor',
+      zero: 'No doctors yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get hmBookNow => 'Book now';
+
+  @override
+  String get hmViewProfile => 'View profile';
+
+  @override
+  String get hmOnlineBooking => 'Online booking';
+
+  @override
+  String get hmPhoneBooking => 'Book by phone';
+
+  @override
+  String get hmSeeAllDoctors => 'See all doctors';
+
+  @override
+  String get hmClinicDoctors => 'View doctors';
+
+  @override
+  String get hmLoadErrorTitle => 'Couldn\'t load the home screen';
+
+  @override
+  String get hmLoadErrorBody => 'Check your internet connection and try again.';
+
+  @override
+  String get hmGuestTitle => 'Sign in for the full experience';
+
+  @override
+  String get hmJoinCta => 'Are you a doctor? Join AlEyada';
+
+  @override
+  String get acSectionAccount => 'Account';
+
+  @override
+  String get acSectionSettings => 'Settings';
+
+  @override
+  String get acPhoneVerified => 'Phone verified';
+
+  @override
+  String get acPhoneUnverified => 'Phone not verified';
+
+  @override
+  String get acVerifyNow => 'Verify';
+
+  @override
+  String get acJoinNow => 'Join now';
+
+  @override
+  String get acLanguageSheetTitle => 'Choose language';
+
+  @override
+  String get acGuestTitle => 'Welcome';
+
+  @override
+  String acUnreadBadge(int count) {
+    return '$count new';
+  }
+
+  @override
+  String get pfPersonalDetails => 'Personal details';
+
+  @override
+  String get pfContactDetails => 'Contact details';
+
+  @override
+  String get pfPhoneReadOnly =>
+      'Your phone number is how you sign in, so it can\'t be changed here.';
+
+  @override
+  String get pfSaveChanges => 'Save changes';
+
+  @override
+  String get pfReadOnly => 'Read-only';
+
+  @override
+  String get ntToday => 'Today';
+
+  @override
+  String get ntYesterday => 'Yesterday';
+
+  @override
+  String get ntEarlier => 'Earlier';
+
+  @override
+  String ntUnreadCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count unread notifications',
+      one: '1 unread notification',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get ntAllRead => 'You\'re all caught up';
+
+  @override
+  String get ntEmptyTitle => 'No notifications yet';
+
+  @override
+  String get ntEmptyBody =>
+      'We\'ll let you know here about anything new with your bookings.';
+
+  @override
+  String get ntErrorTitle => 'Couldn\'t load notifications';
+
+  @override
+  String get ntErrorBody => 'Something went wrong. Please try again.';
+
+  @override
+  String get ntOffline => 'Check your internet connection and try again.';
+
+  @override
+  String get ntLoadOlder => 'Show older notifications';
+
+  @override
+  String get ntUnread => 'Unread';
+
+  @override
+  String get ntUpdateFailed =>
+      'Couldn\'t update notifications. Please try again.';
+
+  @override
+  String get ntRefreshFailed => 'Couldn\'t refresh the list.';
+
+  @override
+  String get auShowPassword => 'Show password';
+
+  @override
+  String get auHidePassword => 'Hide password';
+
+  @override
+  String get auReadPolicy => 'Read';
+
+  @override
+  String get auForgotBody =>
+      'Enter your registered phone number to get a password-reset code.';
+
+  @override
+  String get auLogoLabel => 'AlEyada logo';
+
+  @override
+  String get auPoliciesRetry => 'Couldn\'t load the terms. Please try again.';
 }

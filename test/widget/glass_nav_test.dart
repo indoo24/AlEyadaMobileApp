@@ -147,7 +147,7 @@ void main() {
     await pumpApp(tester, size: const Size(360, 640));
 
     final feed = find.byType(Scrollable).first;
-    final last = find.text('انضم كطبيب'); // the final card on a guest's Home
+    final last = find.text('هل أنت طبيب؟ انضم إلى العيادة'); // the final card on a guest's Home
     await tester.scrollUntilVisible(last, 300, scrollable: feed);
     await tester.drag(feed, const Offset(0, -2000)); // all the way down
     await tester.pump(const Duration(milliseconds: 300));

@@ -123,6 +123,7 @@ void main() {
   final sizes = <String, Size>{
     'small phone': const Size(320, 568),
     'standard phone': const Size(360, 800),
+    'mid phone': const Size(390, 844),
     'large phone': const Size(412, 915),
   };
 
@@ -152,10 +153,10 @@ void main() {
   testWidgets('every section renders real data from the API', (tester) async {
     await pumpHome(tester, size: const Size(360, 800));
 
-    expect(find.text('أسنان'), findsWidgets); // specialty chip
-    expect(find.text('أفضل الأطباء الموصى بهم'), findsOneWidget);
+    expect(find.text('أسنان'), findsWidgets); // specialty tile
+    expect(find.text('أطباء مقترحون'), findsOneWidget);
     expect(find.text('عرض الكل (+15)'), findsOneWidget); // 17 matches, 2 shown
-    expect(find.text('احجز كشف'), findsWidgets);
+    expect(find.text('احجز الآن'), findsWidgets);
 
     final feed = find.byType(Scrollable).first;
     await tester.scrollUntilVisible(find.textContaining('دار الفؤاد'), 300, scrollable: feed);
@@ -166,12 +167,13 @@ void main() {
   });
 
   testWidgets('a failing section says so and the rest of the screen still renders', (tester) async {
-    // A fresh harness with no /articles/ route: that request fails.
+    // A fresh harness with no /clinics/ route: that request fails. (Articles are
+    // a secondary section and simply step aside when they fail.)
     h = TestHarness();
     h.adapter
       ..onGet('/specializations/', (s) => s.reply(200, specializationsResponse))
       ..onGet('/doctors/', (s) => s.reply(200, doctorListResponse))
-      ..onGet('/clinics/', (s) => s.reply(200, _clinics));
+      ..onGet('/articles/', (s) => s.reply(200, _articles));
     container = ProviderContainer(overrides: h.overrides);
     await pumpHome(tester, size: const Size(360, 800));
 
@@ -181,7 +183,7 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('تعذّر تحميل هذا القسم.'), findsOneWidget);
-    expect(find.text('أفضل الأطباء الموصى بهم'), findsOneWidget);
+    expect(find.text('أطباء مقترحون'), findsOneWidget);
   });
 
   testWidgets('choosing a city scopes the feed and is reflected in the header', (tester) async {

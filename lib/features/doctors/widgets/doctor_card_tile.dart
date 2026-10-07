@@ -123,6 +123,8 @@ class DoctorAvatar extends StatelessWidget {
             : Image.network(
                 photo!,
                 fit: BoxFit.cover,
+                // Decoded at the size it is drawn, not the upload's full size.
+                cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
                 // A missing photo must not leave a broken-image glyph on a
                 // medical directory; fall back to the initial.
                 errorBuilder: (_, __, ___) => Center(

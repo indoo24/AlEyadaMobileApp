@@ -43,6 +43,9 @@ class ArticleCard extends StatelessWidget {
                 child: Image.network(
                   image,
                   fit: BoxFit.cover,
+                  cacheWidth:
+                      (MediaQuery.sizeOf(context).width * MediaQuery.devicePixelRatioOf(context))
+                          .round(),
                   width: double.infinity,
                   // A missing cover collapses to the text card rather than
                   // leaving a grey box or a broken-image glyph.

@@ -1051,17 +1051,29 @@ abstract class L {
   /// **'لوحة التحكم'**
   String get dashboardTitle;
 
-  /// No description provided for @dashboardWelcome.
+  /// No description provided for @homeGreetingPatient.
   ///
   /// In ar, this message translates to:
-  /// **'أهلاً {name}'**
-  String dashboardWelcome(String name);
+  /// **'أهلاً {name}، سلامتك'**
+  String homeGreetingPatient(String name);
 
-  /// No description provided for @dashboardWelcomeDoctor.
+  /// No description provided for @homeGreetingDoctor.
   ///
   /// In ar, this message translates to:
   /// **'أهلاً د. {name}'**
-  String dashboardWelcomeDoctor(String name);
+  String homeGreetingDoctor(String name);
+
+  /// No description provided for @homeGreetingPatientNoName.
+  ///
+  /// In ar, this message translates to:
+  /// **'أهلاً بك، سلامتك'**
+  String get homeGreetingPatientNoName;
+
+  /// No description provided for @homeGreetingDoctorNoName.
+  ///
+  /// In ar, this message translates to:
+  /// **'أهلاً بك'**
+  String get homeGreetingDoctorNoName;
 
   /// No description provided for @dashboardStatPatients.
   ///
@@ -3468,6 +3480,318 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'عرض صفحة الطبيب'**
   String get bdViewDoctor;
+
+  /// No description provided for @hmSearchHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث عن طبيب أو تخصص'**
+  String get hmSearchHint;
+
+  /// No description provided for @hmQuickDoctors.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل الأطباء'**
+  String get hmQuickDoctors;
+
+  /// No description provided for @hmQuickSpecialties.
+  ///
+  /// In ar, this message translates to:
+  /// **'التخصصات'**
+  String get hmQuickSpecialties;
+
+  /// No description provided for @hmQuickOnline.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجز إلكتروني'**
+  String get hmQuickOnline;
+
+  /// No description provided for @hmQuickLowestFee.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأقل سعرًا'**
+  String get hmQuickLowestFee;
+
+  /// No description provided for @hmRecommendedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أطباء مقترحون'**
+  String get hmRecommendedTitle;
+
+  /// No description provided for @hmAllSpecialties.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل التخصصات'**
+  String get hmAllSpecialties;
+
+  /// No description provided for @hmSpecialtyDoctors.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =0{لا يوجد أطباء بعد} =1{طبيب واحد} =2{طبيبان} few{{count} أطباء} many{{count} طبيبًا} other{{count} طبيب}}'**
+  String hmSpecialtyDoctors(int count);
+
+  /// No description provided for @hmBookNow.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز الآن'**
+  String get hmBookNow;
+
+  /// No description provided for @hmViewProfile.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض الملف'**
+  String get hmViewProfile;
+
+  /// No description provided for @hmOnlineBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجز إلكتروني'**
+  String get hmOnlineBooking;
+
+  /// No description provided for @hmPhoneBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجز عبر الهاتف'**
+  String get hmPhoneBooking;
+
+  /// No description provided for @hmSeeAllDoctors.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض كل الأطباء'**
+  String get hmSeeAllDoctors;
+
+  /// No description provided for @hmClinicDoctors.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض الأطباء'**
+  String get hmClinicDoctors;
+
+  /// No description provided for @hmLoadErrorTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل البيانات'**
+  String get hmLoadErrorTitle;
+
+  /// No description provided for @hmLoadErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.'**
+  String get hmLoadErrorBody;
+
+  /// No description provided for @hmGuestTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجّل الدخول لتجربة أفضل'**
+  String get hmGuestTitle;
+
+  /// No description provided for @hmJoinCta.
+  ///
+  /// In ar, this message translates to:
+  /// **'هل أنت طبيب؟ انضم إلى العيادة'**
+  String get hmJoinCta;
+
+  /// No description provided for @acSectionAccount.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحساب'**
+  String get acSectionAccount;
+
+  /// No description provided for @acSectionSettings.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإعدادات'**
+  String get acSectionSettings;
+
+  /// No description provided for @acPhoneVerified.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهاتف موثّق'**
+  String get acPhoneVerified;
+
+  /// No description provided for @acPhoneUnverified.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهاتف غير موثّق'**
+  String get acPhoneUnverified;
+
+  /// No description provided for @acVerifyNow.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد الرقم'**
+  String get acVerifyNow;
+
+  /// No description provided for @acJoinNow.
+  ///
+  /// In ar, this message translates to:
+  /// **'انضم الآن'**
+  String get acJoinNow;
+
+  /// No description provided for @acLanguageSheetTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر اللغة'**
+  String get acLanguageSheetTitle;
+
+  /// No description provided for @acGuestTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرحباً بك'**
+  String get acGuestTitle;
+
+  /// No description provided for @acUnreadBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} جديد'**
+  String acUnreadBadge(int count);
+
+  /// No description provided for @pfPersonalDetails.
+  ///
+  /// In ar, this message translates to:
+  /// **'المعلومات الشخصية'**
+  String get pfPersonalDetails;
+
+  /// No description provided for @pfContactDetails.
+  ///
+  /// In ar, this message translates to:
+  /// **'بيانات التواصل'**
+  String get pfContactDetails;
+
+  /// No description provided for @pfPhoneReadOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهاتف هو وسيلة تسجيل الدخول، ولا يمكن تغييره من هنا.'**
+  String get pfPhoneReadOnly;
+
+  /// No description provided for @pfSaveChanges.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ التغييرات'**
+  String get pfSaveChanges;
+
+  /// No description provided for @pfReadOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'للعرض فقط'**
+  String get pfReadOnly;
+
+  /// No description provided for @ntToday.
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم'**
+  String get ntToday;
+
+  /// No description provided for @ntYesterday.
+  ///
+  /// In ar, this message translates to:
+  /// **'أمس'**
+  String get ntYesterday;
+
+  /// No description provided for @ntEarlier.
+  ///
+  /// In ar, this message translates to:
+  /// **'أقدم'**
+  String get ntEarlier;
+
+  /// No description provided for @ntUnreadCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{إشعار واحد غير مقروء} =2{إشعاران غير مقروءين} few{{count} إشعارات غير مقروءة} many{{count} إشعارًا غير مقروء} other{{count} إشعار غير مقروء}}'**
+  String ntUnreadCount(int count);
+
+  /// No description provided for @ntAllRead.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد إشعارات غير مقروءة'**
+  String get ntAllRead;
+
+  /// No description provided for @ntEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد إشعارات'**
+  String get ntEmptyTitle;
+
+  /// No description provided for @ntEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'سنخبرك هنا بكل جديد يتعلق بحجوزاتك.'**
+  String get ntEmptyBody;
+
+  /// No description provided for @ntErrorTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل الإشعارات'**
+  String get ntErrorTitle;
+
+  /// No description provided for @ntErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدث خطأ أثناء التحميل. حاول مرة أخرى.'**
+  String get ntErrorBody;
+
+  /// No description provided for @ntOffline.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.'**
+  String get ntOffline;
+
+  /// No description provided for @ntLoadOlder.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض الإشعارات الأقدم'**
+  String get ntLoadOlder;
+
+  /// No description provided for @ntUnread.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير مقروء'**
+  String get ntUnread;
+
+  /// No description provided for @ntUpdateFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحديث الإشعارات. حاول مرة أخرى.'**
+  String get ntUpdateFailed;
+
+  /// No description provided for @ntRefreshFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحديث القائمة.'**
+  String get ntRefreshFailed;
+
+  /// No description provided for @auShowPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'إظهار كلمة المرور'**
+  String get auShowPassword;
+
+  /// No description provided for @auHidePassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'إخفاء كلمة المرور'**
+  String get auHidePassword;
+
+  /// No description provided for @auReadPolicy.
+  ///
+  /// In ar, this message translates to:
+  /// **'قراءة'**
+  String get auReadPolicy;
+
+  /// No description provided for @auForgotBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رقم هاتفك المسجّل لإرسال رمز إعادة تعيين كلمة المرور.'**
+  String get auForgotBody;
+
+  /// No description provided for @auLogoLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'شعار العيادة'**
+  String get auLogoLabel;
+
+  /// No description provided for @auPoliciesRetry.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل الشروط. حاول مرة أخرى.'**
+  String get auPoliciesRetry;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {
