@@ -1,32 +1,57 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/api/envelope.dart';
 import '../../core/providers.dart';
+import 'booking_logic.dart';
 import 'models.dart';
 import 'repository.dart';
+
+export 'booking_logic.dart' show BookingsTab, BookingGroups;
 
 final bookingRepositoryProvider = Provider<BookingRepository>(
   (ref) => BookingRepository(ref.watch(apiClientProvider)),
 );
 
-/// Which half of the bookings screen is showing.
-enum BookingsTab { upcoming, past }
-
+/// Which section of My Bookings is showing. Lives outside the screen so it
+/// survives leaving the tab and coming back.
 final bookingsTabProvider = StateProvider<BookingsTab>((ref) => BookingsTab.upcoming);
 
-/// The patient's bookings for the active tab.
+/// "Now", in UTC. A provider so tests can pin the clock; the app reads the
+/// device's.
+final bookingsClockProvider = Provider<DateTime Function()>(
+  (ref) =>
+      () => DateTime.now().toUtc(),
+);
+
+/// The most pages the list will walk. A patient with more than this many
+/// appointments sees the most recent pages; the cap only stops a runaway loop.
+const _maxPages = 10;
+const _pageSize = 50;
+
+/// Every booking the signed-in patient owns, all pages.
 ///
-/// Scoped server-side rather than fetched whole and split here: "upcoming" is a
-/// moving target that depends on the server's clock, not the phone's.
-final myBookingsProvider = FutureProvider.family<Paginated<PatientBooking>, BookingsTab>((
-  ref,
-  tab,
-) async {
-  // Watch auth so signing in or out refetches rather than showing a stale list.
-  ref.watch(authControllerProvider);
-  return ref
-      .watch(bookingRepositoryProvider)
-      .myBookings(scope: tab == BookingsTab.upcoming ? 'upcoming' : 'all');
+/// One list feeds all three sections, so switching sections asks nothing of
+/// the server and a pull-to-refresh is a single reload. Tied to the account:
+/// signing in as someone else never shows the previous person's appointments.
+final myBookingsProvider = FutureProvider<List<PatientBooking>>((ref) async {
+  ref.watch(authControllerProvider.select((s) => s.user?.id));
+  final repo = ref.watch(bookingRepositoryProvider);
+
+  final out = <PatientBooking>[];
+  final seen = <String>{};
+  for (var page = 1; page <= _maxPages; page++) {
+    final result = await repo.myBookings(page: page, pageSize: _pageSize);
+    for (final b in result.items) {
+      if (seen.add(b.id)) out.add(b);
+    }
+    if (!result.hasMore) break;
+  }
+  return out;
+});
+
+/// The bookings split into sections, sorted for reading.
+final bookingGroupsProvider = Provider<AsyncValue<BookingGroups>>((ref) {
+  final now = ref.watch(bookingsClockProvider);
+  return ref.watch(myBookingsProvider).whenData((all) => groupBookings(all, now()));
 });
 
 final bookingDetailProvider = FutureProvider.family<PatientBooking, String>((ref, id) async {

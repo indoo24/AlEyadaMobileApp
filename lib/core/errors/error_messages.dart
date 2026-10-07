@@ -25,6 +25,11 @@ String messageForError(BuildContext context, Object error) {
   final known = _knownCode(l, error.code);
   if (known != null) return known;
 
+  // A 401 that survived the client's token refresh means the session is gone.
+  // The backend's prose for it is not for patients ("Given token not valid for
+  // any token type"), so it is never shown.
+  if (error.failure == ApiFailure.unauthenticated) return l.errorNotAuthenticated;
+
   // Unrecognised code: use what the server said, if it said anything.
   final detail = error.firstDetail;
   if (detail != null && detail.isNotEmpty) return detail;
@@ -66,7 +71,8 @@ String? _knownCode(L l, String code) => switch (code) {
   // need different actions from the patient.
   'slot_not_bookable' => l.errorSlotUnavailable,
   'slot_unavailable' => l.errorSlotUnavailable,
-  'doctor_busy' => l.errorBookingConflict,
+  // The *doctor* is booked then (perhaps at another clinic) — not the patient.
+  'doctor_busy' => l.errorDoctorBusy,
   'booking_conflict' => l.errorBookingConflict,
   'outside_availability' => l.errorOutsideAvailability,
   'lead_time_too_short' => l.errorLeadTime,

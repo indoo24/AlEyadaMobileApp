@@ -4,6 +4,8 @@ import '../../../core/theme/tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../doctors/models.dart';
 import '../../doctors/widgets/doctor_card_tile.dart';
+import '../../doctors/widgets/doctor_rating.dart';
+import '../../favorites/widgets/favorite_button.dart';
 import '../home_style.dart';
 
 /// A recommended doctor: photo, name, specialty, place and rating on top; fee,
@@ -62,16 +64,11 @@ class DoctorRecommendationCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (doctor.reviewsCount > 0) ...[
-                              const SizedBox(width: 6),
-                              RatingBadge(
-                                rating: doctor.rating,
-                                count: doctor.reviewsCount,
-                                compact: true,
-                              ),
-                            ],
+                            const SizedBox(width: 2),
+                            FavoriteButton(doctorId: doctor.id, slug: doctor.slug, size: 20),
                           ],
                         ),
+                        DoctorRating(doctor: doctor, fontSize: 12),
                         if (specialty.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(

@@ -106,7 +106,9 @@ class ApiClient {
       }
     }
 
-    _log('← ${status ?? 'network'} ${e.requestOptions.path}');
+    _log(
+      '← ${status ?? 'network'} ${e.requestOptions.method} ${e.requestOptions.path}${_codes(e)}',
+    );
     handler.next(e);
   }
 
@@ -229,10 +231,21 @@ class ApiClient {
     return out.isEmpty ? null : out;
   }
 
+  /// The backend's error codes, e.g. ` [permission_denied]` — enough to tell one
+  /// 403 from another. Codes are fixed identifiers, never user data; the
+  /// human-readable details are left out.
+  static String _codes(DioException e) {
+    final data = e.response?.data;
+    final errors = data is Map ? data['errors'] : null;
+    if (errors is! List || errors.isEmpty) return '';
+    final codes = errors.whereType<Map>().map((m) => '${m['code']}').toSet().join(', ');
+    return ' [$codes]';
+  }
+
   /// Logging that cannot leak a credential.
   ///
-  /// Only the method and path are ever recorded — no headers, no bodies, no
-  /// query strings. A password, an OTP code and a token all travel in exactly
+  /// Only the method, path, status and the backend's error codes are ever
+  /// recorded — no headers, no bodies, no query strings. A password, an OTP code and a token all travel in exactly
   /// those places, and a log is the one component that reliably outlives the
   /// request it describes.
   void _log(String message) {

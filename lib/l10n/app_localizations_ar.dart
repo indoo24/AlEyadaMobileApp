@@ -744,4 +744,1133 @@ class LAr extends L {
 
   @override
   String get homeArticleCertified => 'مراجَع طبياً';
+
+  @override
+  String get searchRecentTitle => 'عمليات البحث الأخيرة';
+
+  @override
+  String get searchClearAll => 'مسح الكل';
+
+  @override
+  String get searchRemoveRecent => 'إزالة من عمليات البحث الأخيرة';
+
+  @override
+  String get searchBrowseTitle => 'تصفح حسب التخصص';
+
+  @override
+  String get searchSuggestionsTitle => 'اقتراحات';
+
+  @override
+  String get searchSuggestSpecialty => 'تخصص';
+
+  @override
+  String get searchSuggestCity => 'مدينة';
+
+  @override
+  String get searchSuggestArea => 'منطقة';
+
+  @override
+  String get searchSuggestClinic => 'عيادة أو مركز';
+
+  @override
+  String searchResultsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'تم العثور على $count طبيب',
+      one: 'تم العثور على طبيب واحد',
+      zero: 'لا يوجد أطباء',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchSortLabel => 'الترتيب';
+
+  @override
+  String get searchSortFeatured => 'الأنسب';
+
+  @override
+  String get searchSortRating => 'الأعلى تقييماً';
+
+  @override
+  String get searchSortNewest => 'الأحدث';
+
+  @override
+  String get searchSortFeeAsc => 'الأقل سعراً';
+
+  @override
+  String get searchFilterButton => 'تصفية متقدمة';
+
+  @override
+  String get searchFilterTitle => 'تصفية النتائج';
+
+  @override
+  String get searchFilterRating => 'التقييم';
+
+  @override
+  String get searchFilterMaxFee => 'أقصى سعر للكشف';
+
+  @override
+  String get searchFilterBooking => 'الحجز الإلكتروني';
+
+  @override
+  String get searchFilterBookingOnly => 'المتاحون للحجز الإلكتروني فقط';
+
+  @override
+  String get searchAny => 'الكل';
+
+  @override
+  String get searchAnyPrice => 'أي سعر';
+
+  @override
+  String get searchGenderMale => 'طبيب';
+
+  @override
+  String get searchGenderFemale => 'طبيبة';
+
+  @override
+  String searchChipRating(String value) {
+    return 'تقييم $value+';
+  }
+
+  @override
+  String searchChipMaxFee(String fee) {
+    return 'حتى $fee ج.م';
+  }
+
+  @override
+  String get searchChipBooking => 'حجز إلكتروني';
+
+  @override
+  String get searchClearField => 'مسح البحث';
+
+  @override
+  String get searchEmptyTitle => 'لم نجد أطباء مطابقين لبحثك';
+
+  @override
+  String get searchEmptyHint =>
+      'جرّب تغيير التخصص أو المنطقة أو إزالة بعض عوامل التصفية.';
+
+  @override
+  String get searchClearFilters => 'مسح الفلاتر';
+
+  @override
+  String get searchBookAppointment => 'احجز موعد كشف';
+
+  @override
+  String get searchCall => 'اتصال';
+
+  @override
+  String searchYearsShort(int years) {
+    return '$years سنة خبرة';
+  }
+
+  @override
+  String get navFavorites => 'المفضلة';
+
+  @override
+  String get favoritesTitle => 'الأطباء المفضلون';
+
+  @override
+  String favoritesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count طبيب',
+      many: '$count طبيباً',
+      few: '$count أطباء',
+      two: 'طبيبان',
+      one: 'طبيب واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get favoritesEmptyTitle => 'لم تقم بإضافة أطباء للمفضلة بعد';
+
+  @override
+  String get favoritesEmptyBody =>
+      'أضف الأطباء الذين تفضلهم للوصول إليهم بسهولة لاحقًا.';
+
+  @override
+  String get favoritesFindDoctor => 'البحث عن طبيب';
+
+  @override
+  String get favoritesDoctorError => 'تعذّر تحميل بيانات هذا الطبيب.';
+
+  @override
+  String get favoritesLoadError => 'تعذّر تحميل قائمة المفضلة.';
+
+  @override
+  String get favoriteAdd => 'إضافة إلى المفضلة';
+
+  @override
+  String get favoriteRemove => 'إزالة من المفضلة';
+
+  @override
+  String get favoriteFailed => 'تعذّر حفظ التغيير. حاول مرة أخرى.';
+
+  @override
+  String get ratingNone => 'لا توجد تقييمات';
+
+  @override
+  String get navManagement => 'الإدارة';
+
+  @override
+  String get managementTitle => 'الإدارة';
+
+  @override
+  String get managementStatsTitle => 'إحصاءاتك';
+
+  @override
+  String managementStatsPeriod(int days) {
+    return 'آخر $days يوم';
+  }
+
+  @override
+  String get statPatients => 'عدد المرضى';
+
+  @override
+  String get statCompletedVisits => 'زيارات مكتملة';
+
+  @override
+  String get statRating => 'متوسط التقييم';
+
+  @override
+  String get statContactRate => 'معدل التواصل';
+
+  @override
+  String get statViews => 'مشاهدات الصفحة';
+
+  @override
+  String get statContacts => 'مرات التواصل';
+
+  @override
+  String get statBookings => 'حجوزات';
+
+  @override
+  String get statBookingsDone => 'تمت';
+
+  @override
+  String statViewsSub(int count) {
+    return 'مشاهدات الصفحة: $count';
+  }
+
+  @override
+  String get managementPortalButton => 'فتح نظام إدارة العيادة';
+
+  @override
+  String get managementPortalFailed => 'تعذّر فتح نظام الإدارة.';
+
+  @override
+  String get managementModulesTitle => 'إدارة العيادة';
+
+  @override
+  String get managementClinicsTitle => 'العيادات';
+
+  @override
+  String get managementClinicsDesc =>
+      'إدارة العيادات وأسعار الكشف ومواعيد العمل';
+
+  @override
+  String get managementAssistantsTitle => 'المساعدون';
+
+  @override
+  String get managementAssistantsDesc => 'إدارة مساعدي العيادة وصلاحياتهم';
+
+  @override
+  String get managementScheduleTitle => 'الجدول';
+
+  @override
+  String get managementScheduleDesc => 'المواعيد وأوقات التوفّر';
+
+  @override
+  String get managementSaved => 'تم الحفظ';
+
+  @override
+  String get managementDelete => 'حذف';
+
+  @override
+  String get managementFailed => 'تعذّر إتمام العملية. حاول مرة أخرى.';
+
+  @override
+  String get weekday1 => 'الاثنين';
+
+  @override
+  String get weekday2 => 'الثلاثاء';
+
+  @override
+  String get weekday3 => 'الأربعاء';
+
+  @override
+  String get weekday4 => 'الخميس';
+
+  @override
+  String get weekday5 => 'الجمعة';
+
+  @override
+  String get weekday6 => 'السبت';
+
+  @override
+  String get weekday7 => 'الأحد';
+
+  @override
+  String get clinicsTitle => 'العيادات';
+
+  @override
+  String get clinicsAdd => 'إضافة عيادة';
+
+  @override
+  String get clinicsEmptyTitle => 'لم تُضف أي عيادة بعد';
+
+  @override
+  String get clinicsEmptyBody => 'أضف عيادتك لتبدأ باستقبال الحجوزات.';
+
+  @override
+  String get clinicBadgePrimary => 'العيادة الرئيسية';
+
+  @override
+  String get clinicBadgeOwner => 'أنشأتها';
+
+  @override
+  String get clinicBadgeInactive => 'معطّلة';
+
+  @override
+  String get clinicReady => 'جاهزة لاستقبال الحجوزات';
+
+  @override
+  String get clinicNotReady => 'غير جاهزة لاستقبال الحجوزات بعد';
+
+  @override
+  String get clinicTermsTitle => 'شروطي في هذه العيادة';
+
+  @override
+  String get clinicFeeConsult => 'سعر الكشف';
+
+  @override
+  String get clinicFeeFollowup => 'سعر الاستشارة/المتابعة';
+
+  @override
+  String get clinicAcceptBookings => 'استقبال الحجوزات';
+
+  @override
+  String get clinicSaveTerms => 'حفظ الشروط';
+
+  @override
+  String get clinicHoursTitle => 'مواعيد العمل';
+
+  @override
+  String get clinicHoursHint =>
+      'حدد مواعيد فتح العيادة لكل يوم. الحجوزات تُولَّد داخل هذه المواعيد فقط.';
+
+  @override
+  String get clinicHoursNone => 'لم تُحدَّد مواعيد العمل بعد.';
+
+  @override
+  String get clinicHoursFrom => 'من';
+
+  @override
+  String get clinicHoursTo => 'إلى';
+
+  @override
+  String get clinicAddShift => 'إضافة فترة';
+
+  @override
+  String get clinicSaveHours => 'حفظ المواعيد';
+
+  @override
+  String get clinicInviteTitle => 'دعوة طبيب';
+
+  @override
+  String get clinicInvitePhone => 'رقم هاتف الطبيب';
+
+  @override
+  String get clinicInviteMessage => 'رسالة (اختياري)';
+
+  @override
+  String get clinicInviteSend => 'إرسال الدعوة';
+
+  @override
+  String get clinicInviteSent => 'تم إرسال الدعوة';
+
+  @override
+  String get clinicInvitesSent => 'الدعوات المرسلة';
+
+  @override
+  String get clinicInvitesNone => 'لا توجد دعوات مرسلة.';
+
+  @override
+  String get invitationPending => 'قيد الانتظار';
+
+  @override
+  String get invitationAccepted => 'مقبولة';
+
+  @override
+  String get invitationDeclined => 'مرفوضة';
+
+  @override
+  String get invitationCancelled => 'ملغاة';
+
+  @override
+  String get clinicFormName => 'اسم العيادة';
+
+  @override
+  String get clinicFormAddress => 'العنوان';
+
+  @override
+  String get clinicFormPhone => 'هاتف العيادة';
+
+  @override
+  String get clinicFormCreate => 'إنشاء العيادة';
+
+  @override
+  String get assistantsTitle => 'المساعدون';
+
+  @override
+  String get assistantsAdd => 'إضافة مساعد';
+
+  @override
+  String get assistantsEmptyTitle => 'لم يتم إضافة أي مساعد بعد';
+
+  @override
+  String get assistantsEmptyBody =>
+      'أضف مساعدًا ليتولى الحجوزات نيابةً عنك، وحدد ما يُسمح له به.';
+
+  @override
+  String get assistantAllClinics => 'كل العيادات';
+
+  @override
+  String get assistantInactive => 'غير نشط';
+
+  @override
+  String get assistantPermissions => 'الصلاحيات';
+
+  @override
+  String assistantPermissionsCount(int count) {
+    return '$count صلاحية';
+  }
+
+  @override
+  String get assistantRevoke => 'سحب الوصول';
+
+  @override
+  String assistantRevokeConfirm(String clinic) {
+    return 'سحب وصول هذا المساعد إلى «$clinic»؟';
+  }
+
+  @override
+  String get assistantFormName => 'اسم المساعد';
+
+  @override
+  String get assistantFormPhone => 'رقم الهاتف';
+
+  @override
+  String get assistantFormNotes => 'ملاحظات (اختياري)';
+
+  @override
+  String get assistantFormClinic => 'العيادة';
+
+  @override
+  String get assistantCreate => 'إضافة المساعد';
+
+  @override
+  String get flag_can_view_bookings => 'عرض الحجوزات';
+
+  @override
+  String get flag_can_create_bookings => 'إنشاء حجوزات';
+
+  @override
+  String get flag_can_update_bookings => 'تعديل الحجوزات';
+
+  @override
+  String get flag_can_cancel_bookings => 'إلغاء الحجوزات';
+
+  @override
+  String get flag_can_manage_schedule => 'إدارة الجدول';
+
+  @override
+  String get flag_can_view_patient_phone => 'رؤية هاتف المريض';
+
+  @override
+  String get flag_can_create_patient_next_visit => 'حجز زيارة تالية للمريض';
+
+  @override
+  String get flag_can_request_duration_verification => 'طلب توثيق مدة الزيارة';
+
+  @override
+  String get flag_can_review_payment_proofs => 'مراجعة إثباتات الدفع';
+
+  @override
+  String get scheduleTitle => 'الجدول';
+
+  @override
+  String get scheduleTabBookings => 'المواعيد';
+
+  @override
+  String get scheduleTabAvailability => 'أوقات التوفّر';
+
+  @override
+  String get scheduleView => 'العرض';
+
+  @override
+  String get scheduleViewUpcoming => 'القادمة';
+
+  @override
+  String get scheduleViewAll => 'الكل';
+
+  @override
+  String get scheduleDate => 'يوم محدد';
+
+  @override
+  String get scheduleDateAny => 'كل الأيام';
+
+  @override
+  String get scheduleStatus => 'الحالة';
+
+  @override
+  String get scheduleStatusAll => 'كل الحالات';
+
+  @override
+  String scheduleCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count موعد',
+      few: '$count مواعيد',
+      two: 'موعدان',
+      one: 'موعد واحد',
+      zero: 'لا مواعيد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleEmpty => 'لا توجد مواعيد.';
+
+  @override
+  String get scheduleEmptyHint => 'جرّب تغيير العرض أو الحالة أو اليوم.';
+
+  @override
+  String get scheduleConfirm => 'تأكيد';
+
+  @override
+  String get scheduleComplete => 'اكتملت';
+
+  @override
+  String get scheduleNoShow => 'لم يحضر';
+
+  @override
+  String get scheduleCancel => 'إلغاء الموعد';
+
+  @override
+  String get scheduleCancelReason => 'سبب الإلغاء (اختياري)';
+
+  @override
+  String get scheduleNoShowHint =>
+      'خيار «لم يحضر» يظهر بعد مرور موعد الكشف بعشر دقائق.';
+
+  @override
+  String get scheduleUpdated => 'تم تحديث الموعد';
+
+  @override
+  String get windowsAdd => 'إضافة فترة توفّر';
+
+  @override
+  String get windowsEmpty => 'لم تحدد أوقات توفّر بعد.';
+
+  @override
+  String get windowsEmptyHint => 'أضف الأيام والساعات التي تستقبل فيها المرضى.';
+
+  @override
+  String windowMinutes(int minutes) {
+    return '$minutes دقيقة للموعد';
+  }
+
+  @override
+  String get windowDeleteConfirm => 'حذف فترة التوفّر هذه؟';
+
+  @override
+  String get windowFormWeekday => 'اليوم';
+
+  @override
+  String get windowFormClinic => 'العيادة';
+
+  @override
+  String get windowFormDuration => 'مدة الموعد (بالدقائق)';
+
+  @override
+  String get windowCreate => 'إضافة';
+
+  @override
+  String get statusCancelledByPatient => 'ألغاه المريض';
+
+  @override
+  String get statusCancelledByClinic => 'ألغته العيادة';
+
+  @override
+  String scheduleDuration(int minutes) {
+    return '$minutes دقيقة';
+  }
+
+  @override
+  String get scheduleDatePick => 'اختر اليوم';
+
+  @override
+  String get blockClinicHoursNotSet => 'لم تُحدَّد مواعيد عمل العيادة بعد';
+
+  @override
+  String get blockBookingDisabled =>
+      'استقبال الحجوزات الإلكترونية متوقف في شروطك';
+
+  @override
+  String get blockNoAvailabilityWindows =>
+      'لم تحدد أوقات توفّرك بعد (من الجدول ← أوقات التوفّر)';
+
+  @override
+  String get dpTitle => 'الملف المهني';
+
+  @override
+  String get dpEdit => 'تعديل';
+
+  @override
+  String get dpSaved => 'تم حفظ الملف المهني';
+
+  @override
+  String get dpSentForReview =>
+      'بعض التغييرات أُرسلت لمراجعة الإدارة قبل أن تظهر.';
+
+  @override
+  String get dpReviewNote => 'يراجع تغيير هذا الحقل من الإدارة قبل تطبيقه.';
+
+  @override
+  String get dpInvalidNumber => 'أدخل رقمًا صحيحًا';
+
+  @override
+  String get dpNothingChanged => 'لم تغيّر شيئًا.';
+
+  @override
+  String get dpSectionBasic => 'المعلومات الأساسية';
+
+  @override
+  String get dpSectionProfessional => 'المعلومات المهنية';
+
+  @override
+  String get dpSectionBio => 'النبذة والرؤية';
+
+  @override
+  String get dpSectionExperience => 'الخبرات';
+
+  @override
+  String get dpSectionQualifications => 'المؤهلات والشهادات';
+
+  @override
+  String get dpSectionServices => 'الخدمات والأسعار';
+
+  @override
+  String get dpSectionContact => 'التواصل';
+
+  @override
+  String get dpSectionLinks => 'الروابط وحسابات التواصل';
+
+  @override
+  String get dpSectionSearch => 'الظهور في نتائج البحث';
+
+  @override
+  String get dpEducationTitle => 'المؤهلات العلمية';
+
+  @override
+  String get dpCertificatesTitle => 'الشهادات';
+
+  @override
+  String get dpCertPublic => 'ظاهرة للمرضى';
+
+  @override
+  String get dpServiceInactive => 'غير مفعّلة';
+
+  @override
+  String get dpSpecializations => 'التخصصات';
+
+  @override
+  String get dpPrimarySpec => 'الرئيسي';
+
+  @override
+  String get dpStatusDraft => 'مسودة';
+
+  @override
+  String get dpStatusPending => 'قيد المراجعة';
+
+  @override
+  String get dpStatusApproved => 'معتمد';
+
+  @override
+  String get dpStatusRejected => 'مرفوض';
+
+  @override
+  String get dpRejectionReason => 'سبب الرفض';
+
+  @override
+  String get dpAccountTile => 'بيانات الحساب';
+
+  @override
+  String get dpAccountTileHint => 'الاسم الأول واسم العائلة والبريد الإلكتروني';
+
+  @override
+  String get dpOpenLink => 'فتح الرابط';
+
+  @override
+  String get dpLinkFailed => 'تعذّر فتح الرابط.';
+
+  @override
+  String get dpField_full_name_ar => 'الاسم بالعربية';
+
+  @override
+  String get dpField_full_name_en => 'الاسم بالإنجليزية';
+
+  @override
+  String get dpField_display_title => 'اللقب (د. / أ.د.)';
+
+  @override
+  String get dpField_gender => 'النوع';
+
+  @override
+  String get dpField_city => 'المحافظة';
+
+  @override
+  String get dpField_area => 'المنطقة';
+
+  @override
+  String get dpField_professional_title_ar => 'المسمى المهني بالعربية';
+
+  @override
+  String get dpField_professional_title_en => 'المسمى المهني بالإنجليزية';
+
+  @override
+  String get dpField_academic_degree_ar => 'الدرجة العلمية';
+
+  @override
+  String get dpField_years_of_experience => 'سنوات الخبرة';
+
+  @override
+  String get dpField_default_consultation_fee => 'سعر الكشف الافتراضي';
+
+  @override
+  String get dpField_bio_ar => 'نبذة تعريفية بالعربية';
+
+  @override
+  String get dpField_bio_en => 'نبذة تعريفية بالإنجليزية';
+
+  @override
+  String get dpField_vision_ar => 'الرؤية الطبية أو الرسالة المهنية';
+
+  @override
+  String get dpField_current_positions_ar => 'المناصب الحالية';
+
+  @override
+  String get dpField_past_positions_ar => 'المناصب السابقة';
+
+  @override
+  String get dpField_certifications_ar => 'الشهادات / الترخيص الطبي';
+
+  @override
+  String get dpField_fellowships_ar => 'الزمالات والدبلومات';
+
+  @override
+  String get dpField_phone => 'رقم الهاتف';
+
+  @override
+  String get dpField_whatsapp => 'واتساب';
+
+  @override
+  String get dpField_website => 'الموقع الإلكتروني';
+
+  @override
+  String get dpField_external_booking_url => 'رابط الحجز الخارجي';
+
+  @override
+  String get dpField_google_maps_url => 'رابط خرائط جوجل';
+
+  @override
+  String get dpField_facebook => 'فيسبوك';
+
+  @override
+  String get dpField_instagram => 'إنستجرام';
+
+  @override
+  String get dpField_linkedin => 'لينكد إن';
+
+  @override
+  String get dpField_youtube => 'يوتيوب';
+
+  @override
+  String get dpField_tiktok => 'تيك توك';
+
+  @override
+  String get dpField_seo_title => 'عنوان الصفحة في البحث';
+
+  @override
+  String get dpField_seo_description => 'وصف الصفحة في البحث';
+
+  @override
+  String get ddStatExperience => 'سنوات الخبرة';
+
+  @override
+  String ddStatYears(int years) {
+    return '$years سنة';
+  }
+
+  @override
+  String get ddStatRating => 'التقييم';
+
+  @override
+  String get ddStatFee => 'الكشف يبدأ من';
+
+  @override
+  String get ddStatClinics => 'العيادات';
+
+  @override
+  String ddMoney(String amount) {
+    return '$amount ج.م';
+  }
+
+  @override
+  String get ddShowMore => 'عرض المزيد';
+
+  @override
+  String get ddShowLess => 'عرض أقل';
+
+  @override
+  String get ddServices => 'الخدمات';
+
+  @override
+  String get ddBookAtClinic => 'احجز موعد';
+
+  @override
+  String get ddOpenLocation => 'فتح الموقع';
+
+  @override
+  String get ddPhoneOnly => 'الحجز عبر الهاتف فقط';
+
+  @override
+  String get ddLinksTitle => 'الموقع والروابط';
+
+  @override
+  String get ddMapLink => 'الموقع على الخريطة';
+
+  @override
+  String get ddNextAvailable => 'أقرب موعد متاح';
+
+  @override
+  String get ddNoSlotsShort => 'لا توجد مواعيد متاحة حاليًا';
+
+  @override
+  String get ddReviewsMore => 'عرض المزيد من التقييمات';
+
+  @override
+  String get ddReviewVerified => 'زيارة مؤكدة';
+
+  @override
+  String get ddReviewPatient => 'مريض';
+
+  @override
+  String get ddReviewsFailed => 'تعذّر تحميل التقييمات.';
+
+  @override
+  String get ddReviewsMoreFailed => 'تعذّر تحميل المزيد من التقييمات.';
+
+  @override
+  String get ddBackTooltip => 'رجوع';
+
+  @override
+  String get bkChooseClinic => 'اختر العيادة';
+
+  @override
+  String get bkChooseClinicHint =>
+      'يعمل الطبيب في أكثر من عيادة. اختر العيادة التي تناسبك.';
+
+  @override
+  String get bkChangeClinic => 'تغيير';
+
+  @override
+  String bkSlotsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count موعد',
+      many: '$count موعدًا',
+      few: '$count مواعيد',
+      two: 'موعدان',
+      one: 'موعد واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bkPickTimeHint => 'اختر وقتًا لإتمام الحجز';
+
+  @override
+  String get bkTimezoneNote => 'المواعيد معروضة بتوقيت العيادة.';
+
+  @override
+  String get bkSlotUnavailable => 'غير متاح';
+
+  @override
+  String get bkPaymentRequired => 'تطلب هذه العيادة دفع الرسوم مسبقًا.';
+
+  @override
+  String get bkSignInToBook => 'سجّل الدخول لتأكيد الحجز';
+
+  @override
+  String get bkViewBooking => 'عرض تفاصيل الحجز';
+
+  @override
+  String get bkDone => 'تم';
+
+  @override
+  String get bkDoctor => 'الطبيب';
+
+  @override
+  String bkDuration(int minutes) {
+    return '$minutes دقيقة';
+  }
+
+  @override
+  String get bkDurationLabel => 'المدة';
+
+  @override
+  String get bkClose => 'إغلاق';
+
+  @override
+  String get bkTime => 'الوقت';
+
+  @override
+  String get bkVerifyPhoneTitle => 'أكّد رقم هاتفك لإتمام الحجز';
+
+  @override
+  String bkVerifyPhoneBody(String phone) {
+    return 'يتطلب الحجز رقم هاتف مؤكَّدًا. سنرسل رمز تحقق إلى $phone.';
+  }
+
+  @override
+  String get bkVerifyPhoneAction => 'تأكيد رقم الهاتف';
+
+  @override
+  String get errorDoctorBusy => 'الطبيب محجوز في هذا الوقت. اختر موعدًا آخر.';
+
+  @override
+  String get mbSubtitle => 'تابع مواعيدك الطبية بسهولة';
+
+  @override
+  String get mbTabCancelled => 'الملغاة';
+
+  @override
+  String get mbNextAppointment => 'موعدك القادم';
+
+  @override
+  String get mbMoreUpcoming => 'مواعيد قادمة أخرى';
+
+  @override
+  String get mbViewDetails => 'عرض تفاصيل الحجز';
+
+  @override
+  String get mbFindDoctor => 'ابحث عن طبيب';
+
+  @override
+  String get mbEmptyUpcomingTitle => 'لا توجد حجوزات قادمة';
+
+  @override
+  String get mbEmptyUpcomingBody =>
+      'احجز موعدك الطبي بسهولة مع الطبيب المناسب.';
+
+  @override
+  String get mbEmptyPastTitle => 'لا توجد حجوزات سابقة';
+
+  @override
+  String get mbEmptyPastBody => 'ستظهر هنا زياراتك بعد انتهاء مواعيدها.';
+
+  @override
+  String get mbEmptyCancelledTitle => 'لا توجد حجوزات ملغاة';
+
+  @override
+  String get mbEmptyCancelledBody => 'أي حجز يُلغى سيظهر هنا.';
+
+  @override
+  String get mbErrorTitle => 'تعذّر تحميل حجوزاتك';
+
+  @override
+  String get mbErrorBody => 'حدث خطأ أثناء تحميل الحجوزات. حاول مرة أخرى.';
+
+  @override
+  String get mbOfflineBody => 'تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.';
+
+  @override
+  String get mbNow => 'الآن';
+
+  @override
+  String mbInMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count دقيقة',
+      many: '$count دقيقة',
+      few: '$count دقائق',
+      two: 'دقيقتين',
+      one: 'دقيقة',
+    );
+    return 'بعد $_temp0';
+  }
+
+  @override
+  String mbInHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ساعة',
+      many: '$count ساعة',
+      few: '$count ساعات',
+      two: 'ساعتين',
+      one: 'ساعة',
+    );
+    return 'بعد $_temp0';
+  }
+
+  @override
+  String mbInDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count يوم',
+      many: '$count يومًا',
+      few: '$count أيام',
+      two: 'يومين',
+      one: 'يوم',
+    );
+    return 'بعد $_temp0';
+  }
+
+  @override
+  String get bdTitle => 'تفاصيل الحجز';
+
+  @override
+  String get bdYourAppointment => 'موعدك';
+
+  @override
+  String get bdInfoTitle => 'معلومات الحجز';
+
+  @override
+  String get bdSpecialty => 'التخصص';
+
+  @override
+  String get bdDate => 'التاريخ';
+
+  @override
+  String get bdFee => 'رسوم الزيارة';
+
+  @override
+  String get bdReason => 'سبب الزيارة';
+
+  @override
+  String get bdNotes => 'ملاحظاتك للطبيب';
+
+  @override
+  String get bdPayment => 'الدفع';
+
+  @override
+  String get bdPayNotRequired => 'لا يتطلب دفعًا مسبقًا';
+
+  @override
+  String get bdPayProofPending => 'بانتظار إثبات الدفع';
+
+  @override
+  String get bdPayProofUploaded => 'تم رفع إثبات الدفع';
+
+  @override
+  String get bdPayAccepted => 'تم قبول الدفع';
+
+  @override
+  String get bdPayRejected => 'لم يُقبل إثبات الدفع';
+
+  @override
+  String get bdVisitConsultation => 'كشف';
+
+  @override
+  String get bdVisitProcedure => 'إجراء طبي';
+
+  @override
+  String get bdVisitCustom => 'زيارة';
+
+  @override
+  String get bdClinicTitle => 'العيادة والموقع';
+
+  @override
+  String get bdTimelineTitle => 'حالة الحجز';
+
+  @override
+  String get bdStepBooked => 'تم الحجز';
+
+  @override
+  String get bdStepAwaiting => 'بانتظار تأكيد العيادة';
+
+  @override
+  String get bdStepConfirmed => 'تم تأكيد الحجز';
+
+  @override
+  String get bdStepAppointment => 'موعد الكشف';
+
+  @override
+  String get bdStepCompleted => 'تمت الزيارة';
+
+  @override
+  String get bdStepNoShow => 'لم يتم الحضور';
+
+  @override
+  String get bdStepCancelledByPatient => 'ألغيتَ هذا الحجز';
+
+  @override
+  String get bdStepCancelledByClinic => 'ألغت العيادة هذا الحجز';
+
+  @override
+  String get bdStepExpired => 'انتهت صلاحية الحجز';
+
+  @override
+  String get bdStepRescheduled => 'تم تغيير هذا الموعد';
+
+  @override
+  String bdCancelBefore(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ساعة',
+      many: '$count ساعة',
+      few: '$count ساعات',
+      two: 'ساعتين',
+      one: 'ساعة',
+    );
+    return 'يمكنك إلغاء الحجز حتى قبل موعدك بـ$_temp0.';
+  }
+
+  @override
+  String get bdCancelClosed =>
+      'انتهت مهلة الإلغاء الإلكتروني. للإلغاء تواصل مع العيادة.';
+
+  @override
+  String get bdCancellationReason => 'سبب الإلغاء';
+
+  @override
+  String get bdCancelKeep => 'تراجع';
+
+  @override
+  String get bdCancelConfirm => 'إلغاء الحجز';
+
+  @override
+  String get bdBookAgain => 'احجز موعدًا آخر';
+
+  @override
+  String get bdBookNew => 'احجز موعدًا جديدًا';
+
+  @override
+  String get bdCallClinic => 'اتصال بالعيادة';
+
+  @override
+  String get bdViewDoctor => 'عرض صفحة الطبيب';
 }

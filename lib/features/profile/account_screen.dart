@@ -93,7 +93,7 @@ class AccountScreen extends ConsumerWidget {
               _Tile(
                 icon: Icons.event_note_outlined,
                 label: l.navDashboard,
-                onTap: () => context.go(Routes.practice),
+                onTap: () => context.go(Routes.management),
               ),
             if (!user.isActiveDoctor && !user.hasOpenApplication)
               _Tile(

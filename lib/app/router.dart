@@ -13,12 +13,17 @@ import '../features/bookings/booking_detail_screen.dart';
 import '../features/bookings/bookings_screen.dart';
 import '../features/doctors/doctor_detail_screen.dart';
 import '../features/doctors/doctors_screen.dart';
+import '../features/favorites/favorites_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/notifications/notifications_screen.dart';
 import '../features/onboarding/join_doctor_screen.dart';
-import '../features/practice/practice_screen.dart';
+import '../features/management/assistants_screen.dart';
+import '../features/management/clinics_screen.dart';
+import '../features/management/management_screen.dart';
+import '../features/management/schedule_screen.dart';
 import '../features/profile/account_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
+import '../features/profile/profile_screen.dart';
 import 'shell.dart';
 import 'splash.dart';
 
@@ -31,9 +36,14 @@ class Routes {
   static const doctors = '/doctors';
   static const doctor = '/doctors/:slug';
   static const bookings = '/bookings';
+  static const favorites = '/favorites';
   static const bookingDetail = '/bookings/:id';
   static const account = '/account';
   static const editProfile = '/account/edit';
+
+  /// The account's own details (names, email) — a doctor's professional profile
+  /// lives at [editProfile]; this keeps the original editor reachable.
+  static const editAccount = '/account/edit/account';
   static const notifications = '/notifications';
 
   static const signIn = '/sign-in';
@@ -42,7 +52,14 @@ class Routes {
   static const consent = '/consent';
 
   static const join = '/join';
+  /// The doctor's old dashboard address. It now redirects to [management].
   static const practice = '/practice';
+
+  /// The doctor's management hub (a tab), and the areas it opens.
+  static const management = '/management';
+  static const managementClinics = '/management/clinics';
+  static const managementAssistants = '/management/assistants';
+  static const managementSchedule = '/management/schedule';
 
   static String doctorPath(String slug) => '/doctors/$slug';
   static String bookingPath(String id) => '/bookings/$id';
@@ -55,6 +72,7 @@ const _authenticatedOnly = <String>{
   Routes.editProfile,
   Routes.notifications,
   Routes.practice,
+  Routes.management,
 };
 
 /// Routes that only make sense when signed out.
@@ -80,6 +98,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (auth.isRestoring) {
         return loc == Routes.splash ? null : Routes.splash;
       }
+      // The practice dashboard became the management hub.
+      if (loc == Routes.practice) return Routes.management;
       if (loc == Routes.splash) {
         // Session settled, but let the launch animation finish before leaving.
         if (!ref.read(splashAnimationDoneProvider)) return null;
@@ -105,10 +125,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         return _homeFor(user);
       }
 
-      // The practice area belongs to approved doctors. An applicant is
+      // The management area belongs to approved doctors. An applicant is
       // deliberately role=patient while under review, so this also keeps them out
-      // of a dashboard that would 403 on every request.
-      if (loc.startsWith(Routes.practice) && auth.isAuthenticated && !user!.isActiveDoctor) {
+      // of screens that would 403 on every request.
+      // An unconfirmed session (offline at launch) has no user yet, so it cannot be
+      // shown to be a doctor either — it waits at home until the profile loads.
+      if (loc.startsWith(Routes.management) && auth.hasSession && !(user?.isActiveDoctor ?? false)) {
         return Routes.home;
       }
 
@@ -140,9 +162,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __, child) => AppShell(child: child),
         routes: [
           GoRoute(path: Routes.home, builder: (_, __) => const HomeScreen()),
-          GoRoute(path: Routes.doctors, builder: (_, __) => const DoctorsScreen()),
+          GoRoute(
+            path: Routes.doctors,
+            builder: (_, state) =>
+                DoctorsScreen(autofocus: state.uri.queryParameters['focus'] == '1'),
+          ),
           GoRoute(path: Routes.bookings, builder: (_, __) => const BookingsScreen()),
-          GoRoute(path: Routes.practice, builder: (_, __) => const PracticeScreen()),
+          GoRoute(path: Routes.favorites, builder: (_, __) => const FavoritesScreen()),
+          GoRoute(path: Routes.management, builder: (_, __) => const ManagementScreen()),
           GoRoute(path: Routes.account, builder: (_, __) => const AccountScreen()),
         ],
       ),
@@ -155,7 +182,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.bookingDetail,
         builder: (_, state) => BookingDetailScreen(id: state.pathParameters['id'] ?? ''),
       ),
-      GoRoute(path: Routes.editProfile, builder: (_, __) => const EditProfileScreen()),
+      GoRoute(path: Routes.editProfile, builder: (_, __) => const ProfileScreen()),
+      GoRoute(path: Routes.editAccount, builder: (_, __) => const EditProfileScreen()),
+      GoRoute(path: Routes.managementClinics, builder: (_, __) => const ClinicsScreen()),
+      GoRoute(path: Routes.managementAssistants, builder: (_, __) => const AssistantsScreen()),
+      GoRoute(path: Routes.managementSchedule, builder: (_, __) => const ScheduleScreen()),
       GoRoute(path: Routes.notifications, builder: (_, __) => const NotificationsScreen()),
     ],
     errorBuilder: (context, state) => Scaffold(
@@ -170,10 +201,10 @@ bool _isProtected(String location) =>
 
 /// Where a given user belongs on launch.
 ///
-/// A doctor's home is their practice; everyone else starts in the directory —
+/// A doctor's home is their management hub; everyone else starts in the directory —
 /// the same split the website makes.
 String _homeFor(Me? user) {
-  if (user != null && user.isActiveDoctor) return Routes.practice;
+  if (user != null && user.isActiveDoctor) return Routes.management;
   return Routes.home;
 }
 

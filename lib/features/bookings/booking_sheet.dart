@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/router.dart';
 import '../../core/api/api_error.dart';
@@ -10,20 +13,48 @@ import '../../core/theme/tokens.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
+import '../doctors/doctor_detail_logic.dart';
 import '../doctors/models.dart';
 import '../doctors/providers.dart';
+import '../doctors/widgets/doctor_card_tile.dart';
+import '../home/home_style.dart';
 import 'models.dart';
 import 'providers.dart';
 
-/// Booking flow: pick a clinic, a day, a time, confirm.
+/// Booking flow: pick a clinic (when there is a choice), a day, a time, confirm.
+///
+/// [clinicId] opens the sheet on that clinic — the "book" button on a clinic's
+/// card. Without it, a doctor with one bookable clinic opens straight on its
+/// times and a doctor with several asks which clinic first.
 ///
 /// A signed-out visitor is sent to sign in first and returned here — browsing is
 /// public, booking is not.
-Future<void> showBookingSheet(BuildContext context, DoctorDetail doctor) async {
+Future<void> showBookingSheet(BuildContext context, DoctorDetail doctor, {String? clinicId}) {
+  final container = ProviderScope.containerOf(context, listen: false);
+  container.read(selectedClinicProvider(doctor.slug).notifier).state = initialBookingClinic(
+    doctor,
+    requested: clinicId,
+  );
+  // A fresh choice each time the sheet opens — unless a confirm from a sheet that
+  // was swiped away is still in flight, which must keep its "submitting" guard.
+  if (!container.read(bookingDraftProvider(doctor.slug)).submitting) {
+    container.read(bookingDraftProvider(doctor.slug).notifier).reset();
+  }
+  // Booking depends on account state the backend checks on every request —
+  // above all a verified phone. Re-read it, so a change made elsewhere (verified
+  // on the website, policies updated) is what the sheet acts on, not a copy
+  // loaded when the app started.
+  if (container.read(authControllerProvider).isAuthenticated) {
+    unawaited(container.read(authControllerProvider.notifier).refreshUser());
+  }
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    showDragHandle: true,
+    useSafeArea: true,
+    backgroundColor: AppColors.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
     builder: (_) => _BookingSheet(doctor: doctor),
   );
 }
@@ -41,6 +72,16 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
   final _notes = TextEditingController();
   String? _error;
 
+  /// The confirmed booking, once the server has answered with one.
+  PatientBooking? _booked;
+
+  /// Slots the server refused during this sheet (taken meanwhile). Shown as
+  /// unavailable even if a stale answer still lists them.
+  final _refused = <String>{};
+
+  /// A verification code is being requested.
+  bool _verifying = false;
+
   @override
   void dispose() {
     _notes.dispose();
@@ -51,196 +92,629 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final l = L.of(context);
-    final auth = ref.watch(authControllerProvider);
     final clinicId = ref.watch(selectedClinicProvider(_slug));
-    final availability = ref.watch(availabilityProvider((slug: _slug, clinicId: clinicId)));
     final draft = ref.watch(bookingDraftProvider(_slug));
+    final clinics = bookableClinics(widget.doctor);
+    final link = clinics.where((c) => c.clinic.id == clinicId).firstOrNull;
+    final key = (slug: _slug, clinicId: clinicId);
+    final availability = link == null ? null : ref.watch(availabilityProvider(key));
+    final hasSlots = availability?.valueOrNull?.hasAnySlot ?? false;
+    final user = ref.watch(authControllerProvider.select((s) => s.isAuthenticated ? s.user : null));
+    // The backend only takes bookings from accounts with a verified phone (the
+    // website asks for the code at this same step). Sending the booking anyway
+    // would only earn a 403.
+    final unverifiedPhone = user != null && !user.isPhoneVerified ? user.phone : null;
 
-    // Bookable clinics only: a contact-only clinic has no times to offer.
-    final clinics = widget.doctor.clinics.where((c) => c.bookingEnabled).toList();
-
-    return DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.85,
-      maxChildSize: 0.95,
-      builder: (context, controller) => Column(
+    final Widget content;
+    if (_booked != null) {
+      content = _SuccessView(doctor: widget.doctor, booking: _booked!, clinic: link);
+    } else if (link == null) {
+      content = _ClinicPicker(
+        clinics: clinics,
+        onPick: (id) {
+          ref.read(selectedClinicProvider(_slug).notifier).state = id;
+          ref.read(bookingDraftProvider(_slug).notifier).reset();
+          setState(() => _error = null);
+        },
+      );
+    } else {
+      content = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: ListView(
-              controller: controller,
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.gutter,
-                0,
-                AppSpacing.gutter,
-                AppSpacing.lg,
+          _SelectedClinic(
+            link: link,
+            onChange: clinics.length > 1 && !draft.submitting
+                ? () {
+                    // A different clinic is a different schedule: the chosen day
+                    // and time no longer apply.
+                    ref.read(selectedClinicProvider(_slug).notifier).state = null;
+                    ref.read(bookingDraftProvider(_slug).notifier).reset();
+                    setState(() => _error = null);
+                  }
+                : null,
+          ),
+          const SizedBox(height: 16),
+          FormErrorBanner(message: _error),
+          if (unverifiedPhone != null) ...[
+            _VerifyPhoneNotice(phone: unverifiedPhone),
+            const SizedBox(height: 16),
+          ],
+          availability!.when(
+            skipLoadingOnRefresh: false,
+            loading: () => const _PickerSkeleton(),
+            error: (e, _) =>
+                AppErrorView(error: e, onRetry: () => ref.invalidate(availabilityProvider(key))),
+            data: (a) {
+              if (!a.bookingEnabled) return _ContactOnly(availability: a, doctor: widget.doctor);
+              if (!a.hasAnySlot) {
+                return AppEmptyView(
+                  icon: Icons.event_busy_outlined,
+                  title: L.of(context).bookingNoSlotsAtAll,
+                );
+              }
+              return _DayAndTimePicker(
+                availability: a,
+                slug: _slug,
+                clinic: link,
+                notes: _notes,
+                refused: _refused,
+              );
+            },
+          ),
+        ],
+      );
+    }
+
+    return PopScope(
+      // Never lose track of a booking mid-request.
+      canPop: !draft.submitting,
+      child: Padding(
+        // Lift the sheet above the keyboard when the notes field is focused.
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        child: DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, controller) => Column(
+            children: [
+              _Header(doctor: widget.doctor, canClose: !draft.submitting),
+              const Divider(height: 1, color: AppColors.border),
+              Expanded(
+                child: ListView(
+                  controller: controller,
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 16, AppSpacing.gutter, 24),
+                  children: [content],
+                ),
               ),
+              if (_booked == null && link != null && hasSlots)
+                _ConfirmBar(
+                  slug: _slug,
+                  onConfirm: _confirm,
+                  verifyPhone: unverifiedPhone == null
+                      ? null
+                      : () => _startPhoneVerification(unverifiedPhone),
+                  verifying: _verifying,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirm() async {
+    final draft = ref.read(bookingDraftProvider(_slug));
+    final slot = draft.selectedSlot;
+    final clinicId = ref.read(selectedClinicProvider(_slug));
+    // The button is disabled while submitting; this guards a double tap that
+    // lands before the rebuild.
+    if (draft.submitting || slot == null || clinicId == null) return;
+
+    if (!ref.read(authControllerProvider).isAuthenticated) {
+      // Send them to sign in and bring them back to this doctor.
+      final router = GoRouter.of(context);
+      final target = Uri.encodeComponent(Routes.doctorPath(_slug));
+      Navigator.of(context).pop();
+      router.push('${Routes.signIn}?next=$target');
+      return;
+    }
+
+    final user = ref.read(authControllerProvider).user;
+    if (user != null && !user.isPhoneVerified) {
+      unawaited(_startPhoneVerification(user.phone));
+      return;
+    }
+
+    // Read before the await: the sheet may be dismissed while the request runs,
+    // and the bookings list must still learn about a booking that went through.
+    final container = ProviderScope.containerOf(context, listen: false);
+    final controller = ref.read(bookingDraftProvider(_slug).notifier);
+    final key = (slug: _slug, clinicId: clinicId);
+
+    setState(() => _error = null);
+    controller.setSubmitting(true);
+    try {
+      final booking = await container
+          .read(bookingRepositoryProvider)
+          .create(
+            doctorSlug: _slug,
+            slotId: slot.id,
+            // Always sent: `clinic` is required by the booking endpoint.
+            clinicId: clinicId,
+            visitType: draft.visitType,
+            notesForDoctor: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
+          );
+      // The list is stale, and so is the offer this slot came from.
+      container.invalidate(myBookingsProvider);
+      container.invalidate(availabilityProvider(key));
+      controller.reset();
+      if (!mounted) return;
+      setState(() => _booked = booking);
+    } on ApiException catch (e) {
+      // A 403 for a signed-in patient means the *account* failed a check the
+      // backend makes on every booking — an unverified phone, or policies that
+      // must be re-accepted. Re-read the account: the sheet then shows the
+      // verification step, or the router moves to the consent screen, instead of
+      // a bare "no permission" the user can do nothing about.
+      if (e.failure == ApiFailure.forbidden) {
+        await container.read(authControllerProvider.notifier).refreshUser();
+      }
+      if (!mounted) return;
+      final account = container.read(authControllerProvider).user;
+      final needsVerification =
+          e.failure == ApiFailure.forbidden && account != null && !account.isPhoneVerified;
+      setState(() => _error = needsVerification ? null : messageForError(context, e));
+      // If the slot went while they were deciding, drop the dead selection and
+      // refetch, so they are choosing from what is actually still free. The sheet
+      // deliberately stays open: the fix is one tap away.
+      if (isRecoverableBookingError(e) || e.failure == ApiFailure.conflict) {
+        _refused.add(slot.id);
+        controller.clearSlot();
+        container.invalidate(availabilityProvider(key));
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = messageForError(context, e));
+    } finally {
+      controller.setSubmitting(false);
+    }
+  }
+
+  /// Send a verification code and open the existing code screen, which returns
+  /// here (to this doctor) once the phone is verified.
+  ///
+  /// Purpose `signup` is what the website's booking step uses for the same job.
+  Future<void> _startPhoneVerification(String phone) async {
+    if (_verifying) return;
+    final router = GoRouter.of(context);
+    final navigator = Navigator.of(context);
+    setState(() {
+      _verifying = true;
+      _error = null;
+    });
+    try {
+      await ref.read(authRepositoryProvider).requestOtp(phone: phone, purpose: 'signup');
+      if (!mounted) return;
+      final next = Uri.encodeComponent(Routes.doctorPath(_slug));
+      navigator.pop();
+      router.push('${Routes.otp}?phone=${Uri.encodeComponent(phone)}&purpose=signup&next=$next');
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = messageForError(context, e));
+    } finally {
+      if (mounted) setState(() => _verifying = false);
+    }
+  }
+}
+
+/// Why the confirm button asks for a phone code instead.
+class _VerifyPhoneNotice extends StatelessWidget {
+  const _VerifyPhoneNotice({required this.phone});
+
+  final String phone;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.bgSoft,
+        borderRadius: AppRadii.inputRadius,
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.verified_user_outlined, color: AppColors.primary, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l.bookingTitle, style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: AppSpacing.xs),
-                Text(widget.doctor.displayName, style: Theme.of(context).textTheme.bodySmall),
-                const SizedBox(height: AppSpacing.lg),
-
-                FormErrorBanner(message: _error),
-
-                if (clinics.length > 1) ...[
-                  AppDropdown<String?>(
-                    label: l.bookingClinic,
-                    value: clinicId ?? clinics.first.clinic.id,
-                    items: [
-                      for (final c in clinics)
-                        DropdownMenuItem(
-                          value: c.clinic.id,
-                          child: Text(c.clinic.nameAr, overflow: TextOverflow.ellipsis),
-                        ),
-                    ],
-                    onChanged: (v) {
-                      // A different clinic means a different schedule, so the
-                      // chosen day and time no longer apply.
-                      ref.read(selectedClinicProvider(_slug).notifier).state = v;
-                      ref.read(bookingDraftProvider(_slug).notifier).reset();
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                ],
-
-                AsyncValueView<DoctorAvailability>(
-                  value: availability,
-                  onRetry: () =>
-                      ref.invalidate(availabilityProvider((slug: _slug, clinicId: clinicId))),
-                  loading: const Skeleton(height: 180, radius: AppRadii.card),
-                  isEmpty: (a) => !a.hasAnySlot,
-                  empty: AppEmptyView(
-                    icon: Icons.event_busy_outlined,
-                    title: l.bookingNoSlotsAtAll,
-                  ),
-                  data: (a) => _DayAndTimePicker(availability: a, slug: _slug, notes: _notes),
+                Text(l.bkVerifyPhoneTitle, style: HomeType.cardTitle.copyWith(fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(
+                  // Isolated so "+20…" keeps its order inside Arabic text.
+                  l.bkVerifyPhoneBody('\u2066$phone\u2069'),
+                  style: HomeType.meta.copyWith(fontSize: 12.5, height: 1.6),
                 ),
               ],
             ),
           ),
-          if (availability.valueOrNull?.hasAnySlot ?? false)
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.gutter),
-                child: FilledButton(
-                  onPressed: !draft.isComplete || draft.submitting
-                      ? null
-                      : () => _confirm(auth.isAuthenticated),
-                  child: draft.submitting
-                      ? const SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
-                        )
-                      : Text(l.bookingConfirm),
+        ],
+      ),
+    );
+  }
+}
+
+/// The doctor the patient is booking with, and a close button.
+class _Header extends StatelessWidget {
+  const _Header({required this.doctor, required this.canClose});
+
+  final DoctorDetail doctor;
+  final bool canClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    final subtitle = doctor.card.professionalTitleAr.isNotEmpty
+        ? doctor.card.professionalTitleAr
+        : (doctor.card.primarySpecialization?.nameAr ?? '');
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.gutter, 10, 8, 12),
+      child: Column(
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(color: AppColors.border, borderRadius: AppRadii.pillRadius),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              DoctorAvatar(
+                photo: doctor.card.photo,
+                name: doctor.displayName,
+                size: 46,
+                radius: 23,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l.bookingTitle,
+                      style: HomeType.meta.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    Text(
+                      doctor.displayName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: HomeType.cardTitle.copyWith(fontSize: 16),
+                    ),
+                    if (subtitle.isNotEmpty)
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: HomeType.meta,
+                      ),
+                  ],
                 ),
               ),
+              IconButton(
+                tooltip: l.bkClose,
+                onPressed: canClose ? () => Navigator.of(context).maybePop() : null,
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Step one when the doctor works at several bookable clinics.
+class _ClinicPicker extends StatelessWidget {
+  const _ClinicPicker({required this.clinics, required this.onPick});
+
+  final List<DoctorClinicLink> clinics;
+  final ValueChanged<String> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l.bkChooseClinic, style: HomeType.sectionTitle),
+        const SizedBox(height: 4),
+        Text(l.bkChooseClinicHint, style: HomeType.meta.copyWith(fontSize: 12.5)),
+        const SizedBox(height: 14),
+        for (final c in clinics) ...[
+          _ClinicOption(link: c, onTap: () => onPick(c.clinic.id)),
+          const SizedBox(height: 10),
+        ],
+      ],
+    );
+  }
+}
+
+class _ClinicOption extends StatelessWidget {
+  const _ClinicOption({required this.link, required this.onTap});
+
+  final DoctorClinicLink link;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    final c = link.clinic;
+    return Material(
+      color: AppColors.input,
+      borderRadius: BorderRadius.circular(homeCardRadius),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(homeCardRadius),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(homeCardRadius),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.bgSoft,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.local_hospital_rounded, color: AppColors.primary),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(child: Text(c.nameAr, style: HomeType.cardTitle)),
+                        if (link.isPrimary) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            '· ${l.clinicBadgePrimary}',
+                            style: HomeType.meta.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (c.addressLine.isNotEmpty)
+                      Text(
+                        c.addressLine,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: HomeType.meta,
+                      ),
+                    if (link.consultationFee != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          '${l.clinicFeeConsult}: ${l.ddMoney(link.consultationFee!)}',
+                          style: HomeType.meta.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The clinic being booked, with "change" when there is another to choose.
+class _SelectedClinic extends StatelessWidget {
+  const _SelectedClinic({required this.link, this.onChange});
+
+  final DoctorClinicLink link;
+  final VoidCallback? onChange;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+      decoration: BoxDecoration(color: AppColors.bgSoft, borderRadius: AppRadii.inputRadius),
+      child: Row(
+        children: [
+          const Icon(Icons.local_hospital_outlined, color: AppColors.primary, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.bookingClinic, style: HomeType.meta),
+                Text(link.clinic.nameAr, style: HomeType.cardTitle.copyWith(fontSize: 14)),
+                if (link.clinic.addressLine.isNotEmpty)
+                  Text(
+                    link.clinic.addressLine,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: HomeType.meta,
+                  ),
+              ],
+            ),
+          ),
+          if (onChange != null)
+            TextButton(
+              onPressed: onChange,
+              style: TextButton.styleFrom(textStyle: HomeType.button.copyWith(fontSize: 13)),
+              child: Text(l.bkChangeClinic),
             ),
         ],
       ),
     );
   }
+}
 
-  Future<void> _confirm(bool isAuthenticated) async {
+class _PickerSkeleton extends StatelessWidget {
+  const _PickerSkeleton();
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Skeleton(height: 16, width: 90),
+      const SizedBox(height: 10),
+      Row(
+        children: [
+          for (var i = 0; i < 4; i++) ...[
+            if (i > 0) const SizedBox(width: 8),
+            const Expanded(child: Skeleton(height: 86, radius: AppRadii.input)),
+          ],
+        ],
+      ),
+      const SizedBox(height: 20),
+      const Skeleton(height: 16, width: 90),
+      const SizedBox(height: 10),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (var i = 0; i < 8; i++) const Skeleton(height: 42, width: 76, radius: AppRadii.pill),
+        ],
+      ),
+    ],
+  );
+}
+
+/// A doctor who takes bookings by phone only at this clinic: the server's own
+/// message, and its call / WhatsApp links.
+class _ContactOnly extends StatelessWidget {
+  const _ContactOnly({required this.availability, required this.doctor});
+
+  final DoctorAvailability availability;
+  final DoctorDetail doctor;
+
+  @override
+  Widget build(BuildContext context) {
     final l = L.of(context);
-
-    if (!isAuthenticated) {
-      // Send them to sign in and bring them back to this doctor.
-      final target = Uri.encodeComponent(Routes.doctorPath(_slug));
-      Navigator.of(context).pop();
-      context.push('${Routes.signIn}?next=$target');
-      return;
+    final contact = availability.contact.canCall || availability.contact.canWhatsapp
+        ? availability.contact
+        : doctor.card.contact;
+    Future<void> open(String url) async {
+      final uri = Uri.tryParse(url);
+      if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
 
-    final controller = ref.read(bookingDraftProvider(_slug).notifier);
-    final draft = ref.read(bookingDraftProvider(_slug));
-    final slot = draft.selectedSlot;
-    if (slot == null) return;
-
-    setState(() => _error = null);
-    controller.setSubmitting(true);
-    try {
-      final booking = await ref
-          .read(bookingRepositoryProvider)
-          .create(
-            doctorSlug: _slug,
-            slotId: slot.id,
-            clinicId: ref.read(selectedClinicProvider(_slug)),
-            visitType: draft.visitType,
-            notesForDoctor: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
-          );
-      if (!mounted) return;
-
-      // The list is now stale.
-      ref.invalidate(myBookingsProvider);
-      controller.reset();
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.bookingSuccessTitle)));
-      context.push(Routes.bookingPath(booking.id));
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      setState(() => _error = messageForError(context, e));
-      // If the slot went while they were deciding, drop the dead selection and
-      // refetch, so they are choosing from what is actually still free. The sheet
-      // deliberately stays open: the fix is one tap away.
-      if (isRecoverableBookingError(e)) {
-        controller.clearSlot();
-        ref.invalidate(
-          availabilityProvider((slug: _slug, clinicId: ref.read(selectedClinicProvider(_slug)))),
-        );
-      }
-    } finally {
-      if (mounted) controller.setSubmitting(false);
-    }
+    return Column(
+      children: [
+        InfoNote(
+          text: availability.message.isNotEmpty ? availability.message : l.doctorBookingUnavailable,
+          icon: Icons.phone_in_talk_outlined,
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            if (contact.canCall)
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => open(contact.telUrl!),
+                  icon: const Icon(Icons.phone_rounded, size: 18),
+                  label: Text(l.doctorCall),
+                ),
+              ),
+            if (contact.canCall && contact.canWhatsapp) const SizedBox(width: 8),
+            if (contact.canWhatsapp)
+              Expanded(
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(backgroundColor: AppColors.whatsapp),
+                  onPressed: () => open(contact.whatsappUrl!),
+                  icon: const Icon(Icons.chat_rounded, size: 18),
+                  label: Text(l.doctorWhatsapp),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
   }
 }
 
 class _DayAndTimePicker extends ConsumerWidget {
-  const _DayAndTimePicker({required this.availability, required this.slug, required this.notes});
+  const _DayAndTimePicker({
+    required this.availability,
+    required this.slug,
+    required this.clinic,
+    required this.notes,
+    required this.refused,
+  });
 
   final DoctorAvailability availability;
   final String slug;
+  final DoctorClinicLink clinic;
   final TextEditingController notes;
+  final Set<String> refused;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = L.of(context);
+    final locale = Localizations.localeOf(context).toLanguageTag();
     final draft = ref.watch(bookingDraftProvider(slug));
     final controller = ref.read(bookingDraftProvider(slug).notifier);
     final days = availability.daysWithSlots;
 
     // Default to the first day that actually has times, rather than today —
     // landing on an empty day looks like a broken screen.
-    final selectedDate = draft.selectedDate ?? (days.isNotEmpty ? days.first.date : null);
+    final selectedDate = days.any((d) => d.date == draft.selectedDate)
+        ? draft.selectedDate
+        : (days.isNotEmpty ? days.first.date : null);
     final day = days.where((d) => d.date == selectedDate).firstOrNull;
+    final now = DateTime.now().toUtc();
+    final selected = draft.selectedSlot;
+    final fee = feeFor(visitType: draft.visitType, clinic: clinic, availability: availability);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l.bookingChooseDay, style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: AppSpacing.sm),
+        _StepTitle(icon: Icons.calendar_month_rounded, title: l.bookingChooseDay),
+        const SizedBox(height: 10),
         SizedBox(
-          height: 78,
+          // Four short lines of text plus padding; grows with the text size.
+          height: MediaQuery.textScalerOf(context).scale(80) + 22,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: days.length,
-            separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (context, i) {
               final d = days[i];
-              final selected = d.date == selectedDate;
               return _DayChip(
                 date: d.date,
+                locale: locale,
                 slotCount: d.slots.length,
-                selected: selected,
+                selected: d.date == selectedDate,
                 onTap: () => controller.chooseDate(d.date),
               );
             },
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
-        Text(l.bookingChooseTime, style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: 20),
+        _StepTitle(icon: Icons.schedule_rounded, title: l.bookingChooseTime),
+        const SizedBox(height: 10),
         if (day == null || day.slots.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
@@ -248,119 +722,198 @@ class _DayAndTimePicker extends ConsumerWidget {
           )
         else
           Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               for (final slot in day.slots)
-                ChoiceChip(
-                  // The backend's clinic-local label. Not derived from the UTC
-                  // timestamp here: the phone's timezone is not necessarily the
-                  // clinic's, and a patient abroad must not see a shifted hour.
-                  label: Text(slot.displayTime, textDirection: TextDirection.ltr),
-                  selected: draft.selectedSlot?.id == slot.id,
-                  onSelected: (_) => controller.chooseSlot(slot),
+                _TimeChip(
+                  slot: slot,
+                  selected: selected?.id == slot.id,
+                  // Taken while the sheet was open, or already in the past.
+                  unavailable: refused.contains(slot.id) || !slot.startAt.isAfter(now),
+                  onTap: () {
+                    // Picking a time on the default day makes that day explicit.
+                    if (draft.selectedDate != selectedDate && selectedDate != null) {
+                      controller.chooseDate(selectedDate);
+                    }
+                    controller.chooseSlot(slot);
+                  },
                 ),
             ],
           ),
-
-        const SizedBox(height: AppSpacing.lg),
-        AppDropdown<VisitType>(
-          label: l.bookingVisitType,
-          value: draft.visitType,
-          items: [
-            DropdownMenuItem(value: VisitType.firstVisit, child: Text(l.bookingVisitFirst)),
-            DropdownMenuItem(value: VisitType.followUp, child: Text(l.bookingVisitFollowUp)),
-          ],
-          onChanged: (v) => v == null ? null : controller.setVisitType(v),
-        ),
-
-        const SizedBox(height: AppSpacing.lg),
-        AppTextField(label: l.bookingNotes, controller: notes, maxLines: 3, minLines: 2),
-
-        if (draft.selectedSlot != null) ...[
-          const SizedBox(height: AppSpacing.lg),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(color: AppColors.bgSoft, borderRadius: AppRadii.cardRadius),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l.bookingSummary, style: Theme.of(context).textTheme.titleSmall),
-                const SizedBox(height: AppSpacing.sm),
-                _SummaryRow(
-                  label: l.bookingDateTime,
-                  value: '$selectedDate  •  ${draft.selectedSlot!.displayTime}',
-                ),
-                if (availability.fee != null)
-                  _SummaryRow(label: l.bookingFee, value: availability.fee!),
-              ],
-            ),
+        if ((availability.timezone ?? '').isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(Icons.public_rounded, size: 14, color: AppColors.muted),
+              const SizedBox(width: 6),
+              Expanded(child: Text(l.bkTimezoneNote, style: HomeType.meta)),
+            ],
           ),
         ],
+
+        const SizedBox(height: 20),
+        _StepTitle(icon: Icons.assignment_outlined, title: l.bookingVisitType),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          children: [
+            for (final (type, label) in [
+              (VisitType.firstVisit, l.bookingVisitFirst),
+              (VisitType.followUp, l.bookingVisitFollowUp),
+            ])
+              ChoiceChip(
+                label: Text(label),
+                selected: draft.visitType == type,
+                onSelected: (_) => controller.setVisitType(type),
+                labelStyle: HomeType.chip.copyWith(
+                  color: draft.visitType == type ? Colors.white : AppColors.navy,
+                ),
+                selectedColor: AppColors.primary,
+                backgroundColor: AppColors.input,
+                side: BorderSide(
+                  color: draft.visitType == type ? AppColors.primary : AppColors.border,
+                ),
+                showCheckmark: false,
+                shape: const StadiumBorder(),
+              ),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+        AppTextField(label: l.bookingNotes, controller: notes, maxLines: 3, minLines: 2),
+
+        if (availability.paymentRequired || clinic.paymentRequired) ...[
+          const SizedBox(height: 14),
+          InfoNote(text: l.bkPaymentRequired, icon: Icons.payments_outlined),
+        ],
+
+        const SizedBox(height: 20),
+        if (selected == null)
+          Row(
+            children: [
+              const Icon(Icons.touch_app_outlined, size: 18, color: AppColors.muted),
+              const SizedBox(width: 6),
+              Text(l.bkPickTimeHint, style: HomeType.meta.copyWith(fontSize: 12.5)),
+            ],
+          )
+        else
+          _Summary(
+            rows: [
+              (l.bookingClinic, clinic.clinic.nameAr, false),
+              (l.bookingDateTime, longDayLabel(selectedDate ?? '', locale), false),
+              (
+                l.bkTime,
+                selected.displayEndTime.isEmpty
+                    ? selected.displayTime
+                    : '${selected.displayTime} – ${selected.displayEndTime}',
+                true,
+              ),
+              if (selected.durationMinutes > 0)
+                (l.bkDurationLabel, l.bkDuration(selected.durationMinutes), false),
+              (
+                l.bookingVisitType,
+                draft.visitType == VisitType.followUp
+                    ? l.bookingVisitFollowUp
+                    : l.bookingVisitFirst,
+                false,
+              ),
+              if (fee != null) (l.bookingFee, l.ddMoney(fee), false),
+            ],
+          ),
       ],
     );
   }
 }
 
+class _StepTitle extends StatelessWidget {
+  const _StepTitle({required this.icon, required this.title});
+
+  final IconData icon;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Icon(icon, size: 18, color: AppColors.primary),
+      const SizedBox(width: 8),
+      Text(title, style: HomeType.sectionTitle.copyWith(fontSize: 15)),
+    ],
+  );
+}
+
 class _DayChip extends StatelessWidget {
   const _DayChip({
     required this.date,
+    required this.locale,
     required this.slotCount,
     required this.selected,
     required this.onTap,
   });
 
   final String date;
+  final String locale;
   final int slotCount;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    // `date` is the clinic-local calendar day as a plain YYYY-MM-DD string.
-    // Parsed only to render a weekday label; never converted across zones.
-    final parsed = DateTime.tryParse(date);
-    final weekday = parsed == null
-        ? ''
-        : MaterialLocalizations.of(context).narrowWeekdays[parsed.weekday % 7];
-    final dayNum = parsed?.day.toString() ?? date;
+    final l = L.of(context);
+    // `date` is the clinic-local calendar day; parsed only for its labels.
+    final parts = calendarParts(date, locale);
+    final fg = selected ? Colors.white : AppColors.navy;
+    final sub = selected ? Colors.white70 : AppColors.muted;
 
     return Semantics(
       selected: selected,
       button: true,
-      child: InkWell(
-        onTap: onTap,
+      label: longDayLabel(date, locale),
+      excludeSemantics: true,
+      child: Material(
+        color: selected ? AppColors.primary : AppColors.input,
         borderRadius: AppRadii.inputRadius,
-        child: Container(
-          width: 64,
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-          decoration: BoxDecoration(
-            color: selected ? AppColors.primary : AppColors.input,
-            borderRadius: AppRadii.inputRadius,
-            border: Border.all(color: selected ? AppColors.primary : AppColors.border),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                weekday,
-                style: TextStyle(fontSize: 12, color: selected ? Colors.white70 : AppColors.muted),
-              ),
-              Text(
-                dayNum,
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w700,
-                  color: selected ? Colors.white : AppColors.navy,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppRadii.inputRadius,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            width: 74,
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            decoration: BoxDecoration(
+              borderRadius: AppRadii.inputRadius,
+              border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  parts?.weekday ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: sub),
                 ),
-                textDirection: TextDirection.ltr,
-              ),
-              Text(
-                '$slotCount',
-                style: TextStyle(fontSize: 11, color: selected ? Colors.white70 : AppColors.muted),
-                textDirection: TextDirection.ltr,
-              ),
-            ],
+                Text(
+                  parts?.day ?? date,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: fg,
+                    height: 1.25,
+                  ),
+                ),
+                Text(parts?.month ?? '', maxLines: 1, style: TextStyle(fontSize: 11, color: sub)),
+                Text(
+                  l.bkSlotsCount(slotCount),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: selected ? Colors.white : AppColors.success,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -368,23 +921,275 @@ class _DayChip extends StatelessWidget {
   }
 }
 
-class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({required this.label, required this.value});
+class _TimeChip extends StatelessWidget {
+  const _TimeChip({
+    required this.slot,
+    required this.selected,
+    required this.unavailable,
+    required this.onTap,
+  });
 
-  final String label;
-  final String value;
+  final Slot slot;
+  final bool selected;
+  final bool unavailable;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
+    final l = L.of(context);
+    final bg = unavailable
+        ? AppColors.bg
+        : selected
+        ? AppColors.primary
+        : AppColors.surface;
+    final fg = unavailable
+        ? AppColors.muted.withValues(alpha: 0.6)
+        : selected
+        ? Colors.white
+        : AppColors.navy;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: !unavailable,
+      label: unavailable ? '${slot.displayTime} — ${l.bkSlotUnavailable}' : slot.displayTime,
+      excludeSemantics: true,
+      child: Material(
+        color: bg,
+        borderRadius: AppRadii.pillRadius,
+        child: InkWell(
+          onTap: unavailable ? null : onTap,
+          borderRadius: AppRadii.pillRadius,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 140),
+            constraints: const BoxConstraints(minWidth: 78, minHeight: 44),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              borderRadius: AppRadii.pillRadius,
+              border: Border.all(
+                color: selected
+                    ? AppColors.primary
+                    : (unavailable ? AppColors.border : AppColors.primary.withValues(alpha: 0.35)),
+              ),
+            ),
+            // Sized to the label (a Wrap child that aligns would fill the row),
+            // centred within the minimum size.
+            child: Center(
+              widthFactor: 1,
+              heightFactor: 1,
+              child: Text(
+                // The backend's clinic-local label. Not derived from the UTC
+                // timestamp here: the phone's timezone is not necessarily the
+                // clinic's, and a patient abroad must not see a shifted hour.
+                slot.displayTime,
+                textDirection: TextDirection.ltr,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: fg,
+                  decoration: unavailable ? TextDecoration.lineThrough : null,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Summary extends StatelessWidget {
+  const _Summary({required this.rows});
+
+  /// Label, value, and whether the value is left-to-right (times).
+  final List<(String, String, bool)> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.bgSoft,
+        borderRadius: AppRadii.cardRadius,
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
-          const Spacer(),
-          Text(value, style: Theme.of(context).textTheme.titleSmall),
+          Text(l.bookingSummary, style: HomeType.sectionTitle.copyWith(fontSize: 15)),
+          const SizedBox(height: 8),
+          for (final (label, value, ltr) in rows) _SummaryRow(label: label, value: value, ltr: ltr),
         ],
       ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({required this.label, required this.value, this.ltr = false});
+
+  final String label;
+  final String value;
+  final bool ltr;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(width: 104, child: Text(label, style: HomeType.meta.copyWith(fontSize: 12.5))),
+        Expanded(
+          // Aligned to the row's end in the page's direction, even for a
+          // left-to-right value such as a time.
+          child: Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: Text(
+              value,
+              textAlign: TextAlign.start,
+              textDirection: ltr ? TextDirection.ltr : null,
+              style: HomeType.cardTitle.copyWith(fontSize: 13.5),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// The pinned confirm button, with the chosen day and time above it.
+class _ConfirmBar extends ConsumerWidget {
+  const _ConfirmBar({
+    required this.slug,
+    required this.onConfirm,
+    this.verifyPhone,
+    this.verifying = false,
+  });
+
+  final String slug;
+  final VoidCallback onConfirm;
+
+  /// Set when the account's phone must be verified first; the button then
+  /// starts that instead of booking.
+  final VoidCallback? verifyPhone;
+  final bool verifying;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = L.of(context);
+    final draft = ref.watch(bookingDraftProvider(slug));
+    final signedIn = ref.watch(authControllerProvider.select((s) => s.isAuthenticated));
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 12, AppSpacing.gutter, 12),
+          child: FilledButton(
+            onPressed: verifyPhone != null
+                ? (verifying ? null : verifyPhone)
+                : (!draft.isComplete || draft.submitting ? null : onConfirm),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+              textStyle: HomeType.button.copyWith(fontSize: 15),
+            ),
+            child: draft.submitting || verifying
+                ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
+                  )
+                : Text(
+                    !signedIn
+                        ? l.bkSignInToBook
+                        : (verifyPhone != null ? l.bkVerifyPhoneAction : l.bookingConfirm),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// What the server confirmed. Every value comes from the booking it returned;
+/// there is no reference number because the API does not issue one.
+class _SuccessView extends StatelessWidget {
+  const _SuccessView({required this.doctor, required this.booking, required this.clinic});
+
+  final DoctorDetail doctor;
+  final PatientBooking booking;
+  final DoctorClinicLink? clinic;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final clinicName = booking.clinicName.isNotEmpty
+        ? booking.clinicName
+        : (clinic?.clinic.nameAr ?? '');
+
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        Container(
+          width: 76,
+          height: 76,
+          decoration: BoxDecoration(
+            color: AppColors.success.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 48),
+        ),
+        const SizedBox(height: 14),
+        Semantics(
+          liveRegion: true,
+          child: Text(l.bookingSuccessTitle, style: HomeType.greeting.copyWith(fontSize: 19)),
+        ),
+        const SizedBox(height: 18),
+        _Summary(
+          rows: [
+            (
+              l.bkDoctor,
+              booking.doctorName.isNotEmpty ? booking.doctorName : doctor.displayName,
+              false,
+            ),
+            if (clinicName.isNotEmpty) (l.bookingClinic, clinicName, false),
+            if (booking.displayDate.isNotEmpty)
+              (l.bookingDateTime, longDayLabel(booking.displayDate, locale), false),
+            if (booking.displayTime.isNotEmpty) (l.bkTime, booking.displayTime, true),
+            if (booking.feeSnapshot != null) (l.bookingFee, l.ddMoney(booking.feeSnapshot!), false),
+          ],
+        ),
+        const SizedBox(height: 20),
+        FilledButton(
+          onPressed: () {
+            final router = GoRouter.of(context);
+            Navigator.of(context).pop();
+            router.push(Routes.bookingPath(booking.id));
+          },
+          style: FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(50),
+            textStyle: HomeType.button.copyWith(fontSize: 15),
+          ),
+          child: Text(l.bkViewBooking),
+        ),
+        const SizedBox(height: 8),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          style: TextButton.styleFrom(
+            minimumSize: const Size.fromHeight(46),
+            textStyle: HomeType.button.copyWith(fontSize: 14),
+          ),
+          child: Text(l.bkDone),
+        ),
+      ],
     );
   }
 }

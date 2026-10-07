@@ -35,6 +35,20 @@ class Env {
     defaultValue: 'https://aleyada.scenariomnchnl.tech/api/v1',
   );
 
+  /// Where the web management system lives: the address the doctor's
+  /// "open the management system" button opens.
+  ///
+  /// The API does not report it (it is in neither `/auth/me/`, `/doctor/*` nor the
+  /// public settings), so it is configuration — defaulted here, like the API
+  /// address, and overridable per build with
+  /// `--dart-define=ALEYADA_MANAGEMENT_URL=https://…`. Passing an empty value, or
+  /// anything that is not an absolute http(s) address, removes the button; the
+  /// Management screen never guesses one.
+  static const String managementUrl = String.fromEnvironment(
+    'ALEYADA_MANAGEMENT_URL',
+    defaultValue: 'https://scenariomnchnl.tech/',
+  );
+
   /// Verbose request logging. Never on in production: even with redaction, the
   /// safest log in a shipped binary is the one that does not exist.
   static bool get verboseLogging =>

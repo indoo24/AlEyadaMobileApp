@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../core/api/api_client.dart';
 import '../../core/api/endpoints.dart';
 import '../../core/api/envelope.dart';
@@ -10,10 +12,22 @@ class ClinicRepository {
 
   /// Active clinics, optionally narrowed to one city (by slug). Filtering is the
   /// backend's; nothing is hidden client-side.
-  Future<Paginated<ClinicListItem>> clinics({String? city, int page = 1, int? pageSize}) async {
+  Future<Paginated<ClinicListItem>> clinics({
+    String? city,
+    String? q,
+    int page = 1,
+    int? pageSize,
+    CancelToken? cancelToken,
+  }) async {
     final body = await _api.get(
       Endpoints.clinics,
-      query: {'page': page, if (pageSize != null) 'page_size': pageSize, if (city != null) 'city': city},
+      query: {
+        'page': page,
+        if (pageSize != null) 'page_size': pageSize,
+        if (city != null) 'city': city,
+        if (q != null && q.trim().isNotEmpty) 'q': q.trim(),
+      },
+      cancelToken: cancelToken,
     );
     return unwrapPaginated(body, ClinicListItem.fromJson);
   }

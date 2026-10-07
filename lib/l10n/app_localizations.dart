@@ -1458,6 +1458,2016 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'مراجَع طبياً'**
   String get homeArticleCertified;
+
+  /// No description provided for @searchRecentTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'عمليات البحث الأخيرة'**
+  String get searchRecentTitle;
+
+  /// No description provided for @searchClearAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح الكل'**
+  String get searchClearAll;
+
+  /// No description provided for @searchRemoveRecent.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة من عمليات البحث الأخيرة'**
+  String get searchRemoveRecent;
+
+  /// No description provided for @searchBrowseTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفح حسب التخصص'**
+  String get searchBrowseTitle;
+
+  /// No description provided for @searchSuggestionsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اقتراحات'**
+  String get searchSuggestionsTitle;
+
+  /// No description provided for @searchSuggestSpecialty.
+  ///
+  /// In ar, this message translates to:
+  /// **'تخصص'**
+  String get searchSuggestSpecialty;
+
+  /// No description provided for @searchSuggestCity.
+  ///
+  /// In ar, this message translates to:
+  /// **'مدينة'**
+  String get searchSuggestCity;
+
+  /// No description provided for @searchSuggestArea.
+  ///
+  /// In ar, this message translates to:
+  /// **'منطقة'**
+  String get searchSuggestArea;
+
+  /// No description provided for @searchSuggestClinic.
+  ///
+  /// In ar, this message translates to:
+  /// **'عيادة أو مركز'**
+  String get searchSuggestClinic;
+
+  /// No description provided for @searchResultsCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =0{لا يوجد أطباء} =1{تم العثور على طبيب واحد} other{تم العثور على {count} طبيب}}'**
+  String searchResultsCount(int count);
+
+  /// No description provided for @searchSortLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الترتيب'**
+  String get searchSortLabel;
+
+  /// No description provided for @searchSortFeatured.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأنسب'**
+  String get searchSortFeatured;
+
+  /// No description provided for @searchSortRating.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأعلى تقييماً'**
+  String get searchSortRating;
+
+  /// No description provided for @searchSortNewest.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأحدث'**
+  String get searchSortNewest;
+
+  /// No description provided for @searchSortFeeAsc.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأقل سعراً'**
+  String get searchSortFeeAsc;
+
+  /// No description provided for @searchFilterButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفية متقدمة'**
+  String get searchFilterButton;
+
+  /// No description provided for @searchFilterTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفية النتائج'**
+  String get searchFilterTitle;
+
+  /// No description provided for @searchFilterRating.
+  ///
+  /// In ar, this message translates to:
+  /// **'التقييم'**
+  String get searchFilterRating;
+
+  /// No description provided for @searchFilterMaxFee.
+  ///
+  /// In ar, this message translates to:
+  /// **'أقصى سعر للكشف'**
+  String get searchFilterMaxFee;
+
+  /// No description provided for @searchFilterBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجز الإلكتروني'**
+  String get searchFilterBooking;
+
+  /// No description provided for @searchFilterBookingOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتاحون للحجز الإلكتروني فقط'**
+  String get searchFilterBookingOnly;
+
+  /// No description provided for @searchAny.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get searchAny;
+
+  /// No description provided for @searchAnyPrice.
+  ///
+  /// In ar, this message translates to:
+  /// **'أي سعر'**
+  String get searchAnyPrice;
+
+  /// No description provided for @searchGenderMale.
+  ///
+  /// In ar, this message translates to:
+  /// **'طبيب'**
+  String get searchGenderMale;
+
+  /// No description provided for @searchGenderFemale.
+  ///
+  /// In ar, this message translates to:
+  /// **'طبيبة'**
+  String get searchGenderFemale;
+
+  /// No description provided for @searchChipRating.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقييم {value}+'**
+  String searchChipRating(String value);
+
+  /// No description provided for @searchChipMaxFee.
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى {fee} ج.م'**
+  String searchChipMaxFee(String fee);
+
+  /// No description provided for @searchChipBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجز إلكتروني'**
+  String get searchChipBooking;
+
+  /// No description provided for @searchClearField.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح البحث'**
+  String get searchClearField;
+
+  /// No description provided for @searchEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نجد أطباء مطابقين لبحثك'**
+  String get searchEmptyTitle;
+
+  /// No description provided for @searchEmptyHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب تغيير التخصص أو المنطقة أو إزالة بعض عوامل التصفية.'**
+  String get searchEmptyHint;
+
+  /// No description provided for @searchClearFilters.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح الفلاتر'**
+  String get searchClearFilters;
+
+  /// No description provided for @searchBookAppointment.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز موعد كشف'**
+  String get searchBookAppointment;
+
+  /// No description provided for @searchCall.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصال'**
+  String get searchCall;
+
+  /// No description provided for @searchYearsShort.
+  ///
+  /// In ar, this message translates to:
+  /// **'{years} سنة خبرة'**
+  String searchYearsShort(int years);
+
+  /// No description provided for @navFavorites.
+  ///
+  /// In ar, this message translates to:
+  /// **'المفضلة'**
+  String get navFavorites;
+
+  /// No description provided for @favoritesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأطباء المفضلون'**
+  String get favoritesTitle;
+
+  /// No description provided for @favoritesCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{طبيب واحد} =2{طبيبان} few{{count} أطباء} many{{count} طبيباً} other{{count} طبيب}}'**
+  String favoritesCount(int count);
+
+  /// No description provided for @favoritesEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تقم بإضافة أطباء للمفضلة بعد'**
+  String get favoritesEmptyTitle;
+
+  /// No description provided for @favoritesEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف الأطباء الذين تفضلهم للوصول إليهم بسهولة لاحقًا.'**
+  String get favoritesEmptyBody;
+
+  /// No description provided for @favoritesFindDoctor.
+  ///
+  /// In ar, this message translates to:
+  /// **'البحث عن طبيب'**
+  String get favoritesFindDoctor;
+
+  /// No description provided for @favoritesDoctorError.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل بيانات هذا الطبيب.'**
+  String get favoritesDoctorError;
+
+  /// No description provided for @favoritesLoadError.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل قائمة المفضلة.'**
+  String get favoritesLoadError;
+
+  /// No description provided for @favoriteAdd.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة إلى المفضلة'**
+  String get favoriteAdd;
+
+  /// No description provided for @favoriteRemove.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة من المفضلة'**
+  String get favoriteRemove;
+
+  /// No description provided for @favoriteFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر حفظ التغيير. حاول مرة أخرى.'**
+  String get favoriteFailed;
+
+  /// No description provided for @ratingNone.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد تقييمات'**
+  String get ratingNone;
+
+  /// No description provided for @navManagement.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإدارة'**
+  String get navManagement;
+
+  /// No description provided for @managementTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإدارة'**
+  String get managementTitle;
+
+  /// No description provided for @managementStatsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إحصاءاتك'**
+  String get managementStatsTitle;
+
+  /// No description provided for @managementStatsPeriod.
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر {days} يوم'**
+  String managementStatsPeriod(int days);
+
+  /// No description provided for @statPatients.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد المرضى'**
+  String get statPatients;
+
+  /// No description provided for @statCompletedVisits.
+  ///
+  /// In ar, this message translates to:
+  /// **'زيارات مكتملة'**
+  String get statCompletedVisits;
+
+  /// No description provided for @statRating.
+  ///
+  /// In ar, this message translates to:
+  /// **'متوسط التقييم'**
+  String get statRating;
+
+  /// No description provided for @statContactRate.
+  ///
+  /// In ar, this message translates to:
+  /// **'معدل التواصل'**
+  String get statContactRate;
+
+  /// No description provided for @statViews.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشاهدات الصفحة'**
+  String get statViews;
+
+  /// No description provided for @statContacts.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرات التواصل'**
+  String get statContacts;
+
+  /// No description provided for @statBookings.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجوزات'**
+  String get statBookings;
+
+  /// No description provided for @statBookingsDone.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت'**
+  String get statBookingsDone;
+
+  /// No description provided for @statViewsSub.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشاهدات الصفحة: {count}'**
+  String statViewsSub(int count);
+
+  /// No description provided for @managementPortalButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح نظام إدارة العيادة'**
+  String get managementPortalButton;
+
+  /// No description provided for @managementPortalFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر فتح نظام الإدارة.'**
+  String get managementPortalFailed;
+
+  /// No description provided for @managementModulesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إدارة العيادة'**
+  String get managementModulesTitle;
+
+  /// No description provided for @managementClinicsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'العيادات'**
+  String get managementClinicsTitle;
+
+  /// No description provided for @managementClinicsDesc.
+  ///
+  /// In ar, this message translates to:
+  /// **'إدارة العيادات وأسعار الكشف ومواعيد العمل'**
+  String get managementClinicsDesc;
+
+  /// No description provided for @managementAssistantsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المساعدون'**
+  String get managementAssistantsTitle;
+
+  /// No description provided for @managementAssistantsDesc.
+  ///
+  /// In ar, this message translates to:
+  /// **'إدارة مساعدي العيادة وصلاحياتهم'**
+  String get managementAssistantsDesc;
+
+  /// No description provided for @managementScheduleTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الجدول'**
+  String get managementScheduleTitle;
+
+  /// No description provided for @managementScheduleDesc.
+  ///
+  /// In ar, this message translates to:
+  /// **'المواعيد وأوقات التوفّر'**
+  String get managementScheduleDesc;
+
+  /// No description provided for @managementSaved.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الحفظ'**
+  String get managementSaved;
+
+  /// No description provided for @managementDelete.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف'**
+  String get managementDelete;
+
+  /// No description provided for @managementFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر إتمام العملية. حاول مرة أخرى.'**
+  String get managementFailed;
+
+  /// No description provided for @weekday1.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاثنين'**
+  String get weekday1;
+
+  /// No description provided for @weekday2.
+  ///
+  /// In ar, this message translates to:
+  /// **'الثلاثاء'**
+  String get weekday2;
+
+  /// No description provided for @weekday3.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأربعاء'**
+  String get weekday3;
+
+  /// No description provided for @weekday4.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخميس'**
+  String get weekday4;
+
+  /// No description provided for @weekday5.
+  ///
+  /// In ar, this message translates to:
+  /// **'الجمعة'**
+  String get weekday5;
+
+  /// No description provided for @weekday6.
+  ///
+  /// In ar, this message translates to:
+  /// **'السبت'**
+  String get weekday6;
+
+  /// No description provided for @weekday7.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأحد'**
+  String get weekday7;
+
+  /// No description provided for @clinicsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'العيادات'**
+  String get clinicsTitle;
+
+  /// No description provided for @clinicsAdd.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة عيادة'**
+  String get clinicsAdd;
+
+  /// No description provided for @clinicsEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تُضف أي عيادة بعد'**
+  String get clinicsEmptyTitle;
+
+  /// No description provided for @clinicsEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف عيادتك لتبدأ باستقبال الحجوزات.'**
+  String get clinicsEmptyBody;
+
+  /// No description provided for @clinicBadgePrimary.
+  ///
+  /// In ar, this message translates to:
+  /// **'العيادة الرئيسية'**
+  String get clinicBadgePrimary;
+
+  /// No description provided for @clinicBadgeOwner.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنشأتها'**
+  String get clinicBadgeOwner;
+
+  /// No description provided for @clinicBadgeInactive.
+  ///
+  /// In ar, this message translates to:
+  /// **'معطّلة'**
+  String get clinicBadgeInactive;
+
+  /// No description provided for @clinicReady.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاهزة لاستقبال الحجوزات'**
+  String get clinicReady;
+
+  /// No description provided for @clinicNotReady.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير جاهزة لاستقبال الحجوزات بعد'**
+  String get clinicNotReady;
+
+  /// No description provided for @clinicTermsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'شروطي في هذه العيادة'**
+  String get clinicTermsTitle;
+
+  /// No description provided for @clinicFeeConsult.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر الكشف'**
+  String get clinicFeeConsult;
+
+  /// No description provided for @clinicFeeFollowup.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر الاستشارة/المتابعة'**
+  String get clinicFeeFollowup;
+
+  /// No description provided for @clinicAcceptBookings.
+  ///
+  /// In ar, this message translates to:
+  /// **'استقبال الحجوزات'**
+  String get clinicAcceptBookings;
+
+  /// No description provided for @clinicSaveTerms.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ الشروط'**
+  String get clinicSaveTerms;
+
+  /// No description provided for @clinicHoursTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مواعيد العمل'**
+  String get clinicHoursTitle;
+
+  /// No description provided for @clinicHoursHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدد مواعيد فتح العيادة لكل يوم. الحجوزات تُولَّد داخل هذه المواعيد فقط.'**
+  String get clinicHoursHint;
+
+  /// No description provided for @clinicHoursNone.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تُحدَّد مواعيد العمل بعد.'**
+  String get clinicHoursNone;
+
+  /// No description provided for @clinicHoursFrom.
+  ///
+  /// In ar, this message translates to:
+  /// **'من'**
+  String get clinicHoursFrom;
+
+  /// No description provided for @clinicHoursTo.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلى'**
+  String get clinicHoursTo;
+
+  /// No description provided for @clinicAddShift.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة فترة'**
+  String get clinicAddShift;
+
+  /// No description provided for @clinicSaveHours.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ المواعيد'**
+  String get clinicSaveHours;
+
+  /// No description provided for @clinicInviteTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'دعوة طبيب'**
+  String get clinicInviteTitle;
+
+  /// No description provided for @clinicInvitePhone.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم هاتف الطبيب'**
+  String get clinicInvitePhone;
+
+  /// No description provided for @clinicInviteMessage.
+  ///
+  /// In ar, this message translates to:
+  /// **'رسالة (اختياري)'**
+  String get clinicInviteMessage;
+
+  /// No description provided for @clinicInviteSend.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال الدعوة'**
+  String get clinicInviteSend;
+
+  /// No description provided for @clinicInviteSent.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إرسال الدعوة'**
+  String get clinicInviteSent;
+
+  /// No description provided for @clinicInvitesSent.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدعوات المرسلة'**
+  String get clinicInvitesSent;
+
+  /// No description provided for @clinicInvitesNone.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد دعوات مرسلة.'**
+  String get clinicInvitesNone;
+
+  /// No description provided for @invitationPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد الانتظار'**
+  String get invitationPending;
+
+  /// No description provided for @invitationAccepted.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقبولة'**
+  String get invitationAccepted;
+
+  /// No description provided for @invitationDeclined.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوضة'**
+  String get invitationDeclined;
+
+  /// No description provided for @invitationCancelled.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملغاة'**
+  String get invitationCancelled;
+
+  /// No description provided for @clinicFormName.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم العيادة'**
+  String get clinicFormName;
+
+  /// No description provided for @clinicFormAddress.
+  ///
+  /// In ar, this message translates to:
+  /// **'العنوان'**
+  String get clinicFormAddress;
+
+  /// No description provided for @clinicFormPhone.
+  ///
+  /// In ar, this message translates to:
+  /// **'هاتف العيادة'**
+  String get clinicFormPhone;
+
+  /// No description provided for @clinicFormCreate.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنشاء العيادة'**
+  String get clinicFormCreate;
+
+  /// No description provided for @assistantsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المساعدون'**
+  String get assistantsTitle;
+
+  /// No description provided for @assistantsAdd.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة مساعد'**
+  String get assistantsAdd;
+
+  /// No description provided for @assistantsEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يتم إضافة أي مساعد بعد'**
+  String get assistantsEmptyTitle;
+
+  /// No description provided for @assistantsEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف مساعدًا ليتولى الحجوزات نيابةً عنك، وحدد ما يُسمح له به.'**
+  String get assistantsEmptyBody;
+
+  /// No description provided for @assistantAllClinics.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل العيادات'**
+  String get assistantAllClinics;
+
+  /// No description provided for @assistantInactive.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير نشط'**
+  String get assistantInactive;
+
+  /// No description provided for @assistantPermissions.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصلاحيات'**
+  String get assistantPermissions;
+
+  /// No description provided for @assistantPermissionsCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} صلاحية'**
+  String assistantPermissionsCount(int count);
+
+  /// No description provided for @assistantRevoke.
+  ///
+  /// In ar, this message translates to:
+  /// **'سحب الوصول'**
+  String get assistantRevoke;
+
+  /// No description provided for @assistantRevokeConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'سحب وصول هذا المساعد إلى «{clinic}»؟'**
+  String assistantRevokeConfirm(String clinic);
+
+  /// No description provided for @assistantFormName.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المساعد'**
+  String get assistantFormName;
+
+  /// No description provided for @assistantFormPhone.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهاتف'**
+  String get assistantFormPhone;
+
+  /// No description provided for @assistantFormNotes.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظات (اختياري)'**
+  String get assistantFormNotes;
+
+  /// No description provided for @assistantFormClinic.
+  ///
+  /// In ar, this message translates to:
+  /// **'العيادة'**
+  String get assistantFormClinic;
+
+  /// No description provided for @assistantCreate.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة المساعد'**
+  String get assistantCreate;
+
+  /// No description provided for @flag_can_view_bookings.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض الحجوزات'**
+  String get flag_can_view_bookings;
+
+  /// No description provided for @flag_can_create_bookings.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنشاء حجوزات'**
+  String get flag_can_create_bookings;
+
+  /// No description provided for @flag_can_update_bookings.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل الحجوزات'**
+  String get flag_can_update_bookings;
+
+  /// No description provided for @flag_can_cancel_bookings.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء الحجوزات'**
+  String get flag_can_cancel_bookings;
+
+  /// No description provided for @flag_can_manage_schedule.
+  ///
+  /// In ar, this message translates to:
+  /// **'إدارة الجدول'**
+  String get flag_can_manage_schedule;
+
+  /// No description provided for @flag_can_view_patient_phone.
+  ///
+  /// In ar, this message translates to:
+  /// **'رؤية هاتف المريض'**
+  String get flag_can_view_patient_phone;
+
+  /// No description provided for @flag_can_create_patient_next_visit.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجز زيارة تالية للمريض'**
+  String get flag_can_create_patient_next_visit;
+
+  /// No description provided for @flag_can_request_duration_verification.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب توثيق مدة الزيارة'**
+  String get flag_can_request_duration_verification;
+
+  /// No description provided for @flag_can_review_payment_proofs.
+  ///
+  /// In ar, this message translates to:
+  /// **'مراجعة إثباتات الدفع'**
+  String get flag_can_review_payment_proofs;
+
+  /// No description provided for @scheduleTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الجدول'**
+  String get scheduleTitle;
+
+  /// No description provided for @scheduleTabBookings.
+  ///
+  /// In ar, this message translates to:
+  /// **'المواعيد'**
+  String get scheduleTabBookings;
+
+  /// No description provided for @scheduleTabAvailability.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقات التوفّر'**
+  String get scheduleTabAvailability;
+
+  /// No description provided for @scheduleView.
+  ///
+  /// In ar, this message translates to:
+  /// **'العرض'**
+  String get scheduleView;
+
+  /// No description provided for @scheduleViewUpcoming.
+  ///
+  /// In ar, this message translates to:
+  /// **'القادمة'**
+  String get scheduleViewUpcoming;
+
+  /// No description provided for @scheduleViewAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get scheduleViewAll;
+
+  /// No description provided for @scheduleDate.
+  ///
+  /// In ar, this message translates to:
+  /// **'يوم محدد'**
+  String get scheduleDate;
+
+  /// No description provided for @scheduleDateAny.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل الأيام'**
+  String get scheduleDateAny;
+
+  /// No description provided for @scheduleStatus.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة'**
+  String get scheduleStatus;
+
+  /// No description provided for @scheduleStatusAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل الحالات'**
+  String get scheduleStatusAll;
+
+  /// No description provided for @scheduleCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =0{لا مواعيد} =1{موعد واحد} =2{موعدان} few{{count} مواعيد} other{{count} موعد}}'**
+  String scheduleCount(int count);
+
+  /// No description provided for @scheduleEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد مواعيد.'**
+  String get scheduleEmpty;
+
+  /// No description provided for @scheduleEmptyHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب تغيير العرض أو الحالة أو اليوم.'**
+  String get scheduleEmptyHint;
+
+  /// No description provided for @scheduleConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد'**
+  String get scheduleConfirm;
+
+  /// No description provided for @scheduleComplete.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتملت'**
+  String get scheduleComplete;
+
+  /// No description provided for @scheduleNoShow.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يحضر'**
+  String get scheduleNoShow;
+
+  /// No description provided for @scheduleCancel.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء الموعد'**
+  String get scheduleCancel;
+
+  /// No description provided for @scheduleCancelReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الإلغاء (اختياري)'**
+  String get scheduleCancelReason;
+
+  /// No description provided for @scheduleNoShowHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'خيار «لم يحضر» يظهر بعد مرور موعد الكشف بعشر دقائق.'**
+  String get scheduleNoShowHint;
+
+  /// No description provided for @scheduleUpdated.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تحديث الموعد'**
+  String get scheduleUpdated;
+
+  /// No description provided for @windowsAdd.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة فترة توفّر'**
+  String get windowsAdd;
+
+  /// No description provided for @windowsEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تحدد أوقات توفّر بعد.'**
+  String get windowsEmpty;
+
+  /// No description provided for @windowsEmptyHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف الأيام والساعات التي تستقبل فيها المرضى.'**
+  String get windowsEmptyHint;
+
+  /// No description provided for @windowMinutes.
+  ///
+  /// In ar, this message translates to:
+  /// **'{minutes} دقيقة للموعد'**
+  String windowMinutes(int minutes);
+
+  /// No description provided for @windowDeleteConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف فترة التوفّر هذه؟'**
+  String get windowDeleteConfirm;
+
+  /// No description provided for @windowFormWeekday.
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم'**
+  String get windowFormWeekday;
+
+  /// No description provided for @windowFormClinic.
+  ///
+  /// In ar, this message translates to:
+  /// **'العيادة'**
+  String get windowFormClinic;
+
+  /// No description provided for @windowFormDuration.
+  ///
+  /// In ar, this message translates to:
+  /// **'مدة الموعد (بالدقائق)'**
+  String get windowFormDuration;
+
+  /// No description provided for @windowCreate.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة'**
+  String get windowCreate;
+
+  /// No description provided for @statusCancelledByPatient.
+  ///
+  /// In ar, this message translates to:
+  /// **'ألغاه المريض'**
+  String get statusCancelledByPatient;
+
+  /// No description provided for @statusCancelledByClinic.
+  ///
+  /// In ar, this message translates to:
+  /// **'ألغته العيادة'**
+  String get statusCancelledByClinic;
+
+  /// No description provided for @scheduleDuration.
+  ///
+  /// In ar, this message translates to:
+  /// **'{minutes} دقيقة'**
+  String scheduleDuration(int minutes);
+
+  /// No description provided for @scheduleDatePick.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر اليوم'**
+  String get scheduleDatePick;
+
+  /// No description provided for @blockClinicHoursNotSet.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تُحدَّد مواعيد عمل العيادة بعد'**
+  String get blockClinicHoursNotSet;
+
+  /// No description provided for @blockBookingDisabled.
+  ///
+  /// In ar, this message translates to:
+  /// **'استقبال الحجوزات الإلكترونية متوقف في شروطك'**
+  String get blockBookingDisabled;
+
+  /// No description provided for @blockNoAvailabilityWindows.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تحدد أوقات توفّرك بعد (من الجدول ← أوقات التوفّر)'**
+  String get blockNoAvailabilityWindows;
+
+  /// No description provided for @dpTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الملف المهني'**
+  String get dpTitle;
+
+  /// No description provided for @dpEdit.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل'**
+  String get dpEdit;
+
+  /// No description provided for @dpSaved.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم حفظ الملف المهني'**
+  String get dpSaved;
+
+  /// No description provided for @dpSentForReview.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعض التغييرات أُرسلت لمراجعة الإدارة قبل أن تظهر.'**
+  String get dpSentForReview;
+
+  /// No description provided for @dpReviewNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'يراجع تغيير هذا الحقل من الإدارة قبل تطبيقه.'**
+  String get dpReviewNote;
+
+  /// No description provided for @dpInvalidNumber.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رقمًا صحيحًا'**
+  String get dpInvalidNumber;
+
+  /// No description provided for @dpNothingChanged.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تغيّر شيئًا.'**
+  String get dpNothingChanged;
+
+  /// No description provided for @dpSectionBasic.
+  ///
+  /// In ar, this message translates to:
+  /// **'المعلومات الأساسية'**
+  String get dpSectionBasic;
+
+  /// No description provided for @dpSectionProfessional.
+  ///
+  /// In ar, this message translates to:
+  /// **'المعلومات المهنية'**
+  String get dpSectionProfessional;
+
+  /// No description provided for @dpSectionBio.
+  ///
+  /// In ar, this message translates to:
+  /// **'النبذة والرؤية'**
+  String get dpSectionBio;
+
+  /// No description provided for @dpSectionExperience.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخبرات'**
+  String get dpSectionExperience;
+
+  /// No description provided for @dpSectionQualifications.
+  ///
+  /// In ar, this message translates to:
+  /// **'المؤهلات والشهادات'**
+  String get dpSectionQualifications;
+
+  /// No description provided for @dpSectionServices.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخدمات والأسعار'**
+  String get dpSectionServices;
+
+  /// No description provided for @dpSectionContact.
+  ///
+  /// In ar, this message translates to:
+  /// **'التواصل'**
+  String get dpSectionContact;
+
+  /// No description provided for @dpSectionLinks.
+  ///
+  /// In ar, this message translates to:
+  /// **'الروابط وحسابات التواصل'**
+  String get dpSectionLinks;
+
+  /// No description provided for @dpSectionSearch.
+  ///
+  /// In ar, this message translates to:
+  /// **'الظهور في نتائج البحث'**
+  String get dpSectionSearch;
+
+  /// No description provided for @dpEducationTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المؤهلات العلمية'**
+  String get dpEducationTitle;
+
+  /// No description provided for @dpCertificatesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشهادات'**
+  String get dpCertificatesTitle;
+
+  /// No description provided for @dpCertPublic.
+  ///
+  /// In ar, this message translates to:
+  /// **'ظاهرة للمرضى'**
+  String get dpCertPublic;
+
+  /// No description provided for @dpServiceInactive.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير مفعّلة'**
+  String get dpServiceInactive;
+
+  /// No description provided for @dpSpecializations.
+  ///
+  /// In ar, this message translates to:
+  /// **'التخصصات'**
+  String get dpSpecializations;
+
+  /// No description provided for @dpPrimarySpec.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرئيسي'**
+  String get dpPrimarySpec;
+
+  /// No description provided for @dpStatusDraft.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسودة'**
+  String get dpStatusDraft;
+
+  /// No description provided for @dpStatusPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد المراجعة'**
+  String get dpStatusPending;
+
+  /// No description provided for @dpStatusApproved.
+  ///
+  /// In ar, this message translates to:
+  /// **'معتمد'**
+  String get dpStatusApproved;
+
+  /// No description provided for @dpStatusRejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض'**
+  String get dpStatusRejected;
+
+  /// No description provided for @dpRejectionReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الرفض'**
+  String get dpRejectionReason;
+
+  /// No description provided for @dpAccountTile.
+  ///
+  /// In ar, this message translates to:
+  /// **'بيانات الحساب'**
+  String get dpAccountTile;
+
+  /// No description provided for @dpAccountTileHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم الأول واسم العائلة والبريد الإلكتروني'**
+  String get dpAccountTileHint;
+
+  /// No description provided for @dpOpenLink.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح الرابط'**
+  String get dpOpenLink;
+
+  /// No description provided for @dpLinkFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر فتح الرابط.'**
+  String get dpLinkFailed;
+
+  /// No description provided for @dpField_full_name_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم بالعربية'**
+  String get dpField_full_name_ar;
+
+  /// No description provided for @dpField_full_name_en.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم بالإنجليزية'**
+  String get dpField_full_name_en;
+
+  /// No description provided for @dpField_display_title.
+  ///
+  /// In ar, this message translates to:
+  /// **'اللقب (د. / أ.د.)'**
+  String get dpField_display_title;
+
+  /// No description provided for @dpField_gender.
+  ///
+  /// In ar, this message translates to:
+  /// **'النوع'**
+  String get dpField_gender;
+
+  /// No description provided for @dpField_city.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحافظة'**
+  String get dpField_city;
+
+  /// No description provided for @dpField_area.
+  ///
+  /// In ar, this message translates to:
+  /// **'المنطقة'**
+  String get dpField_area;
+
+  /// No description provided for @dpField_professional_title_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسمى المهني بالعربية'**
+  String get dpField_professional_title_ar;
+
+  /// No description provided for @dpField_professional_title_en.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسمى المهني بالإنجليزية'**
+  String get dpField_professional_title_en;
+
+  /// No description provided for @dpField_academic_degree_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدرجة العلمية'**
+  String get dpField_academic_degree_ar;
+
+  /// No description provided for @dpField_years_of_experience.
+  ///
+  /// In ar, this message translates to:
+  /// **'سنوات الخبرة'**
+  String get dpField_years_of_experience;
+
+  /// No description provided for @dpField_default_consultation_fee.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر الكشف الافتراضي'**
+  String get dpField_default_consultation_fee;
+
+  /// No description provided for @dpField_bio_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'نبذة تعريفية بالعربية'**
+  String get dpField_bio_ar;
+
+  /// No description provided for @dpField_bio_en.
+  ///
+  /// In ar, this message translates to:
+  /// **'نبذة تعريفية بالإنجليزية'**
+  String get dpField_bio_en;
+
+  /// No description provided for @dpField_vision_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرؤية الطبية أو الرسالة المهنية'**
+  String get dpField_vision_ar;
+
+  /// No description provided for @dpField_current_positions_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'المناصب الحالية'**
+  String get dpField_current_positions_ar;
+
+  /// No description provided for @dpField_past_positions_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'المناصب السابقة'**
+  String get dpField_past_positions_ar;
+
+  /// No description provided for @dpField_certifications_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشهادات / الترخيص الطبي'**
+  String get dpField_certifications_ar;
+
+  /// No description provided for @dpField_fellowships_ar.
+  ///
+  /// In ar, this message translates to:
+  /// **'الزمالات والدبلومات'**
+  String get dpField_fellowships_ar;
+
+  /// No description provided for @dpField_phone.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهاتف'**
+  String get dpField_phone;
+
+  /// No description provided for @dpField_whatsapp.
+  ///
+  /// In ar, this message translates to:
+  /// **'واتساب'**
+  String get dpField_whatsapp;
+
+  /// No description provided for @dpField_website.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموقع الإلكتروني'**
+  String get dpField_website;
+
+  /// No description provided for @dpField_external_booking_url.
+  ///
+  /// In ar, this message translates to:
+  /// **'رابط الحجز الخارجي'**
+  String get dpField_external_booking_url;
+
+  /// No description provided for @dpField_google_maps_url.
+  ///
+  /// In ar, this message translates to:
+  /// **'رابط خرائط جوجل'**
+  String get dpField_google_maps_url;
+
+  /// No description provided for @dpField_facebook.
+  ///
+  /// In ar, this message translates to:
+  /// **'فيسبوك'**
+  String get dpField_facebook;
+
+  /// No description provided for @dpField_instagram.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنستجرام'**
+  String get dpField_instagram;
+
+  /// No description provided for @dpField_linkedin.
+  ///
+  /// In ar, this message translates to:
+  /// **'لينكد إن'**
+  String get dpField_linkedin;
+
+  /// No description provided for @dpField_youtube.
+  ///
+  /// In ar, this message translates to:
+  /// **'يوتيوب'**
+  String get dpField_youtube;
+
+  /// No description provided for @dpField_tiktok.
+  ///
+  /// In ar, this message translates to:
+  /// **'تيك توك'**
+  String get dpField_tiktok;
+
+  /// No description provided for @dpField_seo_title.
+  ///
+  /// In ar, this message translates to:
+  /// **'عنوان الصفحة في البحث'**
+  String get dpField_seo_title;
+
+  /// No description provided for @dpField_seo_description.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصف الصفحة في البحث'**
+  String get dpField_seo_description;
+
+  /// No description provided for @ddStatExperience.
+  ///
+  /// In ar, this message translates to:
+  /// **'سنوات الخبرة'**
+  String get ddStatExperience;
+
+  /// No description provided for @ddStatYears.
+  ///
+  /// In ar, this message translates to:
+  /// **'{years} سنة'**
+  String ddStatYears(int years);
+
+  /// No description provided for @ddStatRating.
+  ///
+  /// In ar, this message translates to:
+  /// **'التقييم'**
+  String get ddStatRating;
+
+  /// No description provided for @ddStatFee.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكشف يبدأ من'**
+  String get ddStatFee;
+
+  /// No description provided for @ddStatClinics.
+  ///
+  /// In ar, this message translates to:
+  /// **'العيادات'**
+  String get ddStatClinics;
+
+  /// No description provided for @ddMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'{amount} ج.م'**
+  String ddMoney(String amount);
+
+  /// No description provided for @ddShowMore.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض المزيد'**
+  String get ddShowMore;
+
+  /// No description provided for @ddShowLess.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض أقل'**
+  String get ddShowLess;
+
+  /// No description provided for @ddServices.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخدمات'**
+  String get ddServices;
+
+  /// No description provided for @ddBookAtClinic.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز موعد'**
+  String get ddBookAtClinic;
+
+  /// No description provided for @ddOpenLocation.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح الموقع'**
+  String get ddOpenLocation;
+
+  /// No description provided for @ddPhoneOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجز عبر الهاتف فقط'**
+  String get ddPhoneOnly;
+
+  /// No description provided for @ddLinksTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموقع والروابط'**
+  String get ddLinksTitle;
+
+  /// No description provided for @ddMapLink.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموقع على الخريطة'**
+  String get ddMapLink;
+
+  /// No description provided for @ddNextAvailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'أقرب موعد متاح'**
+  String get ddNextAvailable;
+
+  /// No description provided for @ddNoSlotsShort.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد مواعيد متاحة حاليًا'**
+  String get ddNoSlotsShort;
+
+  /// No description provided for @ddReviewsMore.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض المزيد من التقييمات'**
+  String get ddReviewsMore;
+
+  /// No description provided for @ddReviewVerified.
+  ///
+  /// In ar, this message translates to:
+  /// **'زيارة مؤكدة'**
+  String get ddReviewVerified;
+
+  /// No description provided for @ddReviewPatient.
+  ///
+  /// In ar, this message translates to:
+  /// **'مريض'**
+  String get ddReviewPatient;
+
+  /// No description provided for @ddReviewsFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل التقييمات.'**
+  String get ddReviewsFailed;
+
+  /// No description provided for @ddReviewsMoreFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل المزيد من التقييمات.'**
+  String get ddReviewsMoreFailed;
+
+  /// No description provided for @ddBackTooltip.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجوع'**
+  String get ddBackTooltip;
+
+  /// No description provided for @bkChooseClinic.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر العيادة'**
+  String get bkChooseClinic;
+
+  /// No description provided for @bkChooseClinicHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'يعمل الطبيب في أكثر من عيادة. اختر العيادة التي تناسبك.'**
+  String get bkChooseClinicHint;
+
+  /// No description provided for @bkChangeClinic.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير'**
+  String get bkChangeClinic;
+
+  /// No description provided for @bkSlotsCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{موعد واحد} =2{موعدان} few{{count} مواعيد} many{{count} موعدًا} other{{count} موعد}}'**
+  String bkSlotsCount(int count);
+
+  /// No description provided for @bkPickTimeHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر وقتًا لإتمام الحجز'**
+  String get bkPickTimeHint;
+
+  /// No description provided for @bkTimezoneNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'المواعيد معروضة بتوقيت العيادة.'**
+  String get bkTimezoneNote;
+
+  /// No description provided for @bkSlotUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير متاح'**
+  String get bkSlotUnavailable;
+
+  /// No description provided for @bkPaymentRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'تطلب هذه العيادة دفع الرسوم مسبقًا.'**
+  String get bkPaymentRequired;
+
+  /// No description provided for @bkSignInToBook.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجّل الدخول لتأكيد الحجز'**
+  String get bkSignInToBook;
+
+  /// No description provided for @bkViewBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض تفاصيل الحجز'**
+  String get bkViewBooking;
+
+  /// No description provided for @bkDone.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم'**
+  String get bkDone;
+
+  /// No description provided for @bkDoctor.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطبيب'**
+  String get bkDoctor;
+
+  /// No description provided for @bkDuration.
+  ///
+  /// In ar, this message translates to:
+  /// **'{minutes} دقيقة'**
+  String bkDuration(int minutes);
+
+  /// No description provided for @bkDurationLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المدة'**
+  String get bkDurationLabel;
+
+  /// No description provided for @bkClose.
+  ///
+  /// In ar, this message translates to:
+  /// **'إغلاق'**
+  String get bkClose;
+
+  /// No description provided for @bkTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوقت'**
+  String get bkTime;
+
+  /// No description provided for @bkVerifyPhoneTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد رقم هاتفك لإتمام الحجز'**
+  String get bkVerifyPhoneTitle;
+
+  /// No description provided for @bkVerifyPhoneBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'يتطلب الحجز رقم هاتف مؤكَّدًا. سنرسل رمز تحقق إلى {phone}.'**
+  String bkVerifyPhoneBody(String phone);
+
+  /// No description provided for @bkVerifyPhoneAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد رقم الهاتف'**
+  String get bkVerifyPhoneAction;
+
+  /// No description provided for @errorDoctorBusy.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطبيب محجوز في هذا الوقت. اختر موعدًا آخر.'**
+  String get errorDoctorBusy;
+
+  /// No description provided for @mbSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تابع مواعيدك الطبية بسهولة'**
+  String get mbSubtitle;
+
+  /// No description provided for @mbTabCancelled.
+  ///
+  /// In ar, this message translates to:
+  /// **'الملغاة'**
+  String get mbTabCancelled;
+
+  /// No description provided for @mbNextAppointment.
+  ///
+  /// In ar, this message translates to:
+  /// **'موعدك القادم'**
+  String get mbNextAppointment;
+
+  /// No description provided for @mbMoreUpcoming.
+  ///
+  /// In ar, this message translates to:
+  /// **'مواعيد قادمة أخرى'**
+  String get mbMoreUpcoming;
+
+  /// No description provided for @mbViewDetails.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض تفاصيل الحجز'**
+  String get mbViewDetails;
+
+  /// No description provided for @mbFindDoctor.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث عن طبيب'**
+  String get mbFindDoctor;
+
+  /// No description provided for @mbEmptyUpcomingTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد حجوزات قادمة'**
+  String get mbEmptyUpcomingTitle;
+
+  /// No description provided for @mbEmptyUpcomingBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز موعدك الطبي بسهولة مع الطبيب المناسب.'**
+  String get mbEmptyUpcomingBody;
+
+  /// No description provided for @mbEmptyPastTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد حجوزات سابقة'**
+  String get mbEmptyPastTitle;
+
+  /// No description provided for @mbEmptyPastBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستظهر هنا زياراتك بعد انتهاء مواعيدها.'**
+  String get mbEmptyPastBody;
+
+  /// No description provided for @mbEmptyCancelledTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد حجوزات ملغاة'**
+  String get mbEmptyCancelledTitle;
+
+  /// No description provided for @mbEmptyCancelledBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أي حجز يُلغى سيظهر هنا.'**
+  String get mbEmptyCancelledBody;
+
+  /// No description provided for @mbErrorTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل حجوزاتك'**
+  String get mbErrorTitle;
+
+  /// No description provided for @mbErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدث خطأ أثناء تحميل الحجوزات. حاول مرة أخرى.'**
+  String get mbErrorBody;
+
+  /// No description provided for @mbOfflineBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.'**
+  String get mbOfflineBody;
+
+  /// No description provided for @mbNow.
+  ///
+  /// In ar, this message translates to:
+  /// **'الآن'**
+  String get mbNow;
+
+  /// No description provided for @mbInMinutes.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعد {count, plural, =1{دقيقة} =2{دقيقتين} few{{count} دقائق} many{{count} دقيقة} other{{count} دقيقة}}'**
+  String mbInMinutes(int count);
+
+  /// No description provided for @mbInHours.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعد {count, plural, =1{ساعة} =2{ساعتين} few{{count} ساعات} many{{count} ساعة} other{{count} ساعة}}'**
+  String mbInHours(int count);
+
+  /// No description provided for @mbInDays.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعد {count, plural, =1{يوم} =2{يومين} few{{count} أيام} many{{count} يومًا} other{{count} يوم}}'**
+  String mbInDays(int count);
+
+  /// No description provided for @bdTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل الحجز'**
+  String get bdTitle;
+
+  /// No description provided for @bdYourAppointment.
+  ///
+  /// In ar, this message translates to:
+  /// **'موعدك'**
+  String get bdYourAppointment;
+
+  /// No description provided for @bdInfoTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'معلومات الحجز'**
+  String get bdInfoTitle;
+
+  /// No description provided for @bdSpecialty.
+  ///
+  /// In ar, this message translates to:
+  /// **'التخصص'**
+  String get bdSpecialty;
+
+  /// No description provided for @bdDate.
+  ///
+  /// In ar, this message translates to:
+  /// **'التاريخ'**
+  String get bdDate;
+
+  /// No description provided for @bdFee.
+  ///
+  /// In ar, this message translates to:
+  /// **'رسوم الزيارة'**
+  String get bdFee;
+
+  /// No description provided for @bdReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الزيارة'**
+  String get bdReason;
+
+  /// No description provided for @bdNotes.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظاتك للطبيب'**
+  String get bdNotes;
+
+  /// No description provided for @bdPayment.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدفع'**
+  String get bdPayment;
+
+  /// No description provided for @bdPayNotRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يتطلب دفعًا مسبقًا'**
+  String get bdPayNotRequired;
+
+  /// No description provided for @bdPayProofPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار إثبات الدفع'**
+  String get bdPayProofPending;
+
+  /// No description provided for @bdPayProofUploaded.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم رفع إثبات الدفع'**
+  String get bdPayProofUploaded;
+
+  /// No description provided for @bdPayAccepted.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم قبول الدفع'**
+  String get bdPayAccepted;
+
+  /// No description provided for @bdPayRejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُقبل إثبات الدفع'**
+  String get bdPayRejected;
+
+  /// No description provided for @bdVisitConsultation.
+  ///
+  /// In ar, this message translates to:
+  /// **'كشف'**
+  String get bdVisitConsultation;
+
+  /// No description provided for @bdVisitProcedure.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجراء طبي'**
+  String get bdVisitProcedure;
+
+  /// No description provided for @bdVisitCustom.
+  ///
+  /// In ar, this message translates to:
+  /// **'زيارة'**
+  String get bdVisitCustom;
+
+  /// No description provided for @bdClinicTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'العيادة والموقع'**
+  String get bdClinicTitle;
+
+  /// No description provided for @bdTimelineTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'حالة الحجز'**
+  String get bdTimelineTitle;
+
+  /// No description provided for @bdStepBooked.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الحجز'**
+  String get bdStepBooked;
+
+  /// No description provided for @bdStepAwaiting.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار تأكيد العيادة'**
+  String get bdStepAwaiting;
+
+  /// No description provided for @bdStepConfirmed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تأكيد الحجز'**
+  String get bdStepConfirmed;
+
+  /// No description provided for @bdStepAppointment.
+  ///
+  /// In ar, this message translates to:
+  /// **'موعد الكشف'**
+  String get bdStepAppointment;
+
+  /// No description provided for @bdStepCompleted.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت الزيارة'**
+  String get bdStepCompleted;
+
+  /// No description provided for @bdStepNoShow.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يتم الحضور'**
+  String get bdStepNoShow;
+
+  /// No description provided for @bdStepCancelledByPatient.
+  ///
+  /// In ar, this message translates to:
+  /// **'ألغيتَ هذا الحجز'**
+  String get bdStepCancelledByPatient;
+
+  /// No description provided for @bdStepCancelledByClinic.
+  ///
+  /// In ar, this message translates to:
+  /// **'ألغت العيادة هذا الحجز'**
+  String get bdStepCancelledByClinic;
+
+  /// No description provided for @bdStepExpired.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت صلاحية الحجز'**
+  String get bdStepExpired;
+
+  /// No description provided for @bdStepRescheduled.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تغيير هذا الموعد'**
+  String get bdStepRescheduled;
+
+  /// No description provided for @bdCancelBefore.
+  ///
+  /// In ar, this message translates to:
+  /// **'يمكنك إلغاء الحجز حتى قبل موعدك بـ{count, plural, =1{ساعة} =2{ساعتين} few{{count} ساعات} many{{count} ساعة} other{{count} ساعة}}.'**
+  String bdCancelBefore(int count);
+
+  /// No description provided for @bdCancelClosed.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت مهلة الإلغاء الإلكتروني. للإلغاء تواصل مع العيادة.'**
+  String get bdCancelClosed;
+
+  /// No description provided for @bdCancellationReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الإلغاء'**
+  String get bdCancellationReason;
+
+  /// No description provided for @bdCancelKeep.
+  ///
+  /// In ar, this message translates to:
+  /// **'تراجع'**
+  String get bdCancelKeep;
+
+  /// No description provided for @bdCancelConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء الحجز'**
+  String get bdCancelConfirm;
+
+  /// No description provided for @bdBookAgain.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز موعدًا آخر'**
+  String get bdBookAgain;
+
+  /// No description provided for @bdBookNew.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز موعدًا جديدًا'**
+  String get bdBookNew;
+
+  /// No description provided for @bdCallClinic.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصال بالعيادة'**
+  String get bdCallClinic;
+
+  /// No description provided for @bdViewDoctor.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض صفحة الطبيب'**
+  String get bdViewDoctor;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {

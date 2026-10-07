@@ -1,4 +1,5 @@
 import '../../core/api/envelope.dart';
+import '../doctors/models.dart' show ContactInfo;
 
 /// One bookable slot.
 ///
@@ -58,6 +59,10 @@ class AvailabilityDay {
 }
 
 /// `/doctors/{slug}/availability/` — the whole offer for one clinic.
+///
+/// The live endpoint answers with an object (the spec documents a bare list of
+/// days). For a contact-only doctor it carries no days but the doctor's phone
+/// links and a server-written [message] instead.
 class DoctorAvailability {
   const DoctorAvailability({
     required this.bookingEnabled,
@@ -66,6 +71,8 @@ class DoctorAvailability {
     this.clinicId,
     this.timezone,
     this.fee,
+    this.message = '',
+    this.contact = ContactInfo.empty,
   });
 
   final bool bookingEnabled;
@@ -74,6 +81,12 @@ class DoctorAvailability {
   final String? clinicId;
   final String? timezone;
   final String? fee;
+
+  /// The server's own explanation when booking is closed (Arabic, ready to show).
+  final String message;
+
+  /// Phone and WhatsApp links, sent when the doctor takes bookings by phone only.
+  final ContactInfo contact;
 
   List<AvailabilityDay> get daysWithSlots => days.where((d) => d.hasSlots).toList();
   bool get hasAnySlot => days.any((d) => d.hasSlots);
@@ -86,6 +99,8 @@ class DoctorAvailability {
       clinicId: j['clinic_id'] as String?,
       timezone: j['timezone'] as String?,
       fee: parseMoney(j['fee']),
+      message: parseString(j['message']).trim(),
+      contact: ContactInfo.fromJson(j),
       days: raw is List
           ? raw
                 .whereType<Map>()
@@ -184,6 +199,7 @@ class PatientBooking {
     this.notesForDoctor,
     this.doctorPhoto,
     this.clinicAddress,
+    this.clinicId,
     this.createdAt,
   });
 
@@ -192,6 +208,11 @@ class PatientBooking {
   final String doctorSlug;
   final String clinicName;
   final String? clinicAddress;
+
+  /// The clinic's id when the nested `clinic` object carries one. Used only to
+  /// find that clinic on the doctor's public profile (for its map link and
+  /// phone); the name is the fallback match.
+  final String? clinicId;
   final String? doctorPhoto;
 
   /// UTC — the source of truth for ordering and comparison.
@@ -233,6 +254,7 @@ class PatientBooking {
       doctorPhoto: d?['photo'] as String?,
       clinicName: parseString(c?['name_ar']),
       clinicAddress: c?['address_ar'] as String?,
+      clinicId: parseString(c?['id']).trim().isEmpty ? null : parseString(c?['id']).trim(),
       startAt: parseUtc(j['start_at']) ?? DateTime.now().toUtc(),
       endAt: parseUtc(j['end_at']) ?? DateTime.now().toUtc(),
       displayDate: parseString(j['display_date']),
