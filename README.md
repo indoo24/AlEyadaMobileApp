@@ -181,17 +181,29 @@ adapter swapped.
 
 ### Release signing
 
-Never committed. Create `android/key.properties` (git-ignored):
+Google Play App Signing signs what users install; the key here is only the
+**upload key** that proves an AAB came from us. Neither the keystore nor its
+passwords are ever committed.
+
+Keep the upload keystore at `android/upload-keystore.jks` (git-ignored) and
+create `android/key.properties` (git-ignored):
 
 ```properties
-storeFile=/absolute/path/to/upload-keystore.jks
+storeFile=upload-keystore.jks
 storePassword=…
-keyAlias=upload
+keyAlias=aleyada-upload
 keyPassword=…
 ```
 
+`storeFile` is resolved relative to `android/`; an absolute path also works.
+
 The build reads it if present and falls back to the debug key if not, so a fresh
-clone still builds. A debug-signed APK runs but is not publishable.
+clone still builds — Gradle prints a warning when that happens. A debug-signed
+build runs but Play Console rejects it.
+
+Back up the keystore and both passwords somewhere other than this machine. If
+the upload key is lost, the only way back is an upload-key reset in Play Console
+(Setup → App signing).
 
 ## iOS
 
