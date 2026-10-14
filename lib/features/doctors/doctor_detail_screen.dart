@@ -14,6 +14,7 @@ import 'models.dart';
 import 'providers.dart';
 import 'widgets/doctor_profile_sections.dart';
 import 'widgets/doctor_reviews_section.dart';
+import '../../core/theme/app_palette.dart';
 
 /// A doctor's public profile.
 ///
@@ -58,7 +59,7 @@ class _DoctorDetailScreenState extends ConsumerState<DoctorDetailScreen> {
 
     if (d == null) {
       return Scaffold(
-        backgroundColor: AppColors.bg,
+        backgroundColor: context.palette.page,
         appBar: AppBar(title: Text(l.doctorsTitle)),
         body: AsyncValueView<DoctorDetail>(
           value: detail,
@@ -69,7 +70,7 @@ class _DoctorDetailScreenState extends ConsumerState<DoctorDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(doctorReviewsProvider(d.slug));
@@ -85,7 +86,7 @@ class _DoctorDetailScreenState extends ConsumerState<DoctorDetailScreen> {
           slivers: [
             SliverAppBar(
               pinned: true,
-              backgroundColor: profileNavy,
+              backgroundColor: context.palette.heroStart,
               surfaceTintColor: Colors.transparent,
               foregroundColor: Colors.white,
               title: ValueListenableBuilder<bool>(
@@ -202,7 +203,10 @@ class _ClinicsBlock extends ConsumerWidget {
           padding: const EdgeInsetsDirectional.only(start: 4, bottom: 10, top: 4),
           child: Semantics(
             header: true,
-            child: Text(l.doctorClinics, style: HomeType.sectionTitle.copyWith(fontSize: 17)),
+            child: Text(
+              l.doctorClinics,
+              style: context.homeType.sectionTitle.copyWith(fontSize: 17),
+            ),
           ),
         ),
         for (var i = 0; i < clinics.length; i++) ...[
@@ -259,7 +263,7 @@ class _NextAvailableCard extends ConsumerWidget {
             ? l.ddNoSlotsShort
             : '${longDayLabel(first.date, locale)}  •  ${first.slot.displayTime}';
         return Material(
-          color: AppColors.surface,
+          color: context.palette.surface,
           borderRadius: BorderRadius.circular(homeCardRadius),
           child: InkWell(
             borderRadius: BorderRadius.circular(homeCardRadius),
@@ -268,7 +272,7 @@ class _NextAvailableCard extends ConsumerWidget {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(homeCardRadius),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.palette.border),
               ),
               child: Row(
                 children: [
@@ -277,14 +281,13 @@ class _NextAvailableCard extends ConsumerWidget {
                     height: 44,
                     decoration: BoxDecoration(
                       // Green: the tokens reserve it for availability.
-                      color: (first == null ? AppColors.muted : AppColors.success).withValues(
-                        alpha: 0.1,
-                      ),
+                      color: (first == null ? context.palette.muted : context.palette.success)
+                          .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       first == null ? Icons.event_busy_outlined : Icons.event_available_rounded,
-                      color: first == null ? AppColors.muted : AppColors.success,
+                      color: first == null ? context.palette.muted : context.palette.success,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -294,21 +297,21 @@ class _NextAvailableCard extends ConsumerWidget {
                       children: [
                         Text(
                           l.ddNextAvailable,
-                          style: HomeType.meta.copyWith(fontWeight: FontWeight.w700),
+                          style: context.homeType.meta.copyWith(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 2),
-                        Text(subtitle, style: HomeType.cardTitle.copyWith(fontSize: 14.5)),
+                        Text(subtitle, style: context.homeType.cardTitle.copyWith(fontSize: 14.5)),
                         if (multipleClinics)
                           Text(
                             clinic.clinic.nameAr,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: HomeType.meta,
+                            style: context.homeType.meta,
                           ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                  Icon(Icons.chevron_right_rounded, color: context.palette.muted),
                 ],
               ),
             ),
@@ -333,19 +336,25 @@ class _BookingBar extends ConsumerWidget {
     if (!bookable && !contact.canCall && !contact.canWhatsapp) return const SizedBox.shrink();
 
     final call = contact.canCall
-        ? () => openContact(ref, detail: detail, url: contact.telUrl!, channel: ContactChannel.phone)
+        ? () =>
+              openContact(ref, detail: detail, url: contact.telUrl!, channel: ContactChannel.phone)
         : null;
     final whatsapp = contact.canWhatsapp
-        ? () => openContact(ref, detail: detail, url: contact.whatsappUrl!, channel: ContactChannel.whatsapp)
+        ? () => openContact(
+            ref,
+            detail: detail,
+            url: contact.whatsappUrl!,
+            channel: ContactChannel.whatsapp,
+          )
         : null;
 
     final width = MediaQuery.sizeOf(context).width - 2 * AppSpacing.gutter;
     final roomy = width / MediaQuery.textScalerOf(context).scale(1) >= 330;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        boxShadow: [BoxShadow(color: Color(0x140F172A), blurRadius: 20, offset: Offset(0, -4))],
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        boxShadow: context.palette.shadowBar,
       ),
       child: SafeArea(
         top: false,
@@ -362,10 +371,10 @@ class _BookingBar extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l.ddStatFee, style: HomeType.feeLabel),
+                      Text(l.ddStatFee, style: context.homeType.feeLabel),
                       Text(
                         l.ddMoney(detail.card.minFee!),
-                        style: HomeType.feeAmount.copyWith(fontSize: 16),
+                        style: context.homeType.feeAmount.copyWith(fontSize: 16),
                       ),
                     ],
                   ),
@@ -378,7 +387,7 @@ class _BookingBar extends ConsumerWidget {
                     label: Text(l.doctorBookNow, maxLines: 1, overflow: TextOverflow.ellipsis),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(0, 52),
-                      textStyle: HomeType.button.copyWith(fontSize: 15),
+                      textStyle: context.homeType.button.copyWith(fontSize: 15),
                     ),
                   ),
                 ),
@@ -387,7 +396,7 @@ class _BookingBar extends ConsumerWidget {
                   _CircleAction(
                     icon: Icons.phone_rounded,
                     tooltip: l.doctorCall,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                     onTap: call,
                   ),
                 ],
@@ -397,7 +406,7 @@ class _BookingBar extends ConsumerWidget {
                     icon: Icons.chat_rounded,
                     tooltip: l.doctorWhatsapp,
                     // Green is reserved for WhatsApp and availability.
-                    color: AppColors.whatsapp,
+                    color: context.palette.whatsappFg,
                     onTap: whatsapp,
                   ),
                 ],
@@ -410,7 +419,7 @@ class _BookingBar extends ConsumerWidget {
                       label: Text(l.doctorCall),
                       style: FilledButton.styleFrom(
                         minimumSize: const Size(0, 52),
-                        textStyle: HomeType.button.copyWith(fontSize: 15),
+                        textStyle: context.homeType.button.copyWith(fontSize: 15),
                       ),
                     ),
                   ),
@@ -422,9 +431,9 @@ class _BookingBar extends ConsumerWidget {
                       icon: const Icon(Icons.chat_rounded, size: 20),
                       label: Text(l.doctorWhatsapp),
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.whatsapp,
+                        backgroundColor: context.palette.whatsapp,
                         minimumSize: const Size(0, 52),
-                        textStyle: HomeType.button.copyWith(fontSize: 15),
+                        textStyle: context.homeType.button.copyWith(fontSize: 15),
                       ),
                     ),
                   ),

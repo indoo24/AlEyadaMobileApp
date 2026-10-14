@@ -13,7 +13,6 @@ import '../articles/providers.dart';
 import '../clinics/providers.dart';
 import '../doctors/providers.dart';
 import '../doctors/repository.dart';
-import '../doctors/widgets/doctor_profile_sections.dart' show profileNavy;
 import '../notifications/notifications_screen.dart';
 import 'home_providers.dart';
 import 'home_style.dart';
@@ -27,6 +26,7 @@ import 'widgets/medical_center_card.dart';
 import 'widgets/pressable.dart';
 import 'widgets/quick_discovery.dart';
 import 'widgets/specialty_section.dart';
+import '../../core/theme/app_palette.dart';
 
 /// Home: greeting and search, shortcuts into the directory, specialties,
 /// recommended doctors, clinics and — when there are any — articles.
@@ -87,12 +87,12 @@ class HomeScreen extends ConsumerWidget {
       // White status-bar icons over the navy strip.
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: AppColors.bg,
+        backgroundColor: context.palette.page,
         body: Column(
           children: [
             // The status bar always sits on navy, even after the header has
             // scrolled away under it.
-            Container(color: profileNavy, height: MediaQuery.paddingOf(context).top),
+            Container(color: context.palette.heroStart, height: MediaQuery.paddingOf(context).top),
             Expanded(
               child: MediaQuery.removePadding(
                 context: context,
@@ -332,9 +332,9 @@ class _GuestCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(homeCardRadius),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.palette.border),
       ),
       child: Row(
         children: [
@@ -342,18 +342,18 @@ class _GuestCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.bgSoft,
+              color: context.palette.pageSoft,
               borderRadius: BorderRadius.circular(13),
             ),
-            child: const Icon(Icons.person_outline_rounded, color: AppColors.primary),
+            child: Icon(Icons.person_outline_rounded, color: context.palette.primary),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l.hmGuestTitle, style: HomeType.cardTitle),
-                Text(l.authGuestPrompt, style: HomeType.meta.copyWith(fontSize: 12.5)),
+                Text(l.hmGuestTitle, style: context.homeType.cardTitle),
+                Text(l.authGuestPrompt, style: context.homeType.meta.copyWith(fontSize: 12.5)),
               ],
             ),
           ),
@@ -363,7 +363,7 @@ class _GuestCard extends StatelessWidget {
             style: FilledButton.styleFrom(
               minimumSize: const Size(0, 42),
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              textStyle: HomeType.button.copyWith(fontSize: 13),
+              textStyle: context.homeType.button.copyWith(fontSize: 13),
             ),
             child: Text(l.authSignIn),
           ),
@@ -381,7 +381,7 @@ class _JoinCard extends StatelessWidget {
     final l = L.of(context);
     return Pressable(
       child: Material(
-        color: AppColors.bgSoft,
+        color: context.palette.pageSoft,
         borderRadius: BorderRadius.circular(homeCardRadius),
         child: InkWell(
           onTap: () => context.push(Routes.join),
@@ -394,22 +394,22 @@ class _JoinCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: context.palette.surface,
                     borderRadius: BorderRadius.circular(13),
                   ),
-                  child: const Icon(Icons.medical_services_outlined, color: AppColors.primary),
+                  child: Icon(Icons.medical_services_outlined, color: context.palette.primary),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l.hmJoinCta, style: HomeType.cardTitle),
-                      Text(l.joinIntro, style: HomeType.meta.copyWith(fontSize: 12.5)),
+                      Text(l.hmJoinCta, style: context.homeType.cardTitle),
+                      Text(l.joinIntro, style: context.homeType.meta.copyWith(fontSize: 12.5)),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.primary),
+                Icon(Icons.chevron_right_rounded, color: context.palette.primary),
               ],
             ),
           ),
@@ -437,21 +437,25 @@ class _HomeError extends StatelessWidget {
           Container(
             width: 84,
             height: 84,
-            decoration: const BoxDecoration(color: AppColors.bgSoft, shape: BoxShape.circle),
+            decoration: BoxDecoration(color: context.palette.pageSoft, shape: BoxShape.circle),
             child: Icon(
               offline ? Icons.wifi_off_rounded : Icons.cloud_off_rounded,
               size: 38,
-              color: AppColors.primary,
+              color: context.palette.primary,
             ),
           ),
           const SizedBox(height: 16),
-          Text(l.hmLoadErrorTitle, textAlign: TextAlign.center, style: HomeType.sectionTitle),
+          Text(
+            l.hmLoadErrorTitle,
+            textAlign: TextAlign.center,
+            style: context.homeType.sectionTitle,
+          ),
           const SizedBox(height: 6),
           Text(
             // A fixed, friendly sentence — never the server's wording.
             l.hmLoadErrorBody,
             textAlign: TextAlign.center,
-            style: HomeType.articleBody.copyWith(fontSize: 13),
+            style: context.homeType.articleBody.copyWith(fontSize: 13),
           ),
           const SizedBox(height: 18),
           FilledButton.icon(
@@ -460,7 +464,7 @@ class _HomeError extends StatelessWidget {
             label: Text(l.actionRetry),
             style: FilledButton.styleFrom(
               minimumSize: const Size(170, 48),
-              textStyle: HomeType.button.copyWith(fontSize: 14),
+              textStyle: context.homeType.button.copyWith(fontSize: 14),
             ),
           ),
         ],
@@ -502,9 +506,11 @@ class ApplicationStatusCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: open ? AppColors.surface : AppColors.star.withValues(alpha: 0.06),
+        color: open ? context.palette.surface : context.palette.star.withValues(alpha: 0.06),
         borderRadius: AppRadii.cardRadius,
-        border: Border.all(color: open ? AppColors.border : AppColors.star.withValues(alpha: 0.4)),
+        border: Border.all(
+          color: open ? context.palette.border : context.palette.star.withValues(alpha: 0.4),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,7 +519,7 @@ class ApplicationStatusCard extends StatelessWidget {
             children: [
               Icon(
                 open ? Icons.hourglass_top_rounded : Icons.info_outline_rounded,
-                color: open ? AppColors.primary : AppColors.star,
+                color: open ? context.palette.primary : context.palette.star,
                 size: 20,
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -528,9 +534,9 @@ class ApplicationStatusCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.input,
+                color: context.palette.input,
                 borderRadius: AppRadii.inputRadius,
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.palette.border),
               ),
               child: RichText(
                 text: TextSpan(

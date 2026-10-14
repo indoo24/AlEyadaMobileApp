@@ -13,6 +13,7 @@ import '../home/home_style.dart';
 import 'management_widgets.dart';
 import 'models.dart';
 import 'providers.dart';
+import '../../core/theme/app_palette.dart';
 
 /// The doctor's clinics, and — for each — the doctor's own terms there, the
 /// clinic's opening hours and (for the clinic's owner) invitations.
@@ -29,7 +30,7 @@ class ClinicsScreen extends ConsumerWidget {
     final clinics = ref.watch(myClinicsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       appBar: AppBar(title: Text(l.clinicsTitle)),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -70,7 +71,7 @@ class ClinicsScreen extends ConsumerWidget {
                   label: Text(l.clinicsAdd),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(0, 40),
-                    textStyle: HomeType.button,
+                    textStyle: context.homeType.button,
                   ),
                 ),
               ),
@@ -101,20 +102,21 @@ class _ClinicCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(clinic.nameAr, style: HomeType.cardTitle.copyWith(fontSize: 16)),
+          Text(clinic.nameAr, style: context.homeType.cardTitle.copyWith(fontSize: 16)),
           if (clinic.addressAr.isNotEmpty) ...[
             const SizedBox(height: 2),
-            Text(clinic.addressAr, style: HomeType.meta),
+            Text(clinic.addressAr, style: context.homeType.meta),
           ],
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,
             children: [
-              if (clinic.isPrimary) MgmtBadge(label: l.clinicBadgePrimary, color: AppColors.primary),
-              if (clinic.iOwnIt) MgmtBadge(label: l.clinicBadgeOwner, color: AppColors.muted),
+              if (clinic.isPrimary)
+                MgmtBadge(label: l.clinicBadgePrimary, color: context.palette.primary),
+              if (clinic.iOwnIt) MgmtBadge(label: l.clinicBadgeOwner, color: context.palette.muted),
               if (!clinic.isActive || !clinic.clinicIsActive)
-                MgmtBadge(label: l.clinicBadgeInactive, color: AppColors.danger),
+                MgmtBadge(label: l.clinicBadgeInactive, color: context.palette.danger),
             ],
           ),
           const SizedBox(height: 10),
@@ -170,8 +172,8 @@ class _Collapsible extends StatelessWidget {
         childrenPadding: const EdgeInsets.only(bottom: 8),
         // Collapsing must not throw away what was typed.
         maintainState: true,
-        leading: Icon(icon, color: AppColors.primary, size: 20),
-        title: Text(title, style: HomeType.cardTitle),
+        leading: Icon(icon, color: context.palette.primary, size: 20),
+        title: Text(title, style: context.homeType.cardTitle),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
         children: [child],
       ),
@@ -270,7 +272,7 @@ class _TermsFormState extends ConsumerState<_TermsForm> {
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(l.clinicAcceptBookings, style: HomeType.doctorSpecialty),
+          title: Text(l.clinicAcceptBookings, style: context.homeType.doctorSpecialty),
           value: _booking,
           onChanged: (v) => setState(() => _booking = v),
         ),
@@ -363,15 +365,15 @@ class _HoursEditorState extends ConsumerState<_HoursEditor> {
     final l = L.of(context);
 
     if (!_editable && _shifts.isEmpty) {
-      return Text(l.clinicHoursNone, style: HomeType.meta);
+      return Text(l.clinicHoursNone, style: context.homeType.meta);
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l.clinicHoursHint, style: HomeType.meta),
+        Text(l.clinicHoursHint, style: context.homeType.meta),
         const SizedBox(height: 10),
-        if (_shifts.isEmpty) Text(l.clinicHoursNone, style: HomeType.meta),
+        if (_shifts.isEmpty) Text(l.clinicHoursNone, style: context.homeType.meta),
         for (var i = 0; i < _shifts.length; i++)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -398,7 +400,10 @@ class _HoursEditorState extends ConsumerState<_HoursEditor> {
                 else
                   SizedBox(
                     width: 90,
-                    child: Text(weekdayName(l, _shifts[i].weekday), style: HomeType.doctorSpecialty),
+                    child: Text(
+                      weekdayName(l, _shifts[i].weekday),
+                      style: context.homeType.doctorSpecialty,
+                    ),
                   ),
                 _TimeButton(
                   label: l.clinicHoursFrom,
@@ -414,7 +419,11 @@ class _HoursEditorState extends ConsumerState<_HoursEditor> {
                   IconButton(
                     tooltip: l.managementDelete,
                     onPressed: () => setState(() => _shifts.removeAt(i)),
-                    icon: const Icon(Icons.delete_outline_rounded, color: AppColors.danger, size: 20),
+                    icon: Icon(
+                      Icons.delete_outline_rounded,
+                      color: context.palette.danger,
+                      size: 20,
+                    ),
                   ),
               ],
             ),
@@ -449,12 +458,12 @@ class _TimeButton extends StatelessWidget {
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(0, 40),
         padding: const EdgeInsets.symmetric(horizontal: 10),
-        textStyle: HomeType.button,
+        textStyle: context.homeType.button,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('$label ', style: HomeType.meta),
+          Text('$label ', style: context.homeType.meta),
           Text(value, textDirection: TextDirection.ltr),
         ],
       ),
@@ -528,13 +537,13 @@ class _InviteSectionState extends ConsumerState<_InviteSection> {
         const SizedBox(height: 12),
         MgmtSaveButton(label: l.clinicInviteSend, saving: _sending, onPressed: _send),
         const SizedBox(height: 14),
-        Text(l.clinicInvitesSent, style: HomeType.cardTitle),
+        Text(l.clinicInvitesSent, style: context.homeType.cardTitle),
         const SizedBox(height: 6),
         sent.when(
           loading: () => const Skeleton(height: 36, radius: 10),
-          error: (_, __) => Text(l.clinicInvitesNone, style: HomeType.meta),
+          error: (_, __) => Text(l.clinicInvitesNone, style: context.homeType.meta),
           data: (list) => list.isEmpty
-              ? Text(l.clinicInvitesNone, style: HomeType.meta)
+              ? Text(l.clinicInvitesNone, style: context.homeType.meta)
               : Column(
                   children: [
                     for (final i in list)
@@ -542,7 +551,9 @@ class _InviteSectionState extends ConsumerState<_InviteSection> {
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Row(
                           children: [
-                            Expanded(child: Text(i.doctorName, style: HomeType.doctorSpecialty)),
+                            Expanded(
+                              child: Text(i.doctorName, style: context.homeType.doctorSpecialty),
+                            ),
                             MgmtBadge(
                               label: switch (i.status) {
                                 'accepted' => l.invitationAccepted,
@@ -551,8 +562,10 @@ class _InviteSectionState extends ConsumerState<_InviteSection> {
                                 _ => l.invitationPending,
                               },
                               color: i.status == 'accepted'
-                                  ? AppColors.success
-                                  : (i.status == 'pending' ? AppColors.star : AppColors.muted),
+                                  ? context.palette.success
+                                  : (i.status == 'pending'
+                                        ? context.palette.star
+                                        : context.palette.muted),
                             ),
                           ],
                         ),
@@ -652,7 +665,12 @@ class _AddClinicSheetState extends ConsumerState<_AddClinicSheet> {
           children: [
             Text(l.clinicsAdd, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
-            AppTextField(label: l.clinicFormName, controller: _name, errorText: _nameError, required: true),
+            AppTextField(
+              label: l.clinicFormName,
+              controller: _name,
+              errorText: _nameError,
+              required: true,
+            ),
             const SizedBox(height: 12),
             AppDropdown<City?>(
               label: l.doctorsFilterCity,

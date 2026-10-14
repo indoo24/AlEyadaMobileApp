@@ -1962,6 +1962,21 @@ class LEn extends L {
   String get acLanguageSheetTitle => 'Choose language';
 
   @override
+  String get accountAppearance => 'Appearance';
+
+  @override
+  String get accountThemeSystem => 'System';
+
+  @override
+  String get accountThemeLight => 'Light';
+
+  @override
+  String get accountThemeDark => 'Dark';
+
+  @override
+  String get acAppearanceSheetTitle => 'Choose appearance';
+
+  @override
   String get acGuestTitle => 'Welcome';
 
   @override

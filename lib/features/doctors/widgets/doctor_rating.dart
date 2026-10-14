@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// A rating as the backend reports it, trimmed of padding zeros but never
 /// rounded: `"4.60"` → `4.6`, `"4.95"` → `4.95`, `"5.00"` → `5.0`.
@@ -53,14 +53,14 @@ class DoctorRating extends StatelessWidget {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.star_outline_rounded, size: fontSize + 2, color: AppColors.muted),
+          Icon(Icons.star_outline_rounded, size: fontSize + 2, color: context.palette.muted),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
               l.ratingNone,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: fontSize, color: AppColors.muted),
+              style: TextStyle(fontSize: fontSize, color: context.palette.muted),
             ),
           ),
         ],
@@ -78,7 +78,7 @@ class DoctorRating extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.star_rounded, size: fontSize + 3, color: AppColors.star),
+          Icon(Icons.star_rounded, size: fontSize + 3, color: context.palette.star),
           const SizedBox(width: 3),
           // Digits read left-to-right inside Arabic text.
           Text(
@@ -87,7 +87,7 @@ class DoctorRating extends StatelessWidget {
             style: TextStyle(
               fontSize: fontSize + 0.5,
               fontWeight: FontWeight.w800,
-              color: AppColors.navy,
+              color: context.palette.heading,
             ),
           ),
           if (count > 0) ...[
@@ -97,7 +97,7 @@ class DoctorRating extends StatelessWidget {
                 '(${l.doctorReviewsCount(count)})',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: fontSize - 0.5, color: AppColors.muted),
+                style: TextStyle(fontSize: fontSize - 0.5, color: context.palette.muted),
               ),
             ),
           ],

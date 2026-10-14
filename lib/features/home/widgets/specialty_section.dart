@@ -12,6 +12,7 @@ import 'home_section_header.dart';
 import 'home_section_message.dart';
 import 'horizontal_strip.dart';
 import 'quick_discovery.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// How many specialties the strip shows; "see all" opens every one.
 const _stripCount = 10;
@@ -105,7 +106,7 @@ class SpecialtyTile extends StatelessWidget {
         label: count > 0 ? '${specialty.nameAr}، ${l.hmSpecialtyDoctors(count)}' : specialty.nameAr,
         excludeSemantics: true,
         child: Material(
-          color: AppColors.surface,
+          color: context.palette.surface,
           borderRadius: BorderRadius.circular(homeCardRadius),
           child: InkWell(
             onTap: onTap,
@@ -114,18 +115,18 @@ class SpecialtyTile extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(6, 12, 6, 10),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(homeCardRadius),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.palette.border),
               ),
               child: Column(
                 children: [
                   Container(
                     width: 46,
                     height: 46,
-                    decoration: const BoxDecoration(
-                      color: AppColors.bgSoft,
+                    decoration: BoxDecoration(
+                      color: context.palette.pageSoft,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(specialtyIcon(specialty), color: AppColors.primary, size: 23),
+                    child: Icon(specialtyIcon(specialty), color: context.palette.primary, size: 23),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -133,7 +134,7 @@ class SpecialtyTile extends StatelessWidget {
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: HomeType.tileLabel,
+                    style: context.homeType.tileLabel,
                   ),
                   if (count > 0) ...[
                     const SizedBox(height: 2),
@@ -141,7 +142,7 @@ class SpecialtyTile extends StatelessWidget {
                       l.hmSpecialtyDoctors(count),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: HomeType.tileMeta,
+                      style: context.homeType.tileMeta,
                     ),
                   ],
                 ],
@@ -167,7 +168,7 @@ Future<void> showAllSpecialties(BuildContext context) => showModalBottomSheet<vo
   context: context,
   isScrollControlled: true,
   useSafeArea: true,
-  backgroundColor: AppColors.surface,
+  backgroundColor: context.palette.surfaceRaised,
   shape: const RoundedRectangleBorder(
     borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
   ),
@@ -193,7 +194,10 @@ class _AllSpecialtiesSheet extends ConsumerWidget {
           Container(
             width: 40,
             height: 4,
-            decoration: BoxDecoration(color: AppColors.border, borderRadius: AppRadii.pillRadius),
+            decoration: BoxDecoration(
+              color: context.palette.border,
+              borderRadius: AppRadii.pillRadius,
+            ),
           ),
           Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.gutter, 10, 8, 6),
@@ -204,7 +208,7 @@ class _AllSpecialtiesSheet extends ConsumerWidget {
                     header: true,
                     child: Text(
                       l.hmAllSpecialties,
-                      style: HomeType.sectionTitle.copyWith(fontSize: 17),
+                      style: context.homeType.sectionTitle.copyWith(fontSize: 17),
                     ),
                   ),
                 ),

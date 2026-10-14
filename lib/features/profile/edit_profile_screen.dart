@@ -11,6 +11,7 @@ import '../../l10n/app_localizations.dart';
 import '../auth/phone_verification.dart';
 import '../home/home_style.dart';
 import 'widgets/account_widgets.dart';
+import '../../core/theme/app_palette.dart';
 
 /// Editing the account's own details.
 ///
@@ -111,29 +112,29 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     // colour on focus, red on error. Scoped here, so other forms are unchanged.
     final fieldTheme = theme.copyWith(
       inputDecorationTheme: theme.inputDecorationTheme.copyWith(
-        fillColor: AppColors.bg,
+        fillColor: context.palette.page,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         border: border(Colors.transparent),
         enabledBorder: border(Colors.transparent),
         disabledBorder: border(Colors.transparent),
-        focusedBorder: border(AppColors.primary, 1.5),
-        errorBorder: border(AppColors.danger),
-        focusedErrorBorder: border(AppColors.danger, 1.5),
+        focusedBorder: border(context.palette.primary, 1.5),
+        errorBorder: border(context.palette.danger),
+        focusedErrorBorder: border(context.palette.danger, 1.5),
       ),
       textTheme: theme.textTheme.copyWith(
         labelLarge: theme.textTheme.labelLarge?.copyWith(
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          color: AppColors.ink,
+          color: context.palette.body,
         ),
       ),
     );
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       appBar: AppBar(
         title: Text(l.accountProfile),
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.palette.surface,
         surfaceTintColor: Colors.transparent,
       ),
       body: Theme(
@@ -224,9 +225,9 @@ class _Summary extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: AppColors.surface,
+      color: context.palette.surface,
       borderRadius: BorderRadius.circular(homeCardRadius),
-      boxShadow: AppShadows.soft,
+      boxShadow: context.palette.shadowSoft,
     ),
     child: Row(
       children: [
@@ -240,13 +241,13 @@ class _Summary extends StatelessWidget {
                 name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: HomeType.cardTitle.copyWith(fontSize: 16),
+                style: context.homeType.cardTitle.copyWith(fontSize: 16),
               ),
               if (phone.isNotEmpty)
                 Text(
                   phone,
                   textDirection: TextDirection.ltr,
-                  style: HomeType.meta.copyWith(fontSize: 13),
+                  style: context.homeType.meta.copyWith(fontSize: 13),
                 ),
             ],
           ),
@@ -266,16 +267,16 @@ class _Panel extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
     decoration: BoxDecoration(
-      color: AppColors.surface,
+      color: context.palette.surface,
       borderRadius: BorderRadius.circular(homeCardRadius),
-      boxShadow: AppShadows.soft,
+      boxShadow: context.palette.shadowSoft,
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Semantics(
           header: true,
-          child: Text(title, style: HomeType.sectionTitle.copyWith(fontSize: 15)),
+          child: Text(title, style: context.homeType.sectionTitle.copyWith(fontSize: 15)),
         ),
         const SizedBox(height: 12),
         ...children,
@@ -308,12 +309,12 @@ class _ReadOnlyPhone extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 48),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.bgSoft,
+              color: context.palette.pageSoft,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
               children: [
-                const Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.muted),
+                Icon(Icons.lock_outline_rounded, size: 18, color: context.palette.muted),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Align(
@@ -321,7 +322,7 @@ class _ReadOnlyPhone extends StatelessWidget {
                     child: Text(
                       phone,
                       textDirection: TextDirection.ltr,
-                      style: const TextStyle(fontSize: 15, color: AppColors.ink),
+                      style: TextStyle(fontSize: 15, color: context.palette.body),
                     ),
                   ),
                 ),
@@ -338,7 +339,7 @@ class _ReadOnlyPhone extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             l.pfPhoneReadOnly,
-            style: HomeType.meta.copyWith(fontSize: 12, color: AppColors.muted),
+            style: context.homeType.meta.copyWith(fontSize: 12, color: context.palette.muted),
           ),
         ],
       ),
@@ -361,9 +362,9 @@ class _SaveBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    decoration: const BoxDecoration(
-      color: AppColors.surface,
-      border: Border(top: BorderSide(color: AppColors.border)),
+    decoration: BoxDecoration(
+      color: context.palette.surface,
+      border: Border(top: BorderSide(color: context.palette.border)),
     ),
     child: SafeArea(
       top: false,
@@ -373,7 +374,7 @@ class _SaveBar extends StatelessWidget {
           onPressed: enabled ? onSave : null,
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(50),
-            textStyle: HomeType.button.copyWith(fontSize: 15),
+            textStyle: context.homeType.button.copyWith(fontSize: 15),
           ),
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 180),

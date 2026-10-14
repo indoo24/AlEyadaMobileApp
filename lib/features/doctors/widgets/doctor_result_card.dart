@@ -10,6 +10,7 @@ import '../models.dart';
 import '../providers.dart';
 import 'doctor_card_tile.dart';
 import 'doctor_rating.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// A doctor in the search results: who they are and what they cost on top, the
 /// place and booking status beneath, and the two actions — call, and book.
@@ -35,10 +36,10 @@ class DoctorResultCard extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(homeCardRadius),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        border: Border.all(color: context.palette.border),
+        boxShadow: context.palette.shadowSoft,
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -63,7 +64,7 @@ class DoctorResultCard extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 doctor.displayName,
-                                style: HomeType.doctorName.copyWith(fontSize: 16),
+                                style: context.homeType.doctorName.copyWith(fontSize: 16),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -79,7 +80,7 @@ class DoctorResultCard extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Text(
                             headline,
-                            style: HomeType.doctorSpecialty,
+                            style: context.homeType.doctorSpecialty,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -107,7 +108,7 @@ class DoctorResultCard extends ConsumerWidget {
                   icon: Icons.location_on_outlined,
                   child: Text(
                     doctor.locationLabel,
-                    style: HomeType.doctorSpecialty,
+                    style: context.homeType.doctorSpecialty,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -118,8 +119,11 @@ class DoctorResultCard extends ConsumerWidget {
                   child: Text.rich(
                     TextSpan(
                       children: [
-                        TextSpan(text: '${l.homeFeeLabel}: ', style: HomeType.feeLabel),
-                        TextSpan(text: l.homeFeeAmount(doctor.minFee!), style: HomeType.feeAmount),
+                        TextSpan(text: '${l.homeFeeLabel}: ', style: context.homeType.feeLabel),
+                        TextSpan(
+                          text: l.homeFeeAmount(doctor.minFee!),
+                          style: context.homeType.feeAmount,
+                        ),
                       ],
                     ),
                   ),
@@ -128,12 +132,12 @@ class DoctorResultCard extends ConsumerWidget {
                 icon: doctor.bookingEnabled
                     ? Icons.event_available_outlined
                     : Icons.phone_in_talk_outlined,
-                color: doctor.bookingEnabled ? AppColors.success : AppColors.muted,
+                color: doctor.bookingEnabled ? context.palette.success : context.palette.muted,
                 child: Text(
                   doctor.bookingEnabled ? l.homeBookingAvailable : l.homeContactOnly,
-                  style: HomeType.status.copyWith(
+                  style: context.homeType.status.copyWith(
                     fontSize: 12,
-                    color: doctor.bookingEnabled ? AppColors.success : AppColors.muted,
+                    color: doctor.bookingEnabled ? context.palette.success : context.palette.muted,
                   ),
                 ),
               ),
@@ -154,7 +158,7 @@ class DoctorResultCard extends ConsumerWidget {
                         minimumSize: const Size(0, 44),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        textStyle: HomeType.button.copyWith(fontSize: 13.5),
+                        textStyle: context.homeType.button.copyWith(fontSize: 13.5),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -209,7 +213,12 @@ class _Photo extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Positioned.fill(
-            child: DoctorAvatar(photo: doctor.photo, name: doctor.displayName, size: 84, radius: 12),
+            child: DoctorAvatar(
+              photo: doctor.photo,
+              name: doctor.displayName,
+              size: 84,
+              radius: 12,
+            ),
           ),
           // Green when the doctor takes online bookings — the only availability
           // signal the list carries. Labelled for screen readers.
@@ -223,9 +232,9 @@ class _Photo extends StatelessWidget {
                   width: 13,
                   height: 13,
                   decoration: BoxDecoration(
-                    color: AppColors.success,
+                    color: context.palette.success,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(color: context.palette.surface, width: 2),
                   ),
                 ),
               ),
@@ -245,18 +254,23 @@ class _Tag extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: BoxDecoration(color: AppColors.bgSoft, borderRadius: AppRadii.pillRadius),
-      child: Text(label, style: HomeType.pill.copyWith(color: AppColors.muted, fontSize: 11)),
+      decoration: BoxDecoration(color: context.palette.pageSoft, borderRadius: AppRadii.pillRadius),
+      child: Text(
+        label,
+        style: context.homeType.pill.copyWith(color: context.palette.muted, fontSize: 11),
+      ),
     );
   }
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.icon, required this.child, this.color = AppColors.primary});
+  const _InfoRow({required this.icon, required this.child, this.color});
 
   final IconData icon;
   final Widget child;
-  final Color color;
+
+  /// Defaults to the brand blue of the theme in force.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -265,7 +279,7 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: color),
+          Icon(icon, size: 16, color: color ?? context.palette.primary),
           const SizedBox(width: 8),
           Expanded(child: child),
         ],
@@ -283,7 +297,7 @@ class _CallButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.bgSoft,
+      color: context.palette.pageSoft,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onPressed,
@@ -294,10 +308,10 @@ class _CallButton extends StatelessWidget {
             button: true,
             label: label,
             excludeSemantics: true,
-            child: const SizedBox(
+            child: SizedBox(
               width: 44,
               height: 44,
-              child: Icon(Icons.phone_outlined, size: 20, color: AppColors.primary),
+              child: Icon(Icons.phone_outlined, size: 20, color: context.palette.primary),
             ),
           ),
         ),

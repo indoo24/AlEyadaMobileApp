@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 
@@ -33,105 +34,74 @@ class HomeSpacing {
 ///
 /// Sizes are deliberately a notch below the app theme's (which is tuned for
 /// forms and detail pages): the home feed is dense, and the reference sets its
-/// hierarchy with weight and colour more than with size. Colours are fixed here;
-/// font family, letter-spacing and the user's text scale still come from the
-/// theme and the app-level text-scale clamp.
+/// hierarchy with weight and colour more than with size. Colours come from the
+/// palette; font family, letter-spacing and the user's text scale still come
+/// from the theme and the app-level text-scale clamp.
+///
+/// Read with `context.homeType`: the colours come from the theme in force, so
+/// the same style is dark-on-light in light mode and light-on-dark in dark.
 class HomeType {
-  const HomeType._();
+  const HomeType(this._p);
 
-  static const greeting = TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.w700,
-    color: AppColors.navy,
-    height: 1.3,
-  );
-  static const tagline = TextStyle(fontSize: 12, color: AppColors.muted, height: 1.3);
+  final AppPalette _p;
 
-  static const brand = TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w800,
-    color: AppColors.primary,
-    height: 1.2,
-  );
-  static const location = TextStyle(fontSize: 12, color: AppColors.muted, height: 1.4);
-  static const locationChip = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w600,
-    color: AppColors.primary,
-  );
+  TextStyle get greeting =>
+      TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: _p.heading, height: 1.3);
+  TextStyle get tagline => TextStyle(fontSize: 12, color: _p.muted, height: 1.3);
 
-  static const searchHint = TextStyle(fontSize: 13, color: AppColors.muted);
+  TextStyle get brand =>
+      TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _p.primary, height: 1.2);
+  TextStyle get location => TextStyle(fontSize: 12, color: _p.muted, height: 1.4);
+  TextStyle get locationChip =>
+      TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _p.primary);
 
-  static const sectionTitle = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w700,
-    color: AppColors.navy,
-    height: 1.3,
-  );
-  static const seeAll = TextStyle(fontSize: 12, fontWeight: FontWeight.w600);
+  TextStyle get searchHint => TextStyle(fontSize: 13, color: _p.muted);
 
-  static const chip = TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600);
+  TextStyle get sectionTitle =>
+      TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _p.heading, height: 1.3);
+  TextStyle get seeAll => TextStyle(fontSize: 12, fontWeight: FontWeight.w600);
 
-  static const doctorName = TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w700,
-    color: AppColors.navy,
-    height: 1.35,
-  );
-  static const doctorSpecialty = TextStyle(fontSize: 12.5, color: AppColors.ink, height: 1.4);
-  static const meta = TextStyle(fontSize: 11.5, color: AppColors.muted, height: 1.4);
+  TextStyle get chip => TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600);
 
-  static const feeLabel = TextStyle(fontSize: 11, color: AppColors.muted);
-  static const feeAmount = TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w800,
-    color: AppColors.primary,
-  );
-  static const status = TextStyle(fontSize: 11, fontWeight: FontWeight.w600);
+  TextStyle get doctorName =>
+      TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _p.heading, height: 1.35);
+  TextStyle get doctorSpecialty => TextStyle(fontSize: 12.5, color: _p.body, height: 1.4);
+  TextStyle get meta => TextStyle(fontSize: 11.5, color: _p.muted, height: 1.4);
+
+  TextStyle get feeLabel => TextStyle(fontSize: 11, color: _p.muted);
+  TextStyle get feeAmount =>
+      TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: _p.primary);
+  TextStyle get status => TextStyle(fontSize: 11, fontWeight: FontWeight.w600);
 
   /// Button text styles *replace* the theme's rather than merging with it, so
   /// the family must be named here or the label drops out of Cairo.
-  static const button = TextStyle(
-    fontFamily: AppTheme.fontFamily,
-    fontSize: 12.5,
-    fontWeight: FontWeight.w700,
-  );
+  TextStyle get button =>
+      TextStyle(fontFamily: AppTheme.fontFamily, fontSize: 12.5, fontWeight: FontWeight.w700);
 
-  static const cardTitle = TextStyle(
-    fontSize: 14.5,
-    fontWeight: FontWeight.w700,
-    color: AppColors.navy,
-    height: 1.4,
-  );
-  static const articleTitle = TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w700,
-    color: AppColors.navy,
-    height: 1.5,
-  );
-  static const articleBody = TextStyle(fontSize: 12.5, color: AppColors.muted, height: 1.6);
-  static const pill = TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600);
+  TextStyle get cardTitle =>
+      TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: _p.heading, height: 1.4);
+  TextStyle get articleTitle =>
+      TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _p.heading, height: 1.5);
+  TextStyle get articleBody => TextStyle(fontSize: 12.5, color: _p.muted, height: 1.6);
+  TextStyle get pill => TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600);
 
-  static const navLabel = TextStyle(fontSize: 11, height: 1.2);
+  TextStyle get navLabel => TextStyle(fontSize: 11, height: 1.2);
 
   // The navy header.
-  static const heroGreeting = TextStyle(
-    fontSize: 19,
-    fontWeight: FontWeight.w800,
-    color: Colors.white,
-    height: 1.3,
-  );
-  static const heroTagline = TextStyle(fontSize: 12.5, color: Color(0xCCFFFFFF), height: 1.4);
-  static const heroSearch = TextStyle(fontSize: 14, color: AppColors.muted);
+  TextStyle get heroGreeting =>
+      TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: Colors.white, height: 1.3);
+  TextStyle get heroTagline => TextStyle(fontSize: 12.5, color: Color(0xCCFFFFFF), height: 1.4);
+  TextStyle get heroSearch => TextStyle(fontSize: 14, color: _p.muted);
 
   // Shortcut and specialty tiles: a short label under an icon.
-  static const tileLabel = TextStyle(
-    fontSize: 12.5,
-    fontWeight: FontWeight.w600,
-    color: AppColors.navy,
-    height: 1.35,
-  );
-  static const tileMeta = TextStyle(fontSize: 11, color: AppColors.muted, height: 1.3);
+  TextStyle get tileLabel =>
+      TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: _p.heading, height: 1.35);
+  TextStyle get tileMeta => TextStyle(fontSize: 11, color: _p.muted, height: 1.3);
+}
+
+/// `context.homeType` — the home feed's type scale in the colours of the theme.
+extension HomeTypeContext on BuildContext {
+  HomeType get homeType => HomeType(palette);
 }
 
 /// Card corner radius on the home feed.

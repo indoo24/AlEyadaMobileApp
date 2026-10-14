@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// One doctor in a list.
 class DoctorCardTile extends StatelessWidget {
@@ -69,7 +70,7 @@ class DoctorCardTile extends StatelessWidget {
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         l.doctorFeeFrom(doctor.minFee!),
-                        style: text.titleSmall?.copyWith(color: AppColors.primary),
+                        style: text.titleSmall?.copyWith(color: context.palette.primary),
                       ),
                     ],
                   ],
@@ -104,9 +105,9 @@ class DoctorAvatar extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: AppColors.bgSoft,
+          color: context.palette.pageSoft,
           borderRadius: BorderRadius.circular(radius ?? size * 0.28),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.palette.border),
         ),
         clipBehavior: Clip.antiAlias,
         child: (photo == null || photo!.isEmpty)
@@ -116,7 +117,7 @@ class DoctorAvatar extends StatelessWidget {
                   style: TextStyle(
                     fontSize: size * 0.4,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                   ),
                 ),
               )
@@ -133,12 +134,12 @@ class DoctorAvatar extends StatelessWidget {
                     style: TextStyle(
                       fontSize: size * 0.4,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                     ),
                   ),
                 ),
                 loadingBuilder: (context, child, progress) =>
-                    progress == null ? child : const ColoredBox(color: AppColors.bgSoft),
+                    progress == null ? child : ColoredBox(color: context.palette.pageSoft),
               ),
       ),
     );
@@ -151,12 +152,7 @@ class DoctorAvatar extends StatelessWidget {
 /// communicated only by a gold glyph is invisible to a screen reader and
 /// ambiguous to anyone who cannot distinguish the colour.
 class RatingBadge extends StatelessWidget {
-  const RatingBadge({
-    super.key,
-    required this.rating,
-    required this.count,
-    this.compact = false,
-  });
+  const RatingBadge({super.key, required this.rating, required this.count, this.compact = false});
 
   final double rating;
   final int count;
@@ -172,29 +168,32 @@ class RatingBadge extends StatelessWidget {
       label: '${l.semanticRating(value)} — ${l.doctorReviewsCount(count)}',
       excludeSemantics: true,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: compact ? 7 : AppSpacing.sm, vertical: compact ? 3 : 4),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 7 : AppSpacing.sm,
+          vertical: compact ? 3 : 4,
+        ),
         decoration: BoxDecoration(
-          color: compact ? AppColors.bgSoft : AppColors.star.withValues(alpha: 0.12),
+          color: compact ? context.palette.pageSoft : context.palette.star.withValues(alpha: 0.12),
           borderRadius: AppRadii.pillRadius,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.star_rounded, size: compact ? 13 : 15, color: AppColors.star),
+            Icon(Icons.star_rounded, size: compact ? 13 : 15, color: context.palette.star),
             const SizedBox(width: 3),
             Text(
               value,
               style: TextStyle(
                 fontSize: compact ? 11.5 : 13,
                 fontWeight: FontWeight.w700,
-                color: AppColors.navy,
+                color: context.palette.heading,
               ),
               textDirection: TextDirection.ltr,
             ),
             const SizedBox(width: 3),
             Text(
               '($count)',
-              style: TextStyle(fontSize: compact ? 10.5 : 12, color: AppColors.muted),
+              style: TextStyle(fontSize: compact ? 10.5 : 12, color: context.palette.muted),
               textDirection: TextDirection.ltr,
             ),
           ],
@@ -215,13 +214,13 @@ class MetaChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 15, color: AppColors.muted),
+        Icon(icon, size: 15, color: context.palette.muted),
         const SizedBox(width: 4),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 180),
           child: Text(
             label,
-            style: const TextStyle(fontSize: 13, color: AppColors.muted),
+            style: TextStyle(fontSize: 13, color: context.palette.muted),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/tokens.dart';
 import '../../home/home_style.dart';
 import '../../home/widgets/pressable.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// The building blocks of My Account and Personal Information.
 ///
@@ -35,16 +36,16 @@ class ProfileAvatar extends StatelessWidget {
           color: onDark ? Colors.white.withValues(alpha: 0.18) : null,
         ),
         child: Container(
-          decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.bgSoft),
+          decoration: BoxDecoration(shape: BoxShape.circle, color: context.palette.pageSoft),
           alignment: Alignment.center,
           child: initial.isEmpty
-              ? Icon(Icons.person_rounded, size: size * 0.5, color: AppColors.primary)
+              ? Icon(Icons.person_rounded, size: size * 0.5, color: context.palette.primary)
               : Text(
                   initial.toUpperCase(),
                   style: TextStyle(
                     fontSize: size * 0.4,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                     height: 1,
                   ),
                 ),
@@ -73,15 +74,15 @@ class SettingsGroup extends StatelessWidget {
               header: true,
               child: Text(
                 title!,
-                style: HomeType.meta.copyWith(fontSize: 12.5, fontWeight: FontWeight.w700),
+                style: context.homeType.meta.copyWith(fontSize: 12.5, fontWeight: FontWeight.w700),
               ),
             ),
           ),
         Container(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.palette.surface,
             borderRadius: BorderRadius.circular(homeCardRadius),
-            boxShadow: AppShadows.soft,
+            boxShadow: context.palette.shadowSoft,
           ),
           clipBehavior: Clip.antiAlias,
           child: Material(
@@ -90,7 +91,7 @@ class SettingsGroup extends StatelessWidget {
               children: [
                 for (var i = 0; i < children.length; i++) ...[
                   if (i > 0)
-                    const Divider(height: 1, thickness: 1, indent: 64, color: AppColors.border),
+                    Divider(height: 1, thickness: 1, indent: 64, color: context.palette.border),
                   children[i],
                 ],
               ],
@@ -130,7 +131,7 @@ class SettingsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = destructive ? AppColors.danger : AppColors.primary;
+    final color = destructive ? context.palette.danger : context.palette.primary;
     return Semantics(
       container: true,
       button: true,
@@ -149,8 +150,8 @@ class SettingsRow extends StatelessWidget {
                   height: 36,
                   decoration: BoxDecoration(
                     color: destructive
-                        ? AppColors.danger.withValues(alpha: 0.08)
-                        : AppColors.bgSoft,
+                        ? context.palette.danger.withValues(alpha: 0.08)
+                        : context.palette.pageSoft,
                     borderRadius: BorderRadius.circular(11),
                   ),
                   child: Icon(icon, size: 20, color: color),
@@ -159,10 +160,10 @@ class SettingsRow extends StatelessWidget {
                 Expanded(
                   child: Text(
                     label,
-                    style: HomeType.cardTitle.copyWith(
+                    style: context.homeType.cardTitle.copyWith(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w600,
-                      color: destructive ? AppColors.danger : AppColors.navy,
+                      color: destructive ? context.palette.danger : context.palette.heading,
                     ),
                   ),
                 ),
@@ -171,7 +172,7 @@ class SettingsRow extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppColors.danger,
+                      color: context.palette.danger,
                       borderRadius: AppRadii.pillRadius,
                     ),
                     child: Text(
@@ -194,13 +195,13 @@ class SettingsRow extends StatelessWidget {
                       value!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: HomeType.meta.copyWith(fontSize: 13),
+                      style: context.homeType.meta.copyWith(fontSize: 13),
                     ),
                   ),
                 ],
                 if (!destructive) ...[
                   const SizedBox(width: 4),
-                  const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.muted),
+                  Icon(Icons.chevron_right_rounded, size: 20, color: context.palette.muted),
                 ],
               ],
             ),
@@ -231,12 +232,10 @@ class PhoneStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = verified
-        ? (onDark ? const Color(0xFF86EFAC) : const Color(0xFF15803D))
-        : (onDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309));
-    final bg = onDark
-        ? Colors.white.withValues(alpha: 0.12)
-        : (verified ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7));
+    final tone = verified ? context.palette.toneSuccess : context.palette.toneWarning;
+    // On the navy header the chip is always the pale pair, in either mode.
+    final fg = onDark ? (verified ? const Color(0xFF86EFAC) : const Color(0xFFFCD34D)) : tone.fg;
+    final bg = onDark ? context.palette.heroChip : tone.bg;
     final chip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(color: bg, borderRadius: AppRadii.pillRadius),
@@ -264,9 +263,9 @@ class PhoneStatusChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
-                color: onDark ? Colors.white : AppColors.primary,
+                color: onDark ? Colors.white : context.palette.primary,
                 decoration: TextDecoration.underline,
-                decorationColor: onDark ? Colors.white : AppColors.primary,
+                decorationColor: onDark ? Colors.white : context.palette.primary,
               ),
             ),
           ],

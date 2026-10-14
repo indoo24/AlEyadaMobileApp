@@ -149,6 +149,29 @@ asserting both directions from the same tree.
 - Text scaling is honoured and clamped to 0.85–1.6, which is honest about where
   the layouts stop working rather than ignoring the setting.
 
+## Light and dark themes
+
+The app follows the device by default; **Account → Appearance** forces System,
+Light or Dark, saved under `aleyada.theme_mode` and read before the first frame
+(like the language) so nothing flashes.
+
+- Colours are **roles**, not values: `context.palette.surface`, `.heading`,
+  `.muted`, `.primary`, `.toneWarning` … (`lib/core/theme/app_palette.dart`, a
+  `ThemeExtension`). Light is the website's design tokens, unchanged; dark is a
+  deep navy-slate with the same blue, lifted for contrast.
+- Two different blues on purpose: `primary` is the brand blue **as text and
+  icons** (light on dark), `primaryFill` is the brand blue **as a fill** under a
+  white label. Destructive and WhatsApp fills have their own roles too.
+- Statuses (booking pills, notifications, the timeline) use `StatusTone` pairs —
+  foreground and tint chosen together.
+- Type that carries colour is `context.homeType.*`; shadows are
+  `context.palette.shadow*`.
+- **Never** reference `AppColors` or write a `Color(0x…)` outside
+  `lib/core/theme/` (the navy hero and the splash are the only exceptions).
+  `test/unit/theme_guard_test.dart` fails the build if you do, and
+  `test/unit/palette_contrast_test.dart` checks every text, fill and status pair
+  against WCAG AA in both modes — add a role there when you add one.
+
 ## Running and testing
 
 ```bash

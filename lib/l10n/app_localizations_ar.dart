@@ -1968,6 +1968,21 @@ class LAr extends L {
   String get acLanguageSheetTitle => 'اختر اللغة';
 
   @override
+  String get accountAppearance => 'المظهر';
+
+  @override
+  String get accountThemeSystem => 'تلقائي';
+
+  @override
+  String get accountThemeLight => 'فاتح';
+
+  @override
+  String get accountThemeDark => 'داكن';
+
+  @override
+  String get acAppearanceSheetTitle => 'اختر المظهر';
+
+  @override
   String get acGuestTitle => 'مرحباً بك';
 
   @override

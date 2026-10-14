@@ -11,6 +11,7 @@ import '../../core/theme/tokens.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
 import 'widgets/auth_widgets.dart';
+import '../../core/theme/app_palette.dart';
 
 /// Patient registration.
 ///
@@ -236,7 +237,7 @@ class _ConsentRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 12, 8),
       decoration: BoxDecoration(
-        color: value ? AppColors.bgSoft : AppColors.bg,
+        color: value ? context.palette.pageSoft : context.palette.page,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -256,10 +257,10 @@ class _ConsentRow extends StatelessWidget {
                   Expanded(
                     child: Text(
                       l.consentAccept,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.ink,
+                        color: context.palette.body,
                         height: 1.5,
                       ),
                     ),
@@ -291,7 +292,7 @@ class _ConsentRow extends StatelessWidget {
         context: context,
         isScrollControlled: true,
         useSafeArea: true,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.palette.surfaceRaised,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -308,7 +309,7 @@ class _ConsentRow extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.border,
+                    color: context.palette.border,
                     borderRadius: AppRadii.pillRadius,
                   ),
                 ),
@@ -318,17 +319,17 @@ class _ConsentRow extends StatelessWidget {
                 header: true,
                 child: Text(
                   p.titleAr,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.navy,
+                    color: context.palette.heading,
                   ),
                 ),
               ),
               const SizedBox(height: 12),
               Text(
                 p.bodyAr!.trim(),
-                style: const TextStyle(fontSize: 14, color: AppColors.ink, height: 1.8),
+                style: TextStyle(fontSize: 14, color: context.palette.body, height: 1.8),
               ),
             ],
           ),
@@ -347,17 +348,17 @@ class _PoliciesError extends StatelessWidget {
     return Container(
       padding: const EdgeInsetsDirectional.fromSTEB(12, 6, 6, 6),
       decoration: BoxDecoration(
-        color: AppColors.danger.withValues(alpha: 0.06),
+        color: context.palette.danger.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded, size: 18, color: AppColors.danger),
+          Icon(Icons.error_outline_rounded, size: 18, color: context.palette.danger),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               l.auPoliciesRetry,
-              style: const TextStyle(fontSize: 13, color: AppColors.danger),
+              style: TextStyle(fontSize: 13, color: context.palette.danger),
             ),
           ),
           TextButton(onPressed: onRetry, child: Text(l.actionRetry)),
@@ -389,17 +390,17 @@ class _PolicyLink extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.description_outlined, size: 16, color: AppColors.primary),
+              Icon(Icons.description_outlined, size: 16, color: context.palette.primary),
               const SizedBox(width: 4),
               Flexible(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                     decoration: TextDecoration.underline,
-                    decorationColor: AppColors.primary,
+                    decorationColor: context.palette.primary,
                   ),
                 ),
               ),

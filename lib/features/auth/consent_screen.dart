@@ -12,6 +12,7 @@ import '../../core/theme/tokens.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/theme/app_palette.dart';
 
 final _policiesProvider = FutureProvider<List<LegalPolicy>>(
   (ref) => ref.watch(authRepositoryProvider).currentPolicies(),
@@ -72,7 +73,7 @@ class _ConsentScreenState extends ConsumerState<ConsentScreen> {
     final policies = ref.watch(_policiesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       appBar: AppBar(title: Text(l.consentReacceptTitle), backgroundColor: Colors.transparent),
       body: SafeArea(
         child: AsyncValueView<List<LegalPolicy>>(

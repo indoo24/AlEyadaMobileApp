@@ -10,6 +10,7 @@ import '../../doctors/repository.dart';
 import '../home_providers.dart';
 import '../home_style.dart';
 import 'specialty_section.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// Open the directory on [query], scoped to the Home city.
 ///
@@ -119,7 +120,7 @@ class _Shortcut extends StatelessWidget {
     label: label,
     excludeSemantics: true,
     child: Material(
-      color: AppColors.surface,
+      color: context.palette.surface,
       borderRadius: BorderRadius.circular(homeCardRadius),
       child: InkWell(
         onTap: onTap,
@@ -129,7 +130,7 @@ class _Shortcut extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(homeCardRadius),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.palette.border),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -141,7 +142,7 @@ class _Shortcut extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: HomeType.tileLabel.copyWith(fontSize: 12),
+                style: context.homeType.tileLabel.copyWith(fontSize: 12),
               ),
             ],
           ),
@@ -160,7 +161,10 @@ class _IconBox extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     width: 42,
     height: 42,
-    decoration: BoxDecoration(color: AppColors.bgSoft, borderRadius: BorderRadius.circular(13)),
-    child: Icon(icon, color: AppColors.primary, size: 22),
+    decoration: BoxDecoration(
+      color: context.palette.pageSoft,
+      borderRadius: BorderRadius.circular(13),
+    ),
+    child: Icon(icon, color: context.palette.primary, size: 22),
   );
 }

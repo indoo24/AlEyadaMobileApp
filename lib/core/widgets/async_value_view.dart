@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../api/api_error.dart';
 import '../errors/error_messages.dart';
 import '../theme/tokens.dart';
+import '../theme/app_palette.dart';
 
 /// Renders the four states every async screen has, so no screen invents its own
 /// and none of them can forget one.
@@ -105,7 +106,7 @@ class AppErrorView extends StatelessWidget {
             Icon(
               isNetwork ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
               size: 44,
-              color: AppColors.muted,
+              color: context.palette.muted,
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
@@ -147,7 +148,7 @@ class AppEmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon ?? Icons.inbox_outlined, size: 44, color: AppColors.muted),
+            Icon(icon ?? Icons.inbox_outlined, size: 44, color: context.palette.muted),
             const SizedBox(height: AppSpacing.lg),
             Text(
               title ?? l.stateEmpty,
@@ -205,7 +206,7 @@ class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin
         height: widget.height,
         width: widget.width,
         decoration: BoxDecoration(
-          color: Color.lerp(AppColors.bgSoft, AppColors.border, _c.value),
+          color: Color.lerp(context.palette.pageSoft, context.palette.border, _c.value),
           borderRadius: BorderRadius.circular(widget.radius),
         ),
       ),

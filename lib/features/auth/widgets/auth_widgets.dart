@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../home/home_style.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// The shared pieces of sign-in, sign-up and phone verification, so the three
 /// read as one flow: the logo and a centred title, a white form surface on the
@@ -68,10 +69,10 @@ class AuthBrandHeader extends StatelessWidget {
         child: Text(
           title,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
-            color: AppColors.navy,
+            color: context.palette.heading,
             height: 1.3,
           ),
         ),
@@ -80,7 +81,7 @@ class AuthBrandHeader extends StatelessWidget {
       Text(
         subtitle,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 14, color: AppColors.muted, height: 1.6),
+        style: TextStyle(fontSize: 14, color: context.palette.muted, height: 1.6),
       ),
     ],
   );
@@ -96,7 +97,7 @@ class AuthScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.bg,
+    backgroundColor: context.palette.page,
     appBar: AppBar(
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
@@ -131,9 +132,9 @@ class AuthCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
     decoration: BoxDecoration(
-      color: AppColors.surface,
+      color: context.palette.surface,
       borderRadius: BorderRadius.circular(22),
-      boxShadow: AppShadows.soft,
+      boxShadow: context.palette.shadowSoft,
     ),
     child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
   );
@@ -217,16 +218,16 @@ class AuthTextField extends StatelessWidget {
               children: [
                 TextSpan(text: label),
                 if (required)
-                  const TextSpan(
+                  TextSpan(
                     text: ' *',
-                    style: TextStyle(color: AppColors.danger),
+                    style: TextStyle(color: context.palette.danger),
                   ),
               ],
             ),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13.5,
               fontWeight: FontWeight.w600,
-              color: AppColors.ink,
+              color: context.palette.body,
             ),
           ),
         ),
@@ -247,17 +248,23 @@ class AuthTextField extends StatelessWidget {
           onSubmitted: onSubmitted,
           textDirection: forceLtr ? TextDirection.ltr : null,
           textAlign: TextAlign.start,
-          style: const TextStyle(fontSize: 15, color: AppColors.ink),
+          style: TextStyle(fontSize: 15, color: context.palette.body),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(fontSize: 14, color: AppColors.muted),
+            hintStyle: TextStyle(fontSize: 14, color: context.palette.muted),
             errorText: hasError ? errorText : null,
             errorMaxLines: 3,
             filled: true,
-            fillColor: hasError ? AppColors.danger.withValues(alpha: 0.04) : AppColors.bg,
+            fillColor: hasError
+                ? context.palette.danger.withValues(alpha: 0.04)
+                : context.palette.page,
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            prefixIcon: Icon(icon, size: 20, color: hasError ? AppColors.danger : AppColors.muted),
+            prefixIcon: Icon(
+              icon,
+              size: 20,
+              color: hasError ? context.palette.danger : context.palette.muted,
+            ),
             prefixIconConstraints: const BoxConstraints(minWidth: 46, minHeight: 48),
             // Named for screen readers with Semantics rather than a tooltip: a
             // tooltip inside a text field's suffix trips a framework assertion
@@ -273,16 +280,16 @@ class AuthTextField extends StatelessWidget {
                       icon: Icon(
                         obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                         size: 20,
-                        color: AppColors.muted,
+                        color: context.palette.muted,
                       ),
                     ),
                   ),
             border: _border(Colors.transparent),
             enabledBorder: _border(Colors.transparent),
             disabledBorder: _border(Colors.transparent),
-            focusedBorder: _border(AppColors.primary, 1.5),
-            errorBorder: _border(AppColors.danger.withValues(alpha: 0.6)),
-            focusedErrorBorder: _border(AppColors.danger, 1.5),
+            focusedBorder: _border(context.palette.primary, 1.5),
+            errorBorder: _border(context.palette.danger.withValues(alpha: 0.6)),
+            focusedErrorBorder: _border(context.palette.danger, 1.5),
           ),
         ),
       ],
@@ -309,7 +316,7 @@ class AuthPrimaryButton extends StatelessWidget {
     onPressed: busy ? null : onPressed,
     style: FilledButton.styleFrom(
       minimumSize: const Size.fromHeight(52),
-      textStyle: HomeType.button.copyWith(fontSize: 15.5),
+      textStyle: context.homeType.button.copyWith(fontSize: 15.5),
     ),
     child: AnimatedSwitcher(
       duration: const Duration(milliseconds: 180),
@@ -343,7 +350,7 @@ class AuthFooterLink extends StatelessWidget {
     alignment: WrapAlignment.center,
     crossAxisAlignment: WrapCrossAlignment.center,
     children: [
-      Text(question, style: const TextStyle(fontSize: 14, color: AppColors.muted)),
+      Text(question, style: TextStyle(fontSize: 14, color: context.palette.muted)),
       TextButton(
         onPressed: onTap,
         style: TextButton.styleFrom(

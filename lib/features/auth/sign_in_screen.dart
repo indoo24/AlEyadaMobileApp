@@ -12,6 +12,7 @@ import '../../core/theme/tokens.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
 import 'widgets/auth_widgets.dart';
+import '../../core/theme/app_palette.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key, this.next});
@@ -196,7 +197,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.palette.surfaceRaised,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -261,7 +262,10 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
             child: Container(
               width: 40,
               height: 4,
-              decoration: BoxDecoration(color: AppColors.border, borderRadius: AppRadii.pillRadius),
+              decoration: BoxDecoration(
+                color: context.palette.border,
+                borderRadius: AppRadii.pillRadius,
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -269,17 +273,17 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
             header: true,
             child: Text(
               l.authForgotPassword,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 19,
                 fontWeight: FontWeight.w800,
-                color: AppColors.navy,
+                color: context.palette.heading,
               ),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             l.auForgotBody,
-            style: const TextStyle(fontSize: 13.5, color: AppColors.muted, height: 1.6),
+            style: TextStyle(fontSize: 13.5, color: context.palette.muted, height: 1.6),
           ),
           const SizedBox(height: 16),
           AuthTextField(

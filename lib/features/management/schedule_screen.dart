@@ -13,6 +13,7 @@ import 'management_widgets.dart';
 import 'models.dart';
 import 'repository.dart';
 import 'providers.dart';
+import '../../core/theme/app_palette.dart';
 
 /// Appointments and weekly availability.
 class ScheduleScreen extends ConsumerStatefulWidget {
@@ -29,12 +30,17 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
   Widget build(BuildContext context) {
     final l = L.of(context);
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       appBar: AppBar(title: Text(l.scheduleTitle)),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, HomeSpacing.top, AppSpacing.gutter, 4),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.gutter,
+              HomeSpacing.top,
+              AppSpacing.gutter,
+              4,
+            ),
             child: Row(
               children: [
                 _TabChip(
@@ -70,8 +76,10 @@ class _TabChip extends StatelessWidget {
     button: true,
     selected: selected,
     child: Material(
-      color: selected ? AppColors.bgSoft : AppColors.surface,
-      shape: StadiumBorder(side: BorderSide(color: selected ? AppColors.primary : AppColors.border)),
+      color: selected ? context.palette.pageSoft : context.palette.surface,
+      shape: StadiumBorder(
+        side: BorderSide(color: selected ? context.palette.primary : context.palette.border),
+      ),
       child: InkWell(
         customBorder: const StadiumBorder(),
         onTap: onTap,
@@ -79,7 +87,9 @@ class _TabChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
           child: Text(
             label,
-            style: HomeType.chip.copyWith(color: selected ? AppColors.primary : AppColors.navy),
+            style: context.homeType.chip.copyWith(
+              color: selected ? context.palette.primary : context.palette.heading,
+            ),
           ),
         ),
       ),
@@ -141,7 +151,8 @@ class _BookingsTabState extends ConsumerState<_BookingsTab> {
                 children: [
                   _FilterBar(filter: filter, onChanged: _setFilter),
                   const SizedBox(height: 12),
-                  if (page != null) Text(l.scheduleCount(page.pagination.count), style: HomeType.meta),
+                  if (page != null)
+                    Text(l.scheduleCount(page.pagination.count), style: context.homeType.meta),
                   const SizedBox(height: 6),
                 ],
               ),
@@ -212,7 +223,7 @@ class _BookingsTabState extends ConsumerState<_BookingsTab> {
         rows.add(
           Padding(
             padding: const EdgeInsets.only(top: 8, bottom: 8),
-            child: Text(material.formatFullDate(d), style: HomeType.cardTitle),
+            child: Text(material.formatFullDate(d), style: context.homeType.cardTitle),
           ),
         );
       }
@@ -288,9 +299,11 @@ class _FilterBar extends StatelessWidget {
         ),
         // One day, with a way back to "any day".
         Material(
-          color: filter.date == null ? AppColors.surface : AppColors.bgSoft,
+          color: filter.date == null ? context.palette.surface : context.palette.pageSoft,
           shape: StadiumBorder(
-            side: BorderSide(color: filter.date == null ? AppColors.border : AppColors.primary),
+            side: BorderSide(
+              color: filter.date == null ? context.palette.border : context.palette.primary,
+            ),
           ),
           child: InkWell(
             customBorder: const StadiumBorder(),
@@ -300,12 +313,12 @@ class _FilterBar extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.calendar_today_outlined, size: 15, color: AppColors.primary),
+                  Icon(Icons.calendar_today_outlined, size: 15, color: context.palette.primary),
                   const SizedBox(width: 6),
                   Text(
                     filter.date ?? l.scheduleDate,
                     textDirection: TextDirection.ltr,
-                    style: HomeType.chip,
+                    style: context.homeType.chip,
                   ),
                   if (filter.date != null)
                     InkWell(
@@ -314,7 +327,11 @@ class _FilterBar extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Semantics(
                           label: l.scheduleDateAny,
-                          child: const Icon(Icons.close_rounded, size: 16, color: AppColors.primary),
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 16,
+                            color: context.palette.primary,
+                          ),
                         ),
                       ),
                     ),
@@ -334,9 +351,11 @@ class _FilterBar extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: ShapeDecoration(
-              color: filter.status == null ? AppColors.surface : AppColors.bgSoft,
+              color: filter.status == null ? context.palette.surface : context.palette.pageSoft,
               shape: StadiumBorder(
-                side: BorderSide(color: filter.status == null ? AppColors.border : AppColors.primary),
+                side: BorderSide(
+                  color: filter.status == null ? context.palette.border : context.palette.primary,
+                ),
               ),
             ),
             child: Row(
@@ -344,9 +363,9 @@ class _FilterBar extends StatelessWidget {
               children: [
                 Text(
                   filter.status == null ? l.scheduleStatusAll : statusLabel(l, filter.status!),
-                  style: HomeType.chip,
+                  style: context.homeType.chip,
                 ),
-                const Icon(Icons.keyboard_arrow_down_rounded, size: 17, color: AppColors.muted),
+                Icon(Icons.keyboard_arrow_down_rounded, size: 17, color: context.palette.muted),
               ],
             ),
           ),
@@ -407,27 +426,27 @@ class _BookingCardState extends ConsumerState<_BookingCard> {
       if (b.status == BookingStatus.pending)
         FilledButton(
           onPressed: _busy ? null : () => _act(BookingAction.confirm),
-          style: _actionStyle,
+          style: _actionStyle(context),
           child: Text(l.scheduleConfirm),
         ),
       if (b.status == BookingStatus.confirmed)
         FilledButton(
           onPressed: _busy ? null : () => _act(BookingAction.complete),
-          style: _actionStyle,
+          style: _actionStyle(context),
           child: Text(l.scheduleComplete),
         ),
       if (b.status == BookingStatus.confirmed)
         OutlinedButton(
           onPressed: _busy ? null : () => _act(BookingAction.noShow),
-          style: _outlineStyle,
+          style: _outlineStyle(context),
           child: Text(l.scheduleNoShow),
         ),
       if (b.status.isActive)
         OutlinedButton(
           onPressed: _busy ? null : _cancel,
-          style: _outlineStyle.copyWith(
-            foregroundColor: const WidgetStatePropertyAll(AppColors.danger),
-          ),
+          style: _outlineStyle(
+            context,
+          ).copyWith(foregroundColor: WidgetStatePropertyAll(context.palette.danger)),
           child: Text(l.actionCancel),
         ),
     ];
@@ -447,13 +466,13 @@ class _BookingCardState extends ConsumerState<_BookingCard> {
                     Text(
                       b.displayTime,
                       textDirection: TextDirection.ltr,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                     ),
-                    Text(b.patientName, style: HomeType.cardTitle.copyWith(fontSize: 15.5)),
+                    Text(b.patientName, style: context.homeType.cardTitle.copyWith(fontSize: 15.5)),
                   ],
                 ),
               ),
@@ -466,17 +485,21 @@ class _BookingCardState extends ConsumerState<_BookingCard> {
             runSpacing: 2,
             children: [
               if (b.durationMinutes != null)
-                Text(l.scheduleDuration(b.durationMinutes!), style: HomeType.meta),
+                Text(l.scheduleDuration(b.durationMinutes!), style: context.homeType.meta),
               if (b.patientPhone.isNotEmpty)
-                Text(b.patientPhone, style: HomeType.meta, textDirection: TextDirection.ltr),
+                Text(
+                  b.patientPhone,
+                  style: context.homeType.meta,
+                  textDirection: TextDirection.ltr,
+                ),
               if (b.fee != null)
-                Text('${l.homeFeeLabel}: ${l.homeFeeAmount(b.fee!)}', style: HomeType.meta),
+                Text('${l.homeFeeLabel}: ${l.homeFeeAmount(b.fee!)}', style: context.homeType.meta),
             ],
           ),
-          if (b.clinicName.isNotEmpty) Text(b.clinicName, style: HomeType.meta),
+          if (b.clinicName.isNotEmpty) Text(b.clinicName, style: context.homeType.meta),
           if (b.reason.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text(b.reason, style: HomeType.doctorSpecialty),
+            Text(b.reason, style: context.homeType.doctorSpecialty),
           ],
           if (actions.isNotEmpty) ...[
             const Divider(height: 20),
@@ -492,18 +515,18 @@ class _BookingCardState extends ConsumerState<_BookingCard> {
     );
   }
 
-  static final _actionStyle = FilledButton.styleFrom(
+  static ButtonStyle _actionStyle(BuildContext context) => FilledButton.styleFrom(
     minimumSize: const Size(0, 38),
     padding: const EdgeInsets.symmetric(horizontal: 18),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    textStyle: HomeType.button,
+    textStyle: context.homeType.button,
   );
 
-  static final _outlineStyle = OutlinedButton.styleFrom(
+  static ButtonStyle _outlineStyle(BuildContext context) => OutlinedButton.styleFrom(
     minimumSize: const Size(0, 38),
     padding: const EdgeInsets.symmetric(horizontal: 16),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    textStyle: HomeType.button,
+    textStyle: context.homeType.button,
   );
 }
 
@@ -541,7 +564,7 @@ class _CancelReasonDialogState extends State<_CancelReasonDialog> {
         TextButton(onPressed: () => Navigator.pop(context), child: Text(l.actionClose)),
         TextButton(
           onPressed: () => Navigator.pop(context, _reason.text.trim()),
-          child: Text(l.scheduleCancel, style: const TextStyle(color: AppColors.danger)),
+          child: Text(l.scheduleCancel, style: TextStyle(color: context.palette.danger)),
         ),
       ],
     );
@@ -587,13 +610,19 @@ class _AvailabilityTab extends ConsumerWidget {
           ],
         ),
         data: (list) {
-          final sorted = [...list]..sort((a, b) {
-            final byDay = a.weekday.compareTo(b.weekday);
-            return byDay != 0 ? byDay : a.start.compareTo(b.start);
-          });
+          final sorted = [...list]
+            ..sort((a, b) {
+              final byDay = a.weekday.compareTo(b.weekday);
+              return byDay != 0 ? byDay : a.start.compareTo(b.start);
+            });
           return ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 8, AppSpacing.gutter, AppSpacing.xl),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.gutter,
+              8,
+              AppSpacing.gutter,
+              AppSpacing.xl,
+            ),
             children: [
               Align(
                 alignment: AlignmentDirectional.centerStart,
@@ -601,7 +630,10 @@ class _AvailabilityTab extends ConsumerWidget {
                   onPressed: () => showAddWindowSheet(context),
                   icon: const Icon(Icons.add_rounded, size: 18),
                   label: Text(l.windowsAdd),
-                  style: FilledButton.styleFrom(minimumSize: const Size(0, 40), textStyle: HomeType.button),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(0, 40),
+                    textStyle: context.homeType.button,
+                  ),
                 ),
               ),
               const SizedBox(height: HomeSpacing.card),
@@ -653,7 +685,7 @@ class _WindowCardState extends ConsumerState<_WindowCard> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.actionCancel)),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l.managementDelete, style: const TextStyle(color: AppColors.danger)),
+            child: Text(l.managementDelete, style: TextStyle(color: context.palette.danger)),
           ),
         ],
       ),
@@ -674,19 +706,23 @@ class _WindowCardState extends ConsumerState<_WindowCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(weekdayName(l, w.weekday), style: HomeType.cardTitle.copyWith(fontSize: 15.5)),
+                Text(
+                  weekdayName(l, w.weekday),
+                  style: context.homeType.cardTitle.copyWith(fontSize: 15.5),
+                ),
                 Text(
                   '${w.start} – ${w.end}',
                   textDirection: TextDirection.ltr,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                   ),
                 ),
                 if (w.durationMinutes != null)
-                  Text(l.windowMinutes(w.durationMinutes!), style: HomeType.meta),
-                if (widget.clinicName.isNotEmpty) Text(widget.clinicName, style: HomeType.meta),
+                  Text(l.windowMinutes(w.durationMinutes!), style: context.homeType.meta),
+                if (widget.clinicName.isNotEmpty)
+                  Text(widget.clinicName, style: context.homeType.meta),
               ],
             ),
           ),
@@ -696,7 +732,7 @@ class _WindowCardState extends ConsumerState<_WindowCard> {
           ),
           IconButton(
             tooltip: l.managementDelete,
-            icon: const Icon(Icons.delete_outline_rounded, color: AppColors.danger),
+            icon: Icon(Icons.delete_outline_rounded, color: context.palette.danger),
             onPressed: _busy ? null : _delete,
           ),
         ],
@@ -792,7 +828,8 @@ class _AddWindowSheetState extends ConsumerState<_AddWindowSheet> {
               label: l.windowFormWeekday,
               value: _weekday,
               items: [
-                for (var d = 1; d <= 7; d++) DropdownMenuItem(value: d, child: Text(weekdayName(l, d))),
+                for (var d = 1; d <= 7; d++)
+                  DropdownMenuItem(value: d, child: Text(weekdayName(l, d))),
               ],
               onChanged: (d) => setState(() => _weekday = d ?? _weekday),
             ),
@@ -800,7 +837,9 @@ class _AddWindowSheetState extends ConsumerState<_AddWindowSheet> {
             AppDropdown<String>(
               label: l.windowFormClinic,
               value: selected,
-              items: [for (final c in clinics) DropdownMenuItem(value: c.clinicId, child: Text(c.nameAr))],
+              items: [
+                for (final c in clinics) DropdownMenuItem(value: c.clinicId, child: Text(c.nameAr)),
+              ],
               onChanged: (v) => setState(() => _clinicId = v),
             ),
             const SizedBox(height: 12),
@@ -809,11 +848,17 @@ class _AddWindowSheetState extends ConsumerState<_AddWindowSheet> {
               children: [
                 OutlinedButton(
                   onPressed: () => _pick(start: true),
-                  child: Text('${l.clinicHoursFrom} ${formatClock(_start)}', textDirection: TextDirection.ltr),
+                  child: Text(
+                    '${l.clinicHoursFrom} ${formatClock(_start)}',
+                    textDirection: TextDirection.ltr,
+                  ),
                 ),
                 OutlinedButton(
                   onPressed: () => _pick(start: false),
-                  child: Text('${l.clinicHoursTo} ${formatClock(_end)}', textDirection: TextDirection.ltr),
+                  child: Text(
+                    '${l.clinicHoursTo} ${formatClock(_end)}',
+                    textDirection: TextDirection.ltr,
+                  ),
                 ),
               ],
             ),

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../clinics/models.dart';
 import '../../doctors/widgets/doctor_rating.dart';
 import '../home_style.dart';
 import 'pressable.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// A clinic or medical center in the horizontal strip.
 ///
@@ -32,10 +32,10 @@ class MedicalCenterCard extends StatelessWidget {
       child: Pressable(
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.palette.surface,
             borderRadius: BorderRadius.circular(homeCardRadius),
-            border: Border.all(color: AppColors.border),
-            boxShadow: AppShadows.soft,
+            border: Border.all(color: context.palette.border),
+            boxShadow: context.palette.shadowSoft,
           ),
           child: Material(
             type: MaterialType.transparency,
@@ -58,14 +58,14 @@ class MedicalCenterCard extends StatelessWidget {
                             children: [
                               Text(
                                 c.nameAr,
-                                style: HomeType.cardTitle,
+                                style: context.homeType.cardTitle,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               if (c.locationLabel.isNotEmpty)
                                 Text(
                                   c.locationLabel,
-                                  style: HomeType.meta,
+                                  style: context.homeType.meta,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -79,12 +79,12 @@ class MedicalCenterCard extends StatelessWidget {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.only(top: 1),
                             child: Icon(
                               Icons.location_on_outlined,
                               size: 14,
-                              color: AppColors.muted,
+                              color: context.palette.muted,
                             ),
                           ),
                           const SizedBox(width: 4),
@@ -93,7 +93,7 @@ class MedicalCenterCard extends StatelessWidget {
                               c.addressAr.trim(),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: HomeType.meta,
+                              style: context.homeType.meta,
                             ),
                           ),
                         ],
@@ -116,13 +116,13 @@ class MedicalCenterCard extends StatelessWidget {
                         if (onTap != null)
                           Text(
                             l.hmClinicDoctors,
-                            style: HomeType.seeAll.copyWith(color: AppColors.primary),
+                            style: context.homeType.seeAll.copyWith(color: context.palette.primary),
                           ),
                         if (onTap != null)
-                          const Icon(
+                          Icon(
                             Icons.chevron_right_rounded,
                             size: 18,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                       ],
                     ),
@@ -144,14 +144,17 @@ class _Logo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const fallback = Center(
-      child: Icon(Icons.local_hospital_rounded, color: AppColors.primary, size: 22),
+    final fallback = Center(
+      child: Icon(Icons.local_hospital_rounded, color: context.palette.primary, size: 22),
     );
     final dpr = MediaQuery.devicePixelRatioOf(context);
     return Container(
       width: 44,
       height: 44,
-      decoration: BoxDecoration(color: AppColors.bgSoft, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: context.palette.pageSoft,
+        borderRadius: BorderRadius.circular(12),
+      ),
       clipBehavior: Clip.antiAlias,
       child: (url == null || url!.isEmpty)
           ? fallback
@@ -177,9 +180,9 @@ class MedicalCenterSkeleton extends StatelessWidget {
     width: width,
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: AppColors.surface,
+      color: context.palette.surface,
       borderRadius: BorderRadius.circular(homeCardRadius),
-      border: Border.all(color: AppColors.border),
+      border: Border.all(color: context.palette.border),
     ),
     child: const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
