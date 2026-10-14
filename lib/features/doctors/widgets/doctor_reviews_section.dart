@@ -11,6 +11,7 @@ import '../providers.dart';
 import '../repository.dart';
 import 'doctor_profile_sections.dart';
 import 'doctor_rating.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// Published reviews from `/doctors/{slug}/reviews/`, a page at a time.
 ///
@@ -49,12 +50,15 @@ class DoctorReviewsSection extends ConsumerWidget {
       body = Column(
         children: [
           for (var i = 0; i < state.items.length; i++) ...[
-            if (i > 0) const Divider(height: 20, color: AppColors.border),
+            if (i > 0) Divider(height: 20, color: context.palette.border),
             _ReviewTile(review: state.items[i]),
           ],
           if (state.moreError != null) ...[
             const SizedBox(height: 8),
-            Text(l.ddReviewsMoreFailed, style: HomeType.meta.copyWith(color: AppColors.danger)),
+            Text(
+              l.ddReviewsMoreFailed,
+              style: context.homeType.meta.copyWith(color: context.palette.danger),
+            ),
           ],
           if (state.hasMore) ...[
             const SizedBox(height: 12),
@@ -64,7 +68,7 @@ class DoctorReviewsSection extends ConsumerWidget {
                 onPressed: state.loadingMore ? null : controller.loadMore,
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(0, 44),
-                  textStyle: HomeType.button.copyWith(fontSize: 13),
+                  textStyle: context.homeType.button.copyWith(fontSize: 13),
                 ),
                 child: state.loadingMore
                     ? const SizedBox(
@@ -107,10 +111,10 @@ class _ReviewTile extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundColor: AppColors.bgSoft,
+              backgroundColor: context.palette.pageSoft,
               child: Text(
                 name.characters.first,
-                style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary),
+                style: TextStyle(fontWeight: FontWeight.w700, color: context.palette.primary),
               ),
             ),
             const SizedBox(width: 10),
@@ -118,7 +122,7 @@ class _ReviewTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: HomeType.cardTitle.copyWith(fontSize: 14)),
+                  Text(name, style: context.homeType.cardTitle.copyWith(fontSize: 14)),
                   Row(
                     children: [
                       Semantics(
@@ -132,7 +136,9 @@ class _ReviewTile extends StatelessWidget {
                                     ? Icons.star_rounded
                                     : Icons.star_outline_rounded,
                                 size: 14,
-                                color: i <= review.rating ? AppColors.star : AppColors.border,
+                                color: i <= review.rating
+                                    ? context.palette.star
+                                    : context.palette.border,
                               ),
                           ],
                         ),
@@ -144,7 +150,7 @@ class _ReviewTile extends StatelessWidget {
                             reviewDateLabel(review.createdAt!, locale),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: HomeType.meta,
+                            style: context.homeType.meta,
                           ),
                         ),
                       ],
@@ -159,17 +165,20 @@ class _ReviewTile extends StatelessWidget {
                 decoration: BoxDecoration(
                   // Green is the tokens' availability colour; a confirmed visit is
                   // the one place a review gets it.
-                  color: AppColors.success.withValues(alpha: 0.1),
+                  color: context.palette.success.withValues(alpha: 0.1),
                   borderRadius: AppRadii.pillRadius,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.verified_rounded, size: 13, color: AppColors.success),
+                    Icon(Icons.verified_rounded, size: 13, color: context.palette.success),
                     const SizedBox(width: 4),
                     Text(
                       l.ddReviewVerified,
-                      style: HomeType.pill.copyWith(color: AppColors.success, fontSize: 11),
+                      style: context.homeType.pill.copyWith(
+                        color: context.palette.success,
+                        fontSize: 11,
+                      ),
                     ),
                   ],
                 ),
@@ -180,7 +189,7 @@ class _ReviewTile extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             review.comment,
-            style: const TextStyle(fontSize: 13.5, color: AppColors.ink, height: 1.7),
+            style: TextStyle(fontSize: 13.5, color: context.palette.body, height: 1.7),
           ),
         ],
       ],
@@ -198,9 +207,9 @@ class _Message extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Icon(icon, size: 20, color: AppColors.muted),
+      Icon(icon, size: 20, color: context.palette.muted),
       const SizedBox(width: 8),
-      Expanded(child: Text(text, style: HomeType.meta.copyWith(fontSize: 13))),
+      Expanded(child: Text(text, style: context.homeType.meta.copyWith(fontSize: 13))),
       ?action,
     ],
   );

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ (API 31). Nothing the app stores leaves the device: not to a
+     cloud backup, and not to a new phone in a device-to-device transfer.
+
+     Why everything: the session tokens live in EncryptedSharedPreferences, whose
+     key stays in this device's Keystore, so a restored copy could not be
+     decrypted anyway; the rest (favourites, recent searches, language) is
+     per-account convenience data that is not worth copying to another device.
+     android:allowBackup="false" already stops cloud backup, but on Android 12+
+     it does not stop device-to-device transfer; these rules do. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+        <exclude domain="device_root" path="." />
+        <exclude domain="device_file" path="." />
+        <exclude domain="device_database" path="." />
+        <exclude domain="device_sharedpref" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+        <exclude domain="device_root" path="." />
+        <exclude domain="device_file" path="." />
+        <exclude domain="device_database" path="." />
+        <exclude domain="device_sharedpref" path="." />
+    </device-transfer>
+</data-extraction-rules>

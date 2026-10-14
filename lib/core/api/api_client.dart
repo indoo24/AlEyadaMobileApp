@@ -76,7 +76,10 @@ class ApiClient {
     // and for which we hold a refresh token: try once to refresh, then replay.
     if (status == 401 && !isRetry && !skipAuth && _tokens.hasSession) {
       try {
-        await _refreshOnce();
+        // Sent before an earlier refresh finished, with the token that refresh
+        // replaced: the new one is already here, so replay with it instead of
+        // rotating the session a second time for nothing.
+        if (!_sentWithReplacedToken(e.requestOptions)) await _refreshOnce();
       } on ApiException catch (refreshFailure) {
         // Distinguish carefully. If the refresh failed because the *network* is
         // down, this is not a logout — surface it as a network error and keep
@@ -110,6 +113,14 @@ class ApiClient {
       '← ${status ?? 'network'} ${e.requestOptions.method} ${e.requestOptions.path}${_codes(e)}',
     );
     handler.next(e);
+  }
+
+  /// Whether [options] carried an access token that has since been replaced.
+  bool _sentWithReplacedToken(RequestOptions options) {
+    final sent = options.headers['Authorization'];
+    final current = _tokens.accessToken;
+    if (sent is! String || current == null || current.isEmpty) return false;
+    return sent != 'Bearer $current';
   }
 
   /// Refresh the access token, collapsing concurrent callers onto one request.

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/router.dart';
+import '../../app/safe_redirect.dart';
 import '../../core/api/api_error.dart';
 import '../../core/errors/error_messages.dart';
 import '../../core/providers.dart';
-import '../../core/theme/tokens.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
+import 'widgets/auth_widgets.dart';
 
 /// Phone verification.
 ///
@@ -90,13 +92,19 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
         code: _code.text.trim(),
       );
       if (result.tokens != null) {
-        await ref
-            .read(authControllerProvider.notifier)
-            .adoptSession(result.tokens!, user: result.user);
+        final auth = ref.read(authControllerProvider.notifier);
+        // Read before adopting the session: adopting it forgets it.
+        final endedAccountId = auth.endedAccountId;
+        await auth.adoptSession(result.tokens!, user: result.user);
         if (!mounted) return;
-        // The router's guards take it from here.
-        final next = widget.next;
-        context.go(next != null && next.isNotEmpty ? next : '/');
+        // The router's guards take it from here; `next` is only followed when
+        // it is a safe location of this account's own.
+        final next = resumeLocation(
+          widget.next,
+          endedAccountId: endedAccountId,
+          signedInAccountId: ref.read(authControllerProvider).user?.id,
+        );
+        context.go(next ?? Routes.home);
       } else if (!mounted) {
         return;
       } else {
@@ -139,73 +147,60 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   @override
   Widget build(BuildContext context) {
     final l = L.of(context);
-    return Scaffold(
-      backgroundColor: AppColors.bg,
-      appBar: AppBar(title: Text(l.otpTitle), backgroundColor: Colors.transparent),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.gutter,
-            AppSpacing.lg,
-            AppSpacing.gutter,
-            AppSpacing.xl,
-          ),
+    return AuthScaffold(
+      children: [
+        const SizedBox(height: 8),
+        AuthBrandHeader(
+          title: l.otpTitle,
+          // The number reads left to right inside the Arabic sentence.
+          subtitle: l.otpSentTo('\u2066${widget.phone}\u2069'),
+        ),
+        const SizedBox(height: 24),
+        AuthCard(
           children: [
-            Text(
-              l.otpSentTo(widget.phone),
-              style: Theme.of(context).textTheme.bodyMedium,
-              textDirection: TextDirection.ltr,
-              textAlign: TextAlign.start,
-            ),
-            const SizedBox(height: AppSpacing.xl),
             FormErrorBanner(message: _formError),
-
-            AppTextField(
+            AuthTextField(
               label: l.otpCode,
               controller: _code,
+              icon: Icons.password_rounded,
               required: true,
               forceLtr: true,
               keyboardType: TextInputType.number,
               inputFormatters: const [DigitsOnlyFormatter(maxLength: 8)],
               textInputAction: _isReset ? TextInputAction.next : TextInputAction.done,
+              autofillHints: const [AutofillHints.oneTimeCode],
+              private: true,
               errorText: _fieldErrors['code'],
               enabled: !_busy,
               onSubmitted: (_) => _isReset || _busy ? null : _verify(),
             ),
-
             if (_isReset) ...[
-              const SizedBox(height: AppSpacing.lg),
-              AppTextField(
+              const SizedBox(height: 14),
+              AuthTextField(
                 label: l.authPassword,
                 controller: _newPassword,
+                icon: Icons.lock_outline_rounded,
                 required: true,
                 obscure: true,
+                autofillHints: const [AutofillHints.newPassword],
                 errorText: _fieldErrors['new_password'],
                 enabled: !_busy,
               ),
             ],
-
-            const SizedBox(height: AppSpacing.xl),
-            FilledButton(
-              onPressed: _busy ? null : _verify,
-              child: _busy
-                  ? const SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
-                    )
-                  : Text(l.otpVerify),
-            ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: 20),
+            AuthPrimaryButton(label: l.otpVerify, busy: _busy, onPressed: _verify),
+            const SizedBox(height: 4),
             Center(
-              child: TextButton(
+              child: TextButton.icon(
                 onPressed: _busy || _resending ? null : _resend,
-                child: Text(l.otpResend),
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: Text(l.otpResend),
+                style: TextButton.styleFrom(minimumSize: const Size(48, 44)),
               ),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

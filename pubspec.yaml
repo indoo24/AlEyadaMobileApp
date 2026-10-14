@@ -59,6 +59,9 @@ flutter:
 
   assets:
     - assets/fonts/OFL.txt
+    # The AlEyada logo (transparent margins around the tile), used as-is on the
+    # sign-in, sign-up and verification screens.
+    - assets/logo.png
 
   fonts:
     # Bundled, not fetched at runtime — design-tokens.md is explicit about this,

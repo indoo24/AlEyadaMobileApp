@@ -6,6 +6,7 @@ import '../../home/home_style.dart';
 import '../models.dart';
 import '../repository.dart';
 import '../search_state.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// What the empty, focused search box offers: earlier searches, and a way into
 /// the specialty list.
@@ -43,14 +44,14 @@ class SearchIdlePanel extends StatelessWidget {
         if (recents.isNotEmpty) ...[
           Row(
             children: [
-              Expanded(child: Text(l.searchRecentTitle, style: HomeType.sectionTitle)),
+              Expanded(child: Text(l.searchRecentTitle, style: context.homeType.sectionTitle)),
               TextButton(
                 onPressed: onClearRecents,
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
-                child: Text(l.searchClearAll, style: HomeType.seeAll),
+                child: Text(l.searchClearAll, style: context.homeType.seeAll),
               ),
             ],
           ),
@@ -65,7 +66,7 @@ class SearchIdlePanel extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
         ],
         if (busiest.isNotEmpty) ...[
-          Text(l.searchBrowseTitle, style: HomeType.sectionTitle),
+          Text(l.searchBrowseTitle, style: context.homeType.sectionTitle),
           const SizedBox(height: HomeSpacing.heading),
           Wrap(
             spacing: 8,
@@ -73,9 +74,9 @@ class SearchIdlePanel extends StatelessWidget {
             children: [
               for (final s in busiest.take(10))
                 ActionChip(
-                  label: Text(s.nameAr, style: HomeType.chip),
-                  backgroundColor: AppColors.surface,
-                  side: const BorderSide(color: AppColors.border),
+                  label: Text(s.nameAr, style: context.homeType.chip),
+                  backgroundColor: context.palette.surface,
+                  side: BorderSide(color: context.palette.border),
                   shape: const StadiumBorder(),
                   onPressed: () => onPickSpecialty(s),
                 ),
@@ -109,16 +110,16 @@ class _RecentRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: Row(
           children: [
-            const Icon(Icons.history_rounded, size: 20, color: AppColors.muted),
+            Icon(Icons.history_rounded, size: 20, color: context.palette.muted),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(text, style: HomeType.doctorSpecialty.copyWith(fontSize: 14)),
+              child: Text(text, style: context.homeType.doctorSpecialty.copyWith(fontSize: 14)),
             ),
             IconButton(
               tooltip: removeLabel,
               visualDensity: VisualDensity.compact,
               onPressed: onRemove,
-              icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.muted),
+              icon: Icon(Icons.close_rounded, size: 18, color: context.palette.muted),
             ),
           ],
         ),
@@ -139,10 +140,10 @@ class SearchSuggestionList extends StatelessWidget {
     final l = L.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(homeCardRadius),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        border: Border.all(color: context.palette.border),
+        boxShadow: context.palette.shadowSoft,
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -154,7 +155,7 @@ class SearchSuggestionList extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Row(
                   children: [
-                    Icon(_icon(s.kind), size: 20, color: AppColors.primary),
+                    Icon(_icon(s.kind), size: 20, color: context.palette.primary),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -162,14 +163,14 @@ class SearchSuggestionList extends StatelessWidget {
                         children: [
                           Text(
                             s.label,
-                            style: HomeType.cardTitle.copyWith(fontSize: 14),
+                            style: context.homeType.cardTitle.copyWith(fontSize: 14),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           if (s.subtitle != null)
                             Text(
                               s.subtitle!,
-                              style: HomeType.meta,
+                              style: context.homeType.meta,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -177,7 +178,7 @@ class SearchSuggestionList extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(_kind(l, s.kind), style: HomeType.meta),
+                    Text(_kind(l, s.kind), style: context.homeType.meta),
                   ],
                 ),
               ),
@@ -226,7 +227,7 @@ class SearchResultHeader extends StatelessWidget {
         Expanded(
           child: Text(
             count == null ? '' : l.searchResultsCount(count!),
-            style: HomeType.sectionTitle,
+            style: context.homeType.sectionTitle,
           ),
         ),
         PopupMenuButton<String>(
@@ -242,7 +243,7 @@ class SearchResultHeader extends StatelessWidget {
                   sortLabel(l, key),
                   style: TextStyle(
                     fontWeight: key == current ? FontWeight.w700 : FontWeight.w500,
-                    color: key == current ? AppColors.primary : AppColors.ink,
+                    color: key == current ? context.palette.primary : context.palette.body,
                   ),
                 ),
               ),
@@ -250,17 +251,20 @@ class SearchResultHeader extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.palette.surface,
               borderRadius: AppRadii.pillRadius,
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: context.palette.border),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.sort_rounded, size: 17, color: AppColors.primary),
+                Icon(Icons.sort_rounded, size: 17, color: context.palette.primary),
                 const SizedBox(width: 6),
-                Text(sortLabel(l, current), style: HomeType.chip.copyWith(color: AppColors.navy)),
-                const Icon(Icons.keyboard_arrow_down_rounded, size: 17, color: AppColors.muted),
+                Text(
+                  sortLabel(l, current),
+                  style: context.homeType.chip.copyWith(color: context.palette.heading),
+                ),
+                Icon(Icons.keyboard_arrow_down_rounded, size: 17, color: context.palette.muted),
               ],
             ),
           ),

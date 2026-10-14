@@ -10,6 +10,7 @@ import '../home/home_style.dart';
 import 'models.dart';
 import 'providers.dart';
 import 'widgets/booking_tile.dart';
+import '../../core/theme/app_palette.dart';
 
 /// The patient's appointments: upcoming, past and cancelled.
 ///
@@ -27,7 +28,7 @@ class BookingsScreen extends ConsumerWidget {
     final counts = groups.valueOrNull;
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       body: Column(
         children: [
           _Header(
@@ -94,7 +95,10 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = L.of(context);
     return DecoratedBox(
-      decoration: const BoxDecoration(color: AppColors.surface, boxShadow: AppShadows.soft),
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        boxShadow: context.palette.shadowSoft,
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -104,14 +108,14 @@ class _Header extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.calendar_month_rounded, color: AppColors.primary, size: 22),
+                  Icon(Icons.calendar_month_rounded, color: context.palette.primary, size: 22),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Semantics(
                       header: true,
                       child: Text(
                         l.bookingsTitle,
-                        style: HomeType.sectionTitle.copyWith(
+                        style: context.homeType.sectionTitle.copyWith(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                         ),
@@ -121,7 +125,7 @@ class _Header extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 2),
-              Text(l.mbSubtitle, style: HomeType.tagline),
+              Text(l.mbSubtitle, style: context.homeType.tagline),
               const SizedBox(height: 12),
               _SegmentedTabs(selected: selected, counts: counts, onSelect: onSelect),
             ],
@@ -155,7 +159,10 @@ class _SegmentedTabs extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.circular(14)),
+      decoration: BoxDecoration(
+        color: context.palette.page,
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: Stack(
         children: [
           Positioned.fill(
@@ -168,9 +175,9 @@ class _SegmentedTabs extends StatelessWidget {
                 heightFactor: 1,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: context.palette.surface,
                     borderRadius: BorderRadius.circular(11),
-                    boxShadow: AppShadows.card,
+                    boxShadow: context.palette.shadowCard,
                   ),
                 ),
               ),
@@ -210,7 +217,7 @@ class _Segment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = selected ? AppColors.primary : AppColors.muted;
+    final fg = selected ? context.palette.primary : context.palette.muted;
     return Semantics(
       button: true,
       selected: selected,
@@ -235,7 +242,7 @@ class _Segment extends StatelessWidget {
                       // the default text style, and on its own would drop the
                       // app's font family.
                       style: DefaultTextStyle.of(context).style
-                          .merge(HomeType.chip)
+                          .merge(context.homeType.chip)
                           .copyWith(
                             fontSize: 13.5,
                             color: fg,
@@ -249,7 +256,7 @@ class _Segment extends StatelessWidget {
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(
-                          color: selected ? AppColors.primary : AppColors.border,
+                          color: selected ? context.palette.primary : context.palette.border,
                           borderRadius: AppRadii.pillRadius,
                         ),
                         child: Text(
@@ -257,7 +264,7 @@ class _Segment extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: selected ? Colors.white : AppColors.muted,
+                            color: selected ? Colors.white : context.palette.muted,
                           ),
                         ),
                       ),
@@ -296,7 +303,10 @@ class _Section extends StatelessWidget {
       if (featured != null && rest.isNotEmpty)
         Padding(
           padding: const EdgeInsetsDirectional.only(start: 4, top: 6),
-          child: Text(l.mbMoreUpcoming, style: HomeType.sectionTitle.copyWith(fontSize: 15)),
+          child: Text(
+            l.mbMoreUpcoming,
+            style: context.homeType.sectionTitle.copyWith(fontSize: 15),
+          ),
         ),
       for (final b in rest) BookingTile(booking: b, onTap: () => open(b)),
     ];
@@ -370,13 +380,17 @@ class _EmptyState extends StatelessWidget {
         Container(
           width: 84,
           height: 84,
-          decoration: const BoxDecoration(color: AppColors.bgSoft, shape: BoxShape.circle),
-          child: Icon(icon, size: 38, color: AppColors.primary),
+          decoration: BoxDecoration(color: context.palette.pageSoft, shape: BoxShape.circle),
+          child: Icon(icon, size: 38, color: context.palette.primary),
         ),
         const SizedBox(height: 16),
-        Text(title, textAlign: TextAlign.center, style: HomeType.sectionTitle),
+        Text(title, textAlign: TextAlign.center, style: context.homeType.sectionTitle),
         const SizedBox(height: 6),
-        Text(body, textAlign: TextAlign.center, style: HomeType.articleBody.copyWith(fontSize: 13)),
+        Text(
+          body,
+          textAlign: TextAlign.center,
+          style: context.homeType.articleBody.copyWith(fontSize: 13),
+        ),
         if (tab != BookingsTab.cancelled) ...[
           const SizedBox(height: 18),
           FilledButton.icon(
@@ -385,7 +399,7 @@ class _EmptyState extends StatelessWidget {
             label: Text(l.mbFindDoctor),
             style: FilledButton.styleFrom(
               minimumSize: const Size(180, 48),
-              textStyle: HomeType.button.copyWith(fontSize: 14),
+              textStyle: context.homeType.button.copyWith(fontSize: 14),
             ),
           ),
         ],
@@ -409,21 +423,21 @@ class _ErrorState extends StatelessWidget {
         Container(
           width: 84,
           height: 84,
-          decoration: const BoxDecoration(color: Color(0xFFFEE2E2), shape: BoxShape.circle),
+          decoration: BoxDecoration(color: context.palette.toneDanger.bg, shape: BoxShape.circle),
           child: Icon(
             offline ? Icons.wifi_off_rounded : Icons.cloud_off_rounded,
             size: 36,
-            color: const Color(0xFFB91C1C),
+            color: context.palette.toneDanger.fg,
           ),
         ),
         const SizedBox(height: 16),
-        Text(l.mbErrorTitle, textAlign: TextAlign.center, style: HomeType.sectionTitle),
+        Text(l.mbErrorTitle, textAlign: TextAlign.center, style: context.homeType.sectionTitle),
         const SizedBox(height: 6),
         Text(
           // Never the server's raw wording: a fixed, friendly sentence.
           offline ? l.mbOfflineBody : l.mbErrorBody,
           textAlign: TextAlign.center,
-          style: HomeType.articleBody.copyWith(fontSize: 13),
+          style: context.homeType.articleBody.copyWith(fontSize: 13),
         ),
         const SizedBox(height: 18),
         OutlinedButton.icon(
@@ -432,7 +446,7 @@ class _ErrorState extends StatelessWidget {
           label: Text(l.actionRetry),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(160, 48),
-            textStyle: HomeType.button.copyWith(fontSize: 14),
+            textStyle: context.homeType.button.copyWith(fontSize: 14),
           ),
         ),
       ],

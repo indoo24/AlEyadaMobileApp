@@ -463,7 +463,8 @@ void main() {
       tester,
     ) async {
       SharedPreferences.setMockInitialValues({
-        'recent_doctor_searches': ['عمليات العيون', 'دكتور أسنان', 'باطنة'],
+        // Signed out: the guest's own list.
+        RecentSearchesController.storageKey(null): ['عمليات العيون', 'دكتور أسنان', 'باطنة'],
       });
       container.dispose();
       container = ProviderContainer(
@@ -488,7 +489,8 @@ void main() {
 
     testWidgets('tapping a recent search runs it', (tester) async {
       SharedPreferences.setMockInitialValues({
-        'recent_doctor_searches': ['عمليات العيون'],
+        // Signed out: the guest's own list.
+        RecentSearchesController.storageKey(null): ['عمليات العيون'],
       });
       container.dispose();
       container = ProviderContainer(

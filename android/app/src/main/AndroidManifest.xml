@@ -1,16 +1,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- The app talks to one HTTPS origin and nothing else. INTERNET is the only
-         permission it needs: no location, no contacts, no storage. image_picker
-         uses the system picker, which needs no gallery permission on modern
-         Android. -->
+         permission it needs: no location, no contacts, no storage. -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
+    <!-- Backups: none. The session tokens and the per-account local data (recent
+         searches, favourites) stay on this device; see the two rule files for
+         the detail, including why Android 12+ needs dataExtractionRules on top
+         of allowBackup="false". -->
     <application
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/network_security_config"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -27,6 +32,14 @@
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
+              />
+            <!-- No deep links yet: there is no intent filter for any URL, and this
+                 keeps the engine from handing a launch intent's route to the
+                 router either. Turn it back on together with real App Links and
+                 their validation. -->
+            <meta-data
+              android:name="flutter_deeplinking_enabled"
+              android:value="false"
               />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

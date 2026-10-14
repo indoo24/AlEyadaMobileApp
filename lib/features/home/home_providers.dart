@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/providers.dart';
 import '../doctors/models.dart';
 import '../doctors/providers.dart';
 import '../doctors/repository.dart';
@@ -9,8 +10,12 @@ import '../doctors/repository.dart';
 /// Held in memory for the session. It narrows what Home *shows* (featured
 /// doctors, clinics) and is carried into the directory when the user searches or
 /// picks a specialty from here; it does not rewrite the directory's own filters
-/// on its own.
-final homeCitySlugProvider = StateProvider<String?>((ref) => null);
+/// on its own. Like the directory's filters, it starts over when the signed-in
+/// account changes.
+final homeCitySlugProvider = StateProvider<String?>((ref) {
+  ref.watch(authControllerProvider.select((s) => s.user?.id));
+  return null;
+});
 
 /// Highest-rated first, as the backend orders it, within the chosen city.
 DoctorQuery featuredDoctorQuery(String? city) => DoctorQuery(sort: DoctorSort.rating, city: city);

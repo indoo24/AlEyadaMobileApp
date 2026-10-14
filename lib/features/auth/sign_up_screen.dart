@@ -10,6 +10,8 @@ import '../../core/providers.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
+import 'widgets/auth_widgets.dart';
+import '../../core/theme/app_palette.dart';
 
 /// Patient registration.
 ///
@@ -48,7 +50,19 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     super.dispose();
   }
 
+  /// Drop a field's error as soon as the user edits that field.
+  void _clearError(String key) {
+    if (_fieldErrors.containsKey(key) || _formError != null) {
+      setState(() {
+        _fieldErrors = {..._fieldErrors}..remove(key);
+        _formError = null;
+      });
+    }
+  }
+
   Future<void> _submit(List<LegalPolicy> policies) async {
+    // A second tap (or the keyboard's "done") while a request is in flight.
+    if (_busy) return;
     final l = L.of(context);
     setState(() {
       _formError = null;
@@ -96,113 +110,304 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   Widget build(BuildContext context) {
     final l = L.of(context);
     final policies = ref.watch(_currentPoliciesProvider);
+    final canSubmit = policies.hasValue;
+    void submit() => canSubmit ? _submit(policies.requireValue) : null;
 
-    return Scaffold(
-      backgroundColor: AppColors.bg,
-      appBar: AppBar(title: Text(l.authSignUp), backgroundColor: Colors.transparent),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.gutter,
-            AppSpacing.sm,
-            AppSpacing.gutter,
-            AppSpacing.xl,
+    return AuthScaffold(
+      children: [
+        AuthBrandHeader(title: l.authSignUp, subtitle: l.authSignUpSubtitle),
+        const SizedBox(height: 22),
+        AutofillGroup(
+          child: AuthCard(
+            children: [
+              FormErrorBanner(message: _formError),
+              AuthTextField(
+                label: l.authFullName,
+                controller: _name,
+                icon: Icons.person_outline_rounded,
+                required: true,
+                textInputAction: TextInputAction.next,
+                textCapitalization: TextCapitalization.words,
+                autofillHints: const [AutofillHints.name],
+                errorText: _fieldErrors['full_name'],
+                onChanged: (_) => _clearError('full_name'),
+                enabled: !_busy,
+              ),
+              const SizedBox(height: 14),
+              AuthTextField(
+                label: l.authPhone,
+                controller: _phone,
+                icon: Icons.phone_iphone_rounded,
+                hint: l.authPhoneHint,
+                required: true,
+                forceLtr: true,
+                keyboardType: TextInputType.phone,
+                inputFormatters: const [DigitsOnlyFormatter()],
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.telephoneNumber],
+                errorText: _fieldErrors['phone'],
+                onChanged: (_) => _clearError('phone'),
+                enabled: !_busy,
+              ),
+              const SizedBox(height: 14),
+              AuthTextField(
+                label: l.authEmail,
+                controller: _email,
+                icon: Icons.mail_outline_rounded,
+                forceLtr: true,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.email],
+                errorText: _fieldErrors['email'],
+                onChanged: (_) => _clearError('email'),
+                enabled: !_busy,
+              ),
+              const SizedBox(height: 14),
+              AuthTextField(
+                label: l.authPassword,
+                controller: _password,
+                icon: Icons.lock_outline_rounded,
+                required: true,
+                obscure: _obscure,
+                onToggleObscure: () => setState(() => _obscure = !_obscure),
+                textInputAction: TextInputAction.done,
+                autofillHints: const [AutofillHints.newPassword],
+                errorText: _fieldErrors['password'],
+                onChanged: (_) => _clearError('password'),
+                onSubmitted: (_) => submit(),
+                enabled: !_busy,
+              ),
+              const SizedBox(height: 14),
+              policies.when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  child: LinearProgressIndicator(minHeight: 2),
+                ),
+                error: (e, _) =>
+                    _PoliciesError(onRetry: () => ref.invalidate(_currentPoliciesProvider)),
+                data: (list) => _ConsentRow(
+                  value: _consent,
+                  policies: list,
+                  enabled: !_busy,
+                  onChanged: (v) => setState(() {
+                    _consent = v;
+                    if (v && _formError == l.consentRequired) _formError = null;
+                  }),
+                ),
+              ),
+              const SizedBox(height: 14),
+              AuthPrimaryButton(
+                label: l.authSignUp,
+                busy: _busy,
+                onPressed: canSubmit ? submit : null,
+              ),
+            ],
           ),
-          children: [
-            Text(l.authSignUpSubtitle, style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: AppSpacing.xl),
-            FormErrorBanner(message: _formError),
+        ),
+        const SizedBox(height: 14),
+        AuthFooterLink(
+          question: l.authHaveAccount,
+          action: l.authSignIn,
+          onTap: _busy ? null : () => context.pop(),
+        ),
+      ],
+    );
+  }
+}
 
-            AppTextField(
-              label: l.authFullName,
-              controller: _name,
-              required: true,
-              textInputAction: TextInputAction.next,
-              autofillHints: const [AutofillHints.name],
-              errorText: _fieldErrors['full_name'],
-              enabled: !_busy,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppTextField(
-              label: l.authPhone,
-              controller: _phone,
-              hint: l.authPhoneHint,
-              required: true,
-              forceLtr: true,
-              keyboardType: TextInputType.phone,
-              inputFormatters: const [DigitsOnlyFormatter()],
-              textInputAction: TextInputAction.next,
-              errorText: _fieldErrors['phone'],
-              enabled: !_busy,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppTextField(
-              label: l.authEmail,
-              controller: _email,
-              forceLtr: true,
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.next,
-              autofillHints: const [AutofillHints.email],
-              errorText: _fieldErrors['email'],
-              enabled: !_busy,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppTextField(
-              label: l.authPassword,
-              controller: _password,
-              required: true,
-              obscure: _obscure,
-              onToggleObscure: () => setState(() => _obscure = !_obscure),
-              textInputAction: TextInputAction.done,
-              autofillHints: const [AutofillHints.newPassword],
-              errorText: _fieldErrors['password'],
-              enabled: !_busy,
-            ),
+/// The agreement: a real checkbox with its sentence as the tap target, and the
+/// current policies — the backend's own titles and text — readable from here.
+class _ConsentRow extends StatelessWidget {
+  const _ConsentRow({
+    required this.value,
+    required this.policies,
+    required this.enabled,
+    required this.onChanged,
+  });
 
-            const SizedBox(height: AppSpacing.lg),
-            policies.when(
-              loading: () => const LinearProgressIndicator(minHeight: 2),
-              error: (e, _) => FormErrorBanner(message: messageForError(context, e)),
-              data: (list) => CheckboxListTile(
-                value: _consent,
-                onChanged: _busy ? null : (v) => setState(() => _consent = v ?? false),
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
-                title: Text(l.consentAccept, style: Theme.of(context).textTheme.bodySmall),
-                subtitle: list.isEmpty
-                    ? null
-                    : Text(
-                        list.map((p) => p.titleAr).join(' • '),
-                        style: Theme.of(context).textTheme.labelMedium,
+  final bool value;
+  final List<LegalPolicy> policies;
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    final readable = policies.where((p) => (p.bodyAr ?? '').trim().isNotEmpty).toList();
+    return Container(
+      padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 12, 8),
+      decoration: BoxDecoration(
+        color: value ? context.palette.pageSoft : context.palette.page,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MergeSemantics(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: enabled ? () => onChanged(!value) : null,
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: value,
+                    onChanged: enabled ? (v) => onChanged(v ?? false) : null,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                  ),
+                  Expanded(
+                    child: Text(
+                      l.consentAccept,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: context.palette.body,
+                        height: 1.5,
                       ),
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            const SizedBox(height: AppSpacing.lg),
-            FilledButton(
-              onPressed: _busy || !policies.hasValue ? null : () => _submit(policies.requireValue),
-              child: _busy
-                  ? const SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
-                    )
-                  : Text(l.authSignUp),
+          ),
+          if (readable.isNotEmpty)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(start: 44),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 2,
+                children: [
+                  for (final p in readable)
+                    _PolicyLink(title: p.titleAr, onTap: () => _showPolicy(context, p)),
+                ],
+              ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(l.authHaveAccount, style: Theme.of(context).textTheme.bodySmall),
-                TextButton(
-                  onPressed: _busy ? null : () => context.pop(),
-                  child: Text(l.authSignIn),
-                ),
-              ],
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
+
+  /// The policy's own text, as the backend publishes it.
+  static Future<void> _showPolicy(BuildContext context, LegalPolicy p) =>
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: context.palette.surfaceRaised,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (ctx) => DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.75,
+          maxChildSize: 0.95,
+          builder: (ctx, controller) => ListView(
+            controller: controller,
+            padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 12, AppSpacing.gutter, 28),
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: context.palette.border,
+                    borderRadius: AppRadii.pillRadius,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Semantics(
+                header: true,
+                child: Text(
+                  p.titleAr,
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    color: context.palette.heading,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                p.bodyAr!.trim(),
+                style: TextStyle(fontSize: 14, color: context.palette.body, height: 1.8),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class _PoliciesError extends StatelessWidget {
+  const _PoliciesError({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    return Container(
+      padding: const EdgeInsetsDirectional.fromSTEB(12, 6, 6, 6),
+      decoration: BoxDecoration(
+        color: context.palette.danger.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline_rounded, size: 18, color: context.palette.danger),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l.auPoliciesRetry,
+              style: TextStyle(fontSize: 13, color: context.palette.danger),
+            ),
+          ),
+          TextButton(onPressed: onRetry, child: Text(l.actionRetry)),
+        ],
+      ),
+    );
+  }
+}
+
+/// A compact inline link to one policy's text.
+class _PolicyLink extends StatelessWidget {
+  const _PolicyLink({required this.title, required this.onTap});
+
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    link: true,
+    label: title,
+    excludeSemantics: true,
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 40),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.description_outlined, size: 16, color: context.palette.primary),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: context.palette.primary,
+                    decoration: TextDecoration.underline,
+                    decorationColor: context.palette.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }

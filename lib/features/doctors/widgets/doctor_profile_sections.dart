@@ -9,6 +9,7 @@ import '../doctor_detail_logic.dart';
 import '../models.dart';
 import 'doctor_card_tile.dart';
 import 'doctor_rating.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// The building blocks of a doctor's public profile.
 ///
@@ -16,7 +17,6 @@ import 'doctor_rating.dart';
 /// is left out entirely rather than shown empty or padded with placeholder text.
 
 /// Deep navy of the brand (the splash and launch background).
-const profileNavy = Color(0xFF022253);
 
 /// Open a web or map link outside the app, telling the patient when it fails.
 Future<void> openExternalLink(BuildContext context, Uri uri) async {
@@ -46,13 +46,14 @@ class DoctorHero extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 4, AppSpacing.gutter, 52),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [profileNavy, Color(0xFF0A3F86)],
+          colors: [context.palette.heroStart, context.palette.heroEnd],
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+        border: context.palette.isDark ? Border.all(color: context.palette.heroEdge) : null,
       ),
       child: Column(
         children: [
@@ -179,7 +180,7 @@ class _HeroRating extends StatelessWidget {
                 ? Icons.star_half_rounded
                 : Icons.star_outline_rounded,
             size: 18,
-            color: AppColors.star,
+            color: context.palette.star,
           ),
         const SizedBox(width: 6),
         Text(
@@ -225,7 +226,7 @@ class DoctorStatsCard extends StatelessWidget {
       if (card.hasRating)
         _Stat(
           icon: Icons.star_rounded,
-          iconColor: AppColors.star,
+          iconColor: context.palette.star,
           value: formatRating(card.ratingValue!),
           label: l.ddStatRating,
           ltr: true,
@@ -245,16 +246,16 @@ class DoctorStatsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(homeCardRadius),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.float,
+        border: Border.all(color: context.palette.border),
+        boxShadow: context.palette.shadowFloat,
       ),
       child: IntrinsicHeight(
         child: Row(
           children: [
             for (var i = 0; i < stats.length; i++) ...[
-              if (i > 0) const VerticalDivider(width: 1, thickness: 1, color: AppColors.border),
+              if (i > 0) VerticalDivider(width: 1, thickness: 1, color: context.palette.border),
               Expanded(child: stats[i]),
             ],
           ],
@@ -285,7 +286,7 @@ class _Stat extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 20, color: iconColor ?? AppColors.primary),
+        Icon(icon, size: 20, color: iconColor ?? context.palette.primary),
         const SizedBox(height: 6),
         FittedBox(
           fit: BoxFit.scaleDown,
@@ -293,10 +294,10 @@ class _Stat extends StatelessWidget {
             value,
             maxLines: 1,
             textDirection: ltr ? TextDirection.ltr : null,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14.5,
               fontWeight: FontWeight.w800,
-              color: AppColors.navy,
+              color: context.palette.heading,
             ),
           ),
         ),
@@ -306,7 +307,7 @@ class _Stat extends StatelessWidget {
           maxLines: 2,
           textAlign: TextAlign.center,
           overflow: TextOverflow.ellipsis,
-          style: HomeType.meta.copyWith(fontSize: 11),
+          style: context.homeType.meta.copyWith(fontSize: 11),
         ),
       ],
     ),
@@ -333,10 +334,10 @@ class ProfileSection extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: AppColors.surface,
+      color: context.palette.surface,
       borderRadius: BorderRadius.circular(homeCardRadius),
-      border: Border.all(color: AppColors.border),
-      boxShadow: AppShadows.soft,
+      border: Border.all(color: context.palette.border),
+      boxShadow: context.palette.shadowSoft,
     ),
     child: Material(
       type: MaterialType.transparency,
@@ -350,15 +351,18 @@ class ProfileSection extends StatelessWidget {
                   width: 30,
                   height: 30,
                   decoration: BoxDecoration(
-                    color: AppColors.bgSoft,
+                    color: context.palette.pageSoft,
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Icon(icon, size: 17, color: AppColors.primary),
+                  child: Icon(icon, size: 17, color: context.palette.primary),
                 ),
                 const SizedBox(width: 10),
               ],
               Expanded(
-                child: Semantics(header: true, child: Text(title, style: HomeType.sectionTitle)),
+                child: Semantics(
+                  header: true,
+                  child: Text(title, style: context.homeType.sectionTitle),
+                ),
               ),
               ?trailing,
             ],
@@ -390,7 +394,7 @@ class _ExpandableTextState extends State<ExpandableText> {
   @override
   Widget build(BuildContext context) {
     final l = L.of(context);
-    final style = widget.style ?? const TextStyle(fontSize: 14, color: AppColors.ink, height: 1.8);
+    final style = widget.style ?? TextStyle(fontSize: 14, color: context.palette.body, height: 1.8);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -422,7 +426,7 @@ class _ExpandableTextState extends State<ExpandableText> {
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
                   minimumSize: const Size(48, 36),
-                  textStyle: HomeType.button.copyWith(fontSize: 13),
+                  textStyle: context.homeType.button.copyWith(fontSize: 13),
                 ),
                 child: Text(_expanded ? l.ddShowLess : l.ddShowMore),
               ),
@@ -458,10 +462,10 @@ class DoctorAboutSection extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.bgSoft,
+                color: context.palette.pageSoft,
                 borderRadius: AppRadii.inputRadius,
-                border: const BorderDirectional(
-                  start: BorderSide(color: AppColors.primary, width: 3),
+                border: BorderDirectional(
+                  start: BorderSide(color: context.palette.primary, width: 3),
                 ),
               ),
               child: Column(
@@ -469,12 +473,12 @@ class DoctorAboutSection extends StatelessWidget {
                 children: [
                   Text(
                     l.dpField_vision_ar,
-                    style: HomeType.meta.copyWith(fontWeight: FontWeight.w700),
+                    style: context.homeType.meta.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     detail.visionAr,
-                    style: const TextStyle(fontSize: 13.5, color: AppColors.ink, height: 1.7),
+                    style: TextStyle(fontSize: 13.5, color: context.palette.body, height: 1.7),
                   ),
                 ],
               ),
@@ -555,7 +559,7 @@ class DoctorProfessionalSection extends StatelessWidget {
       child: Column(
         children: [
           for (var i = 0; i < rows.length; i++) ...[
-            if (i > 0) const Divider(height: 22, color: AppColors.border),
+            if (i > 0) Divider(height: 22, color: context.palette.border),
             rows[i],
           ],
         ],
@@ -575,7 +579,7 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lines = text.split('\n').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
-    const body = TextStyle(fontSize: 13.5, color: AppColors.ink, height: 1.65);
+    final body = TextStyle(fontSize: 13.5, color: context.palette.body, height: 1.65);
     return _LabelledBlock(
       icon: icon,
       label: label,
@@ -598,7 +602,7 @@ class _CredentialList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const body = TextStyle(fontSize: 13.5, color: AppColors.ink, height: 1.6);
+    final body = TextStyle(fontSize: 13.5, color: context.palette.body, height: 1.6);
     return _LabelledBlock(
       icon: icon,
       label: label,
@@ -633,14 +637,17 @@ class _LabelledBlock extends StatelessWidget {
     children: [
       Padding(
         padding: const EdgeInsets.only(top: 2),
-        child: Icon(icon, size: 18, color: AppColors.primary),
+        child: Icon(icon, size: 18, color: context.palette.primary),
       ),
       const SizedBox(width: 10),
       Expanded(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: HomeType.meta.copyWith(fontWeight: FontWeight.w700, fontSize: 12)),
+            Text(
+              label,
+              style: context.homeType.meta.copyWith(fontWeight: FontWeight.w700, fontSize: 12),
+            ),
             const SizedBox(height: 4),
             child,
           ],
@@ -667,7 +674,7 @@ class _Bullet extends StatelessWidget {
           child: Container(
             width: 5,
             height: 5,
-            decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+            decoration: BoxDecoration(color: context.palette.primaryFill, shape: BoxShape.circle),
           ),
         ),
         const SizedBox(width: 8),
@@ -723,9 +730,9 @@ class _InfoChip extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
     decoration: BoxDecoration(
-      color: highlighted ? AppColors.primary : AppColors.bgSoft,
+      color: highlighted ? context.palette.primaryFill : context.palette.pageSoft,
       borderRadius: AppRadii.pillRadius,
-      border: Border.all(color: highlighted ? AppColors.primary : AppColors.border),
+      border: Border.all(color: highlighted ? context.palette.primaryFill : context.palette.border),
     ),
     child: Text.rich(
       TextSpan(
@@ -736,12 +743,14 @@ class _InfoChip extends StatelessWidget {
               text: '  ·  $trailing',
               style: TextStyle(
                 fontWeight: FontWeight.w800,
-                color: highlighted ? Colors.white : AppColors.primary,
+                color: highlighted ? Colors.white : context.palette.primary,
               ),
             ),
         ],
       ),
-      style: HomeType.chip.copyWith(color: highlighted ? Colors.white : AppColors.navy),
+      style: context.homeType.chip.copyWith(
+        color: highlighted ? Colors.white : context.palette.heading,
+      ),
     ),
   );
 }
@@ -790,12 +799,14 @@ class DoctorClinicCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(homeCardRadius),
         border: Border.all(
-          color: link.isPrimary ? AppColors.primary.withValues(alpha: 0.35) : AppColors.border,
+          color: link.isPrimary
+              ? context.palette.primary.withValues(alpha: 0.35)
+              : context.palette.border,
         ),
-        boxShadow: AppShadows.soft,
+        boxShadow: context.palette.shadowSoft,
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
@@ -814,10 +825,10 @@ class DoctorClinicCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(c.nameAr, style: HomeType.cardTitle.copyWith(fontSize: 15)),
+                        Text(c.nameAr, style: context.homeType.cardTitle.copyWith(fontSize: 15)),
                         if (location.isNotEmpty) ...[
                           const SizedBox(height: 2),
-                          Text(location, style: HomeType.meta),
+                          Text(location, style: context.homeType.meta),
                         ],
                         if (link.isPrimary || !bookable) ...[
                           const SizedBox(height: 6),
@@ -826,8 +837,9 @@ class DoctorClinicCard extends StatelessWidget {
                             runSpacing: 6,
                             children: [
                               if (link.isPrimary)
-                                _Badge(label: l.clinicBadgePrimary, color: AppColors.primary),
-                              if (!bookable) _Badge(label: l.ddPhoneOnly, color: AppColors.muted),
+                                _Badge(label: l.clinicBadgePrimary, color: context.palette.primary),
+                              if (!bookable)
+                                _Badge(label: l.ddPhoneOnly, color: context.palette.muted),
                             ],
                           ),
                         ],
@@ -859,7 +871,7 @@ class DoctorClinicCard extends StatelessWidget {
                         label: Text(l.ddOpenLocation),
                         style: TextButton.styleFrom(
                           visualDensity: VisualDensity.compact,
-                          textStyle: HomeType.button.copyWith(fontSize: 13),
+                          textStyle: context.homeType.button.copyWith(fontSize: 13),
                         ),
                       ),
                   ],
@@ -892,11 +904,14 @@ class DoctorClinicCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.schedule_rounded, size: 17, color: AppColors.primary),
+                    Icon(Icons.schedule_rounded, size: 17, color: context.palette.primary),
                     const SizedBox(width: 6),
                     Text(
                       l.doctorWorkingHours,
-                      style: HomeType.meta.copyWith(fontWeight: FontWeight.w700, fontSize: 12),
+                      style: context.homeType.meta.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -911,10 +926,10 @@ class DoctorClinicCard extends StatelessWidget {
                           width: 92,
                           child: Text(
                             d.label.isNotEmpty ? d.label : _weekdayName(l, d.weekday),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.navy,
+                              color: context.palette.heading,
                             ),
                           ),
                         ),
@@ -923,7 +938,7 @@ class DoctorClinicCard extends StatelessWidget {
                             d.ranges.join('  ،  '),
                             textDirection: TextDirection.ltr,
                             textAlign: TextAlign.end,
-                            style: const TextStyle(fontSize: 13, color: AppColors.ink),
+                            style: TextStyle(fontSize: 13, color: context.palette.body),
                           ),
                         ),
                       ],
@@ -946,7 +961,7 @@ class DoctorClinicCard extends StatelessWidget {
                           ),
                           style: FilledButton.styleFrom(
                             minimumSize: const Size(0, 46),
-                            textStyle: HomeType.button.copyWith(fontSize: 13.5),
+                            textStyle: context.homeType.button.copyWith(fontSize: 13.5),
                           ),
                         ),
                       ),
@@ -967,7 +982,7 @@ class DoctorClinicCard extends StatelessWidget {
                             label: Text(l.doctorCall),
                             style: OutlinedButton.styleFrom(
                               minimumSize: const Size(0, 46),
-                              textStyle: HomeType.button.copyWith(fontSize: 13.5),
+                              textStyle: context.homeType.button.copyWith(fontSize: 13.5),
                             ),
                           ),
                         ),
@@ -1000,13 +1015,16 @@ class _ClinicThumb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const fallback = Center(
-      child: Icon(Icons.local_hospital_rounded, color: AppColors.primary, size: 24),
+    final fallback = Center(
+      child: Icon(Icons.local_hospital_rounded, color: context.palette.primary, size: 24),
     );
     return Container(
       width: 48,
       height: 48,
-      decoration: BoxDecoration(color: AppColors.bgSoft, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: context.palette.pageSoft,
+        borderRadius: BorderRadius.circular(12),
+      ),
       clipBehavior: Clip.antiAlias,
       child: (image ?? '').isEmpty
           ? fallback
@@ -1028,7 +1046,7 @@ class _Badge extends StatelessWidget {
       color: color.withValues(alpha: 0.1),
       borderRadius: AppRadii.pillRadius,
     ),
-    child: Text(label, style: HomeType.pill.copyWith(color: color, fontSize: 11)),
+    child: Text(label, style: context.homeType.pill.copyWith(color: color, fontSize: 11)),
   );
 }
 
@@ -1044,11 +1062,11 @@ class _IconLine extends StatelessWidget {
     children: [
       Padding(
         padding: const EdgeInsets.only(top: 2),
-        child: Icon(icon, size: 17, color: AppColors.muted),
+        child: Icon(icon, size: 17, color: context.palette.muted),
       ),
       const SizedBox(width: 6),
       Expanded(
-        child: Text(text, style: const TextStyle(fontSize: 13, color: AppColors.ink, height: 1.6)),
+        child: Text(text, style: TextStyle(fontSize: 13, color: context.palette.body, height: 1.6)),
       ),
     ],
   );
@@ -1063,13 +1081,13 @@ class _FeeBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-    decoration: BoxDecoration(color: AppColors.bgSoft, borderRadius: AppRadii.inputRadius),
+    decoration: BoxDecoration(color: context.palette.pageSoft, borderRadius: AppRadii.inputRadius),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: HomeType.feeLabel),
+        Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.homeType.feeLabel),
         const SizedBox(height: 2),
-        Text(amount, style: HomeType.feeAmount.copyWith(fontSize: 14)),
+        Text(amount, style: context.homeType.feeAmount.copyWith(fontSize: 14)),
       ],
     ),
   );
@@ -1136,14 +1154,14 @@ class DoctorLinksSection extends StatelessWidget {
               children: [
                 for (final e in detail.socialLinks.entries)
                   ActionChip(
-                    avatar: Icon(_socialIcon(e.key), size: 18, color: AppColors.primary),
+                    avatar: Icon(_socialIcon(e.key), size: 18, color: context.palette.primary),
                     label: Text(_socialLabel(l, e.key)),
-                    labelStyle: HomeType.chip.copyWith(
-                      color: AppColors.navy,
+                    labelStyle: context.homeType.chip.copyWith(
+                      color: context.palette.heading,
                       fontFamily: AppTheme.fontFamily,
                     ),
-                    backgroundColor: AppColors.bgSoft,
-                    side: const BorderSide(color: AppColors.border),
+                    backgroundColor: context.palette.pageSoft,
+                    side: BorderSide(color: context.palette.border),
                     shape: const StadiumBorder(),
                     onPressed: () => openExternalLink(context, e.value),
                   ),
@@ -1185,32 +1203,35 @@ class _LinkTile extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: AppColors.bgSoft,
+                color: context.palette.pageSoft,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, size: 20, color: AppColors.primary),
+              child: Icon(icon, size: 20, color: context.palette.primary),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: HomeType.cardTitle.copyWith(fontSize: 14)),
+                  Text(title, style: context.homeType.cardTitle.copyWith(fontSize: 14)),
                   if (subtitle != null)
                     Text(
                       subtitle!,
                       textDirection: TextDirection.ltr,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: HomeType.meta.copyWith(color: AppColors.primary),
+                      style: context.homeType.meta.copyWith(color: context.palette.primary),
                     ),
                 ],
               ),
             ),
             if (actionLabel != null)
-              Text(actionLabel!, style: HomeType.seeAll.copyWith(color: AppColors.primary))
+              Text(
+                actionLabel!,
+                style: context.homeType.seeAll.copyWith(color: context.palette.primary),
+              )
             else
-              const Icon(Icons.open_in_new_rounded, size: 18, color: AppColors.muted),
+              Icon(Icons.open_in_new_rounded, size: 18, color: context.palette.muted),
           ],
         ),
       ),

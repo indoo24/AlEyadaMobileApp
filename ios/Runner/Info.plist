@@ -90,5 +90,10 @@
 	     tells iOS the bundle genuinely supports it. -->
 	<key>CFBundleAllowMixedLocalizations</key>
 	<true/>
+	<!-- No deep links yet: no URL scheme or associated domain is registered, and
+	     this keeps the engine from handing an opened URL to the router. Turn it
+	     back on together with real Universal Links and their validation. -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
 </dict>
 </plist>

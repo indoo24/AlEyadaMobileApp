@@ -9,6 +9,7 @@ import '../home/home_style.dart';
 import 'management_widgets.dart';
 import 'models.dart';
 import 'providers.dart';
+import '../../core/theme/app_palette.dart';
 
 /// The label for one of the backend's assistant permission flags.
 String flagLabel(L l, String key) => switch (key) {
@@ -35,7 +36,7 @@ class AssistantsScreen extends ConsumerWidget {
     final assistants = ref.watch(assistantsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       appBar: AppBar(title: Text(l.assistantsTitle)),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -76,7 +77,7 @@ class AssistantsScreen extends ConsumerWidget {
                   label: Text(l.assistantsAdd),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(0, 40),
-                    textStyle: HomeType.button,
+                    textStyle: context.homeType.button,
                   ),
                 ),
               ),
@@ -109,10 +110,12 @@ class _AssistantCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: AppColors.bgSoft,
+                backgroundColor: context.palette.pageSoft,
                 child: Text(
-                  assistant.fullName.trim().isEmpty ? '؟' : assistant.fullName.trim().characters.first,
-                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800),
+                  assistant.fullName.trim().isEmpty
+                      ? '؟'
+                      : assistant.fullName.trim().characters.first,
+                  style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w800),
                 ),
               ),
               const SizedBox(width: 12),
@@ -120,24 +123,35 @@ class _AssistantCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(assistant.fullName, style: HomeType.cardTitle.copyWith(fontSize: 15.5)),
-                    Text(assistant.phone, style: HomeType.meta, textDirection: TextDirection.ltr),
+                    Text(
+                      assistant.fullName,
+                      style: context.homeType.cardTitle.copyWith(fontSize: 15.5),
+                    ),
+                    Text(
+                      assistant.phone,
+                      style: context.homeType.meta,
+                      textDirection: TextDirection.ltr,
+                    ),
                   ],
                 ),
               ),
               if (!assistant.isActive)
-                MgmtBadge(label: l.assistantInactive, color: AppColors.danger),
+                MgmtBadge(label: l.assistantInactive, color: context.palette.danger),
             ],
           ),
           if (assistant.notes.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(assistant.notes, style: HomeType.meta),
+            Text(assistant.notes, style: context.homeType.meta),
           ],
           for (final a in assistant.assignments)
             // Keyed by what the server holds, so a refresh that changed the flags
             // (here or on the web) resets the switches to match.
             _AssignmentTile(
-              key: ValueKey((a.id, a.isActive, a.flags.entries.map((e) => '${e.key}=${e.value}').join(','))),
+              key: ValueKey((
+                a.id,
+                a.isActive,
+                a.flags.entries.map((e) => '${e.key}=${e.value}').join(','),
+              )),
               assignment: a,
             ),
         ],
@@ -189,7 +203,7 @@ class _AssignmentTileState extends ConsumerState<_AssignmentTile> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.actionCancel)),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l.assistantRevoke, style: const TextStyle(color: AppColors.danger)),
+            child: Text(l.assistantRevoke, style: TextStyle(color: context.palette.danger)),
           ),
         ],
       ),
@@ -216,33 +230,29 @@ class _AssignmentTileState extends ConsumerState<_AssignmentTile> {
         tilePadding: EdgeInsets.zero,
         childrenPadding: const EdgeInsets.only(bottom: 8),
         maintainState: true,
-        leading: const Icon(Icons.local_hospital_outlined, color: AppColors.primary, size: 20),
+        leading: Icon(Icons.local_hospital_outlined, color: context.palette.primary, size: 20),
         title: Text(
           a.coversAllClinics ? l.assistantAllClinics : a.clinicName,
-          style: HomeType.cardTitle,
+          style: context.homeType.cardTitle,
         ),
-        subtitle: Text(l.assistantPermissionsCount(a.grantedCount), style: HomeType.meta),
+        subtitle: Text(l.assistantPermissionsCount(a.grantedCount), style: context.homeType.meta),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l.assistantPermissions, style: HomeType.cardTitle),
+          Text(l.assistantPermissions, style: context.homeType.cardTitle),
           for (final k in keys)
             SwitchListTile(
               dense: true,
               contentPadding: EdgeInsets.zero,
-              title: Text(flagLabel(l, k), style: HomeType.doctorSpecialty),
+              title: Text(flagLabel(l, k), style: context.homeType.doctorSpecialty),
               value: _flags[k] ?? false,
               onChanged: (v) => setState(() => _flags = {..._flags, k: v}),
             ),
           const SizedBox(height: 6),
-          MgmtSaveButton(
-            label: l.actionSave,
-            saving: _saving,
-            onPressed: _dirty ? _save : () {},
-          ),
+          MgmtSaveButton(label: l.actionSave, saving: _saving, onPressed: _dirty ? _save : () {}),
           TextButton.icon(
             onPressed: _revoke,
-            icon: const Icon(Icons.link_off_rounded, size: 18, color: AppColors.danger),
-            label: Text(l.assistantRevoke, style: const TextStyle(color: AppColors.danger)),
+            icon: Icon(Icons.link_off_rounded, size: 18, color: context.palette.danger),
+            label: Text(l.assistantRevoke, style: TextStyle(color: context.palette.danger)),
           ),
         ],
       ),
@@ -339,7 +349,12 @@ class _AddAssistantSheetState extends ConsumerState<_AddAssistantSheet> {
           children: [
             Text(l.assistantsAdd, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
-            AppTextField(label: l.assistantFormName, controller: _name, errorText: _nameError, required: true),
+            AppTextField(
+              label: l.assistantFormName,
+              controller: _name,
+              errorText: _nameError,
+              required: true,
+            ),
             const SizedBox(height: 12),
             AppTextField(
               label: l.assistantFormPhone,
@@ -362,12 +377,12 @@ class _AddAssistantSheetState extends ConsumerState<_AddAssistantSheet> {
               onChanged: (v) => setState(() => _clinicId = v),
             ),
             const SizedBox(height: 12),
-            Text(l.assistantPermissions, style: HomeType.cardTitle),
+            Text(l.assistantPermissions, style: context.homeType.cardTitle),
             for (final k in assistantFlagKeys)
               SwitchListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,
-                title: Text(flagLabel(l, k), style: HomeType.doctorSpecialty),
+                title: Text(flagLabel(l, k), style: context.homeType.doctorSpecialty),
                 value: _flags[k] ?? false,
                 onChanged: (v) => setState(() => _flags[k] = v),
               ),

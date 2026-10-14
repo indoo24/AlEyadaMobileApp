@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../doctors/models.dart';
 import '../../doctors/providers.dart';
 import '../home_providers.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// A city's name in the reader's language.
 String cityName(BuildContext context, City c) {
@@ -97,9 +98,9 @@ class _CityTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       selected: selected,
-      selectedColor: AppColors.primary,
+      selectedColor: context.palette.primary,
       title: Text(label),
-      trailing: selected ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
+      trailing: selected ? Icon(Icons.check_rounded, color: context.palette.primary) : null,
       onTap: onTap,
     );
   }

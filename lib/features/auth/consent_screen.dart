@@ -5,12 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_error.dart';
 import '../../core/auth/models.dart';
+import '../../core/config/env.dart';
 import '../../core/errors/error_messages.dart';
 import '../../core/providers.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/theme/app_palette.dart';
 
 final _policiesProvider = FutureProvider<List<LegalPolicy>>(
   (ref) => ref.watch(authRepositoryProvider).currentPolicies(),
@@ -55,10 +57,13 @@ class _ConsentScreenState extends ConsumerState<ConsentScreen> {
   /// This screen has no inputs, so an error the backend pins on a field means
   /// the app built the request wrong — nothing the user can fix. Its bare
   /// detail ("هذا الحقل مطلوب") would read as blaming the checkbox, so it is
-  /// logged for us and replaced with a sentence that says what actually failed.
+  /// logged for us (debug builds with verbose logging only) and replaced with a
+  /// sentence that says what actually failed.
   String _messageFor(ApiException e) {
     if (e.fieldErrors.isEmpty) return messageForError(context, e);
-    developer.log('consent rejected: ${e.fieldErrors}', name: 'aleyada.consent');
+    if (Env.verboseLogging) {
+      developer.log('consent rejected: ${e.fieldErrors}', name: 'aleyada.consent');
+    }
     return L.of(context).consentSubmitRejected;
   }
 
@@ -68,7 +73,7 @@ class _ConsentScreenState extends ConsumerState<ConsentScreen> {
     final policies = ref.watch(_policiesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       appBar: AppBar(title: Text(l.consentReacceptTitle), backgroundColor: Colors.transparent),
       body: SafeArea(
         child: AsyncValueView<List<LegalPolicy>>(

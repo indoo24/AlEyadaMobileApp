@@ -5,6 +5,7 @@ import '../../core/errors/error_messages.dart';
 import '../../core/theme/tokens.dart';
 import '../../l10n/app_localizations.dart';
 import '../home/home_style.dart';
+import '../../core/theme/app_palette.dart';
 
 /// A white card in the home feed's style.
 class MgmtCard extends StatelessWidget {
@@ -18,10 +19,10 @@ class MgmtCard extends StatelessWidget {
     width: double.infinity,
     padding: padding,
     decoration: BoxDecoration(
-      color: AppColors.surface,
+      color: context.palette.surface,
       borderRadius: BorderRadius.circular(homeCardRadius),
-      border: Border.all(color: AppColors.border),
-      boxShadow: AppShadows.soft,
+      border: Border.all(color: context.palette.border),
+      boxShadow: context.palette.shadowSoft,
     ),
     // List tiles and buttons inside paint their ink on the nearest Material; a
     // coloured DecoratedBox above them would hide it.
@@ -43,7 +44,7 @@ class MgmtBadge extends StatelessWidget {
       color: color.withValues(alpha: 0.12),
       borderRadius: AppRadii.pillRadius,
     ),
-    child: Text(label, style: HomeType.pill.copyWith(color: color, fontSize: 11)),
+    child: Text(label, style: context.homeType.pill.copyWith(color: color, fontSize: 11)),
   );
 }
 
@@ -57,7 +58,7 @@ class MgmtNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = ok ? AppColors.success : AppColors.star;
+    final color = ok ? context.palette.success : context.palette.star;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(10),
@@ -70,15 +71,24 @@ class MgmtNotice extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(ok ? Icons.check_circle_outline_rounded : Icons.info_outline_rounded, size: 17, color: color),
+              Icon(
+                ok ? Icons.check_circle_outline_rounded : Icons.info_outline_rounded,
+                size: 17,
+                color: color,
+              ),
               const SizedBox(width: 6),
-              Expanded(child: Text(title, style: HomeType.status.copyWith(color: color, fontSize: 12.5))),
+              Expanded(
+                child: Text(
+                  title,
+                  style: context.homeType.status.copyWith(color: color, fontSize: 12.5),
+                ),
+              ),
             ],
           ),
           for (final line in lines)
             Padding(
               padding: const EdgeInsetsDirectional.only(start: 23, top: 3),
-              child: Text(line, style: HomeType.meta),
+              child: Text(line, style: context.homeType.meta),
             ),
         ],
       ),
@@ -107,7 +117,7 @@ class MgmtSaveButton extends StatelessWidget {
       style: FilledButton.styleFrom(
         minimumSize: const Size(0, 44),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: HomeType.button.copyWith(fontSize: 13.5),
+        textStyle: context.homeType.button.copyWith(fontSize: 13.5),
       ),
       child: saving
           ? const SizedBox(

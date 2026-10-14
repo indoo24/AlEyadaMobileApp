@@ -4,6 +4,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../articles/models.dart';
 import '../home_style.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// One article in the feed: category, title, excerpt, and the cover when the
 /// article has one.
@@ -26,10 +27,10 @@ class ArticleCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(homeCardRadius),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        border: Border.all(color: context.palette.border),
+        boxShadow: context.palette.shadowSoft,
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -43,12 +44,15 @@ class ArticleCard extends StatelessWidget {
                 child: Image.network(
                   image,
                   fit: BoxFit.cover,
+                  cacheWidth:
+                      (MediaQuery.sizeOf(context).width * MediaQuery.devicePixelRatioOf(context))
+                          .round(),
                   width: double.infinity,
                   // A missing cover collapses to the text card rather than
                   // leaving a grey box or a broken-image glyph.
-                  errorBuilder: (_, __, ___) => const ColoredBox(color: AppColors.bgSoft),
+                  errorBuilder: (_, __, ___) => ColoredBox(color: context.palette.pageSoft),
                   loadingBuilder: (context, child, progress) =>
-                      progress == null ? child : const ColoredBox(color: AppColors.bgSoft),
+                      progress == null ? child : ColoredBox(color: context.palette.pageSoft),
                 ),
               ),
             Padding(
@@ -63,24 +67,24 @@ class ArticleCard extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppColors.bgSoft,
+                              color: context.palette.pageSoft,
                               borderRadius: AppRadii.pillRadius,
                             ),
                             child: Text(
                               category,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: HomeType.pill.copyWith(color: AppColors.primary),
+                              style: context.homeType.pill.copyWith(color: context.palette.primary),
                             ),
                           ),
                         ),
                       const Spacer(),
                       if (article.isCertified) ...[
-                        const Icon(Icons.verified_outlined, size: 13, color: AppColors.success),
+                        Icon(Icons.verified_outlined, size: 13, color: context.palette.success),
                         const SizedBox(width: 4),
                         Text(
                           l.homeArticleCertified,
-                          style: HomeType.status.copyWith(color: AppColors.success),
+                          style: context.homeType.status.copyWith(color: context.palette.success),
                         ),
                       ],
                     ],
@@ -88,7 +92,7 @@ class ArticleCard extends StatelessWidget {
                   const SizedBox(height: 10),
                   Text(
                     article.titleAr,
-                    style: HomeType.articleTitle,
+                    style: context.homeType.articleTitle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -96,7 +100,7 @@ class ArticleCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       article.excerpt,
-                      style: HomeType.articleBody,
+                      style: context.homeType.articleBody,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),

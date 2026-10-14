@@ -109,7 +109,7 @@ void main() {
       await pumpHome(tester);
       await signIn(tester, '01');
 
-      expect(find.text('أهلاً Ahmed'), findsOneWidget);
+      expect(find.text('أهلاً Ahmed، سلامتك'), findsOneWidget);
       expect(find.textContaining('د.'), findsNothing);
     });
 
@@ -119,6 +119,7 @@ void main() {
       await signIn(tester, '02');
 
       expect(find.text('أهلاً د. Ahmed'), findsOneWidget);
+      expect(find.textContaining('سلامتك'), findsNothing, reason: 'patients only');
     });
 
     testWidgets('patient, English: no title', (tester) async {
@@ -126,10 +127,10 @@ void main() {
       await pumpHome(tester, locale: const Locale('en'));
       await signIn(tester, '01');
 
-      expect(find.text('Welcome Ahmed'), findsOneWidget);
+      expect(find.text('Welcome, Ahmed. Stay well.'), findsOneWidget);
       // Scoped to the greeting: the page also has a "Doctors" section heading.
-      expect(find.textContaining('Welcome Dr'), findsNothing);
-      expect(find.textContaining('Welcome Doctor'), findsNothing);
+      expect(find.textContaining('Dr.'), findsNothing);
+      expect(find.textContaining('Doctor '), findsNothing);
     });
 
     testWidgets('doctor, English: Dr.', (tester) async {
@@ -137,7 +138,8 @@ void main() {
       await pumpHome(tester, locale: const Locale('en'));
       await signIn(tester, '02');
 
-      expect(find.text('Welcome Dr. Ahmed'), findsOneWidget);
+      expect(find.text('Welcome, Dr. Ahmed.'), findsOneWidget);
+      expect(find.textContaining('Stay well'), findsNothing, reason: 'patients only');
     });
 
     testWidgets('an unrecognised role gets no title', (tester) async {
@@ -146,7 +148,7 @@ void main() {
       await signIn(tester, '03');
 
       expect(container.read(currentUserProvider)!.role, UserRole.unknown);
-      expect(find.text('Welcome Ahmed'), findsOneWidget);
+      expect(find.text('Welcome, Ahmed. Stay well.'), findsOneWidget);
     });
 
     testWidgets('a missing role gets no title', (tester) async {
@@ -156,7 +158,7 @@ void main() {
       await pumpHome(tester, locale: const Locale('en'));
       await signIn(tester, '04');
 
-      expect(find.text('Welcome Ahmed'), findsOneWidget);
+      expect(find.text('Welcome, Ahmed. Stay well.'), findsOneWidget);
     });
 
     testWidgets('a patient whose name starts with Dr. is not given a title', (tester) async {
@@ -164,7 +166,51 @@ void main() {
       await pumpHome(tester, locale: const Locale('en'));
       await signIn(tester, '01');
 
-      expect(find.text('Welcome Ahmed'), findsOneWidget);
+      expect(find.text('Welcome, Ahmed. Stay well.'), findsOneWidget);
+    });
+
+    testWidgets('first name only — Arabic patient', (tester) async {
+      loginAs('05', 'patient', fullName: 'يوسف قنديل');
+      await pumpHome(tester);
+      await signIn(tester, '05');
+      expect(find.text('أهلاً يوسف، سلامتك'), findsOneWidget);
+    });
+
+    testWidgets('first name only — Arabic doctor, whose stored name has د. already', (
+      tester,
+    ) async {
+      loginAs('06', 'doctor', fullName: 'د. يوسف قنديل');
+      await pumpHome(tester);
+      await signIn(tester, '06');
+      expect(find.text('أهلاً د. يوسف'), findsOneWidget);
+      expect(find.textContaining('د. د.'), findsNothing);
+    });
+
+    testWidgets('first name only — English patient and doctor', (tester) async {
+      loginAs('07', 'patient', fullName: 'Yousef Kandeel');
+      loginAs('08', 'doctor', fullName: 'Dr. Yousef Kandeel');
+      await pumpHome(tester, locale: const Locale('en'));
+      await signIn(tester, '07');
+      expect(find.text('Welcome, Yousef. Stay well.'), findsOneWidget);
+      await run(tester, container.read(authControllerProvider.notifier).signOut);
+      await signIn(tester, '08');
+      expect(find.text('Welcome, Dr. Yousef.'), findsOneWidget);
+      expect(find.textContaining('Dr. Dr.'), findsNothing);
+    });
+
+    testWidgets('no usable name: still a greeting, never the phone or a bare title', (
+      tester,
+    ) async {
+      loginAs('09', 'patient', fullName: '   ');
+      loginAs('10', 'doctor', fullName: 'د.');
+      await pumpHome(tester);
+      await signIn(tester, '09');
+      expect(find.text('أهلاً بك، سلامتك'), findsOneWidget);
+      expect(find.textContaining('+20'), findsNothing);
+      await run(tester, container.read(authControllerProvider.notifier).signOut);
+      await signIn(tester, '10');
+      expect(find.text('أهلاً بك'), findsOneWidget);
+      expect(find.textContaining('أهلاً د.'), findsNothing);
     });
 
     testWidgets('a doctor whose name already starts with a title gets it once', (tester) async {
@@ -176,33 +222,42 @@ void main() {
     });
   });
 
-  testWidgets('the greeting follows logout and a login as a different account type', (tester) async {
+  testWidgets('the greeting follows logout and a login as a different account type', (
+    tester,
+  ) async {
     loginAs('01', 'patient');
     loginAs('02', 'doctor');
     await pumpHome(tester, locale: const Locale('en'));
 
     await signIn(tester, '01');
-    expect(find.text('Welcome Ahmed'), findsOneWidget);
+    expect(find.text('Welcome, Ahmed. Stay well.'), findsOneWidget);
 
     await run(tester, container.read(authControllerProvider.notifier).signOut);
     expect(find.textContaining('Welcome'), findsNothing, reason: 'nobody is signed in');
 
     await signIn(tester, '02');
-    expect(find.text('Welcome Dr. Ahmed'), findsOneWidget);
+    expect(find.text('Welcome, Dr. Ahmed.'), findsOneWidget);
 
     await run(tester, container.read(authControllerProvider.notifier).signOut);
     await signIn(tester, '01');
-    expect(find.text('Welcome Ahmed'), findsOneWidget, reason: 'the title must not stick');
+    expect(
+      find.text('Welcome, Ahmed. Stay well.'),
+      findsOneWidget,
+      reason: 'the title must not stick',
+    );
   });
 
   testWidgets('after an app restart the role comes back from /auth/me/', (tester) async {
     final restarted = TestHarness(refreshToken: 'r');
     final restartedAdapter = DioAdapter(dio: restarted.dio);
-    restartedAdapter.onGet('/auth/me/', (s) => s.reply(200, {
-      'data': (_login('doctor')['data'] as Map)['user'],
-      'meta': <String, dynamic>{},
-      'errors': <dynamic>[],
-    }));
+    restartedAdapter.onGet(
+      '/auth/me/',
+      (s) => s.reply(200, {
+        'data': (_login('doctor')['data'] as Map)['user'],
+        'meta': <String, dynamic>{},
+        'errors': <dynamic>[],
+      }),
+    );
     _mockHomeData(restartedAdapter);
     final c = ProviderContainer(overrides: restarted.overrides);
     addTearDown(c.dispose);
@@ -225,16 +280,12 @@ void main() {
     }
     await restore;
 
-    expect(find.text('Welcome Dr. Ahmed'), findsOneWidget);
+    expect(find.text('Welcome, Dr. Ahmed.'), findsOneWidget);
   });
 
   group('Me title handling', () {
-    Me meNamed(String name, {String role = 'patient'}) => Me.fromJson({
-      ...meResponseData,
-      'role': role,
-      'patient_profile': null,
-      'full_name': name,
-    });
+    Me meNamed(String name, {String role = 'patient'}) =>
+        Me.fromJson({...meResponseData, 'role': role, 'patient_profile': null, 'full_name': name});
 
     test('isDoctor follows the backend role and nothing else', () {
       expect(meNamed('Ahmed', role: 'doctor').isDoctor, isTrue);
@@ -271,6 +322,81 @@ void main() {
 
     test('a name that is only a title is not erased', () {
       expect(meNamed('Dr.').shortName, 'Dr.');
+    });
+  });
+
+  group('the first name to greet by', () {
+    Me me({
+      String? first,
+      String? full,
+      Map<String, dynamic>? patient,
+      Map<String, dynamic>? doctor,
+    }) => Me.fromJson({
+      ...meResponseData,
+      'first_name': first,
+      'full_name': full,
+      'patient_profile': patient,
+      'doctor_profile': doctor,
+    });
+
+    test('the backend\'s first_name wins when it has one', () {
+      expect(me(first: 'يوسف', full: 'محمد علي').greetingName, 'يوسف');
+    });
+
+    test('otherwise the first word of the full name — Arabic and English', () {
+      expect(me(first: '', full: 'يوسف قنديل').greetingName, 'يوسف');
+      expect(me(first: null, full: 'Yousef Kandeel').greetingName, 'Yousef');
+    });
+
+    test('one-word names and extra spaces', () {
+      expect(me(first: '', full: 'يوسف').greetingName, 'يوسف');
+      expect(me(first: '  ', full: '   يوسف    قنديل  ').greetingName, 'يوسف');
+      expect(me(first: '  Yousef  ', full: '').greetingName, 'Yousef');
+    });
+
+    test('a title is never part of the name', () {
+      for (final full in [
+        'د. يوسف قنديل',
+        'د/ يوسف',
+        'د.يوسف',
+        'دكتور يوسف',
+        'الدكتورة يوسف',
+        'Dr. Yousef',
+        'Dr Yousef',
+        'Doctor Yousef',
+      ]) {
+        expect(
+          me(first: '', full: full).greetingName,
+          isNot(anyOf('د.', 'د/', 'دكتور', 'Dr.', 'Dr', 'Doctor')),
+          reason: full,
+        );
+        expect(
+          ['يوسف', 'Yousef'],
+          contains(me(first: '', full: full).greetingName),
+          reason: full,
+        );
+      }
+      expect(me(first: 'Dr. Yousef', full: '').greetingName, 'Yousef');
+    });
+
+    test('names that merely begin like a title are kept whole', () {
+      expect(me(first: 'دعاء', full: '').greetingName, 'دعاء');
+      expect(me(first: 'Drake', full: '').greetingName, 'Drake');
+    });
+
+    test('the profile names are used before the account name', () {
+      final patient = me(
+        first: '',
+        full: 'Account Name',
+        patient: {'id': 'p', 'full_name': 'منى أحمد'},
+      );
+      expect(patient.greetingName, 'منى');
+    });
+
+    test('missing, empty or title-only names give nothing — never the phone', () {
+      expect(me(first: null, full: null).greetingName, isNull);
+      expect(me(first: '', full: '   ').greetingName, isNull);
+      expect(me(first: 'د.', full: 'Dr.').greetingName, isNull);
     });
   });
 }

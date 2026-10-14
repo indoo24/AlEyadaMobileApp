@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import 'app_palette.dart';
 import 'tokens.dart';
 
 /// The Material theme built from the shared tokens.
@@ -14,72 +16,97 @@ class AppTheme {
   /// product must not render its first frame in a Latin fallback face.
   static const fontFamily = 'Cairo';
 
-  static ThemeData light() {
-    final scheme = ColorScheme.fromSeed(seedColor: AppColors.primary, brightness: Brightness.light)
+  static ThemeData light() => _build(AppPalette.light);
+
+  static ThemeData dark() => _build(AppPalette.dark);
+
+  /// Both themes come from here, so they cannot drift apart: a component styled
+  /// in one is styled in the other, from the palette's roles.
+  static ThemeData _build(AppPalette p) {
+    final dark = p.isDark;
+    var scheme = ColorScheme.fromSeed(seedColor: AppColors.primary, brightness: p.brightness)
         .copyWith(
-          primary: AppColors.primary,
-          onPrimary: Colors.white,
-          surface: AppColors.surface,
-          onSurface: AppColors.ink,
-          error: AppColors.danger,
-          outline: AppColors.border,
+          // `primary` is the brand blue *as text and icons* — legible on the
+          // surface. Filled buttons use `primaryFill` explicitly below.
+          primary: p.primary,
+          onPrimary: dark ? p.page : Colors.white,
+          surface: p.surface,
+          onSurface: p.body,
+          error: p.danger,
+          outline: p.border,
         );
+    if (dark) {
+      // Material 3 derives tinted container surfaces from the seed; pin them to
+      // the palette so menus and pickers match the cards.
+      scheme = scheme.copyWith(
+        surfaceContainerLowest: p.page,
+        surfaceContainerLow: p.surface,
+        surfaceContainer: p.surfaceRaised,
+        surfaceContainerHigh: p.surfaceRaised,
+        surfaceContainerHighest: p.surfaceRaised,
+        onSurfaceVariant: p.muted,
+        outlineVariant: p.border,
+      );
+    }
 
     final base = ThemeData(
       useMaterial3: true,
+      brightness: p.brightness,
       colorScheme: scheme,
       fontFamily: fontFamily,
-      scaffoldBackgroundColor: AppColors.surface,
+      scaffoldBackgroundColor: p.surface,
+      extensions: [p],
       splashFactory: InkSparkle.splashFactory,
     );
 
     return base.copyWith(
-      textTheme: _textTheme(base.textTheme),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.navy,
+      textTheme: _textTheme(base.textTheme, p),
+      appBarTheme: AppBarTheme(
+        backgroundColor: p.surface,
+        foregroundColor: p.heading,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         centerTitle: false,
+        systemOverlayStyle: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
         titleTextStyle: TextStyle(
           fontFamily: fontFamily,
           fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: AppColors.navy,
+          color: p.heading,
         ),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.surface,
+        color: p.surface,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadii.cardRadius,
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: p.border),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.input,
+        fillColor: p.input,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.lg,
         ),
-        border: _inputBorder(AppColors.border),
-        enabledBorder: _inputBorder(AppColors.border),
-        focusedBorder: _inputBorder(AppColors.primary, width: 1.6),
-        errorBorder: _inputBorder(AppColors.danger),
-        focusedErrorBorder: _inputBorder(AppColors.danger, width: 1.6),
-        labelStyle: const TextStyle(color: AppColors.muted, fontSize: 15),
-        floatingLabelStyle: const TextStyle(color: AppColors.primary),
-        hintStyle: const TextStyle(color: AppColors.muted, fontSize: 15),
-        errorStyle: const TextStyle(color: AppColors.danger, fontSize: 13, height: 1.4),
+        border: _inputBorder(p.border),
+        enabledBorder: _inputBorder(p.border),
+        focusedBorder: _inputBorder(p.primary, width: 1.6),
+        errorBorder: _inputBorder(p.danger),
+        focusedErrorBorder: _inputBorder(p.danger, width: 1.6),
+        labelStyle: TextStyle(color: p.muted, fontSize: 15),
+        floatingLabelStyle: TextStyle(color: p.primary),
+        hintStyle: TextStyle(color: p.muted, fontSize: 15),
+        errorStyle: TextStyle(color: p.danger, fontSize: 13, height: 1.4),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.45),
-          disabledForegroundColor: Colors.white,
+          backgroundColor: p.primaryFill,
+          foregroundColor: p.onPrimaryFill,
+          disabledBackgroundColor: p.primaryFill.withValues(alpha: 0.45),
+          disabledForegroundColor: p.onPrimaryFill,
           // 48 is the accessible minimum for a primary action; the design's pill
           // shape keeps it from looking heavy.
           minimumSize: const Size.fromHeight(52),
@@ -93,9 +120,9 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: p.primary,
           minimumSize: const Size.fromHeight(52),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: p.border),
           shape: RoundedRectangleBorder(borderRadius: AppRadii.pillRadius),
           textStyle: const TextStyle(
             fontFamily: fontFamily,
@@ -106,7 +133,7 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: p.primary,
           textStyle: const TextStyle(
             fontFamily: fontFamily,
             fontSize: 15,
@@ -115,35 +142,35 @@ class AppTheme {
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.bgSoft,
-        selectedColor: AppColors.primary,
-        labelStyle: const TextStyle(
+        backgroundColor: p.pageSoft,
+        selectedColor: p.primaryFill,
+        labelStyle: TextStyle(
           fontFamily: fontFamily,
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          color: AppColors.navy,
+          color: p.heading,
         ),
-        secondaryLabelStyle: const TextStyle(
+        secondaryLabelStyle: TextStyle(
           fontFamily: fontFamily,
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          color: Colors.white,
+          color: p.onPrimaryFill,
         ),
         side: BorderSide.none,
         shape: RoundedRectangleBorder(borderRadius: AppRadii.pillRadius),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
       ),
-      dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1, space: 1),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.muted,
+      dividerTheme: DividerThemeData(color: p.border, thickness: 1, space: 1),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: p.surface,
+        selectedItemColor: p.primary,
+        unselectedItemColor: p.muted,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.bgSoft,
+        backgroundColor: p.surface,
+        indicatorColor: p.pageSoft,
         surfaceTintColor: Colors.transparent,
         elevation: 3,
         labelTextStyle: WidgetStateProperty.resolveWith(
@@ -151,19 +178,21 @@ class AppTheme {
             fontFamily: fontFamily,
             fontSize: 12,
             fontWeight: states.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500,
-            color: states.contains(WidgetState.selected) ? AppColors.primary : AppColors.muted,
+            color: states.contains(WidgetState.selected) ? p.primary : p.muted,
           ),
         ),
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: AppColors.surface,
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: p.surfaceRaised,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.card)),
         ),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.navy,
+        // Navy in light. In dark the heading colour is pale, so a pale bar with
+        // white text would not read: use a lifted slate instead.
+        backgroundColor: dark ? const Color(0xFF26364F) : p.heading,
         contentTextStyle: const TextStyle(
           fontFamily: fontFamily,
           fontSize: 14,
@@ -172,7 +201,7 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: AppRadii.inputRadius),
       ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(color: AppColors.primary),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: p.primary),
     );
   }
 
@@ -186,81 +215,81 @@ class AppTheme {
   /// Letter spacing is pinned to zero everywhere: Arabic glyphs join, and
   /// tracking breaks the joins. Material's defaults add tracking to several
   /// styles, so this is a correction, not a preference.
-  static TextTheme _textTheme(TextTheme base) {
+  static TextTheme _textTheme(TextTheme base, AppPalette p) {
     return base
         .copyWith(
-          displayLarge: const TextStyle(
+          displayLarge: TextStyle(
             letterSpacing: 0,
             fontSize: 34,
             fontWeight: FontWeight.w800,
-            color: AppColors.navy,
+            color: p.heading,
             height: 1.25,
           ),
-          headlineLarge: const TextStyle(
+          headlineLarge: TextStyle(
             letterSpacing: 0,
             fontSize: 28,
             fontWeight: FontWeight.w700,
-            color: AppColors.navy,
+            color: p.heading,
             height: 1.25,
           ),
-          headlineMedium: const TextStyle(
+          headlineMedium: TextStyle(
             letterSpacing: 0,
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: AppColors.navy,
+            color: p.heading,
             height: 1.3,
           ),
-          titleLarge: const TextStyle(
+          titleLarge: TextStyle(
             letterSpacing: 0,
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: AppColors.navy,
+            color: p.heading,
             height: 1.35,
           ),
-          titleMedium: const TextStyle(
+          titleMedium: TextStyle(
             letterSpacing: 0,
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: AppColors.navy,
+            color: p.heading,
           ),
-          titleSmall: const TextStyle(
+          titleSmall: TextStyle(
             letterSpacing: 0,
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: AppColors.navy,
+            color: p.heading,
           ),
-          bodyLarge: const TextStyle(
+          bodyLarge: TextStyle(
             letterSpacing: 0,
             fontSize: 16,
             fontWeight: FontWeight.w400,
-            color: AppColors.ink,
+            color: p.body,
             height: 1.6,
           ),
-          bodyMedium: const TextStyle(
+          bodyMedium: TextStyle(
             letterSpacing: 0,
             fontSize: 15,
             fontWeight: FontWeight.w400,
-            color: AppColors.ink,
+            color: p.body,
             height: 1.6,
           ),
-          bodySmall: const TextStyle(
+          bodySmall: TextStyle(
             letterSpacing: 0,
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.muted,
+            color: p.muted,
             height: 1.5,
           ),
-          labelLarge: const TextStyle(
+          labelLarge: TextStyle(
             letterSpacing: 0,
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: AppColors.navy,
+            color: p.heading,
           ),
-          labelMedium: const TextStyle(
+          labelMedium: TextStyle(
             letterSpacing: 0,
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: AppColors.muted,
+            color: p.muted,
           ),
         )
         // Arabic glyphs join, and tracking breaks the joins — so every style

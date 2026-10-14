@@ -12,6 +12,7 @@ import '../doctors/providers.dart';
 import '../doctors/widgets/doctor_result_card.dart';
 import '../home/home_style.dart';
 import 'providers.dart';
+import '../../core/theme/app_palette.dart';
 
 /// The doctors the person has marked as favourites.
 ///
@@ -28,10 +29,12 @@ class FavoritesScreen extends ConsumerWidget {
     final favorites = ref.watch(favoritesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       body: Column(
         children: [
-          _Header(count: favorites.status == FavoritesStatus.ready ? favorites.entries.length : null),
+          _Header(
+            count: favorites.status == FavoritesStatus.ready ? favorites.entries.length : null,
+          ),
           Expanded(
             child: switch (favorites.status) {
               FavoritesStatus.loading => const _LoadingList(),
@@ -57,31 +60,37 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = L.of(context);
     return DecoratedBox(
-      decoration: const BoxDecoration(color: AppColors.surface, boxShadow: AppShadows.soft),
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        boxShadow: context.palette.shadowSoft,
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 14, AppSpacing.gutter, 14),
           child: Row(
             children: [
-              const Icon(Icons.favorite_rounded, color: AppColors.primary, size: 22),
+              Icon(Icons.favorite_rounded, color: context.palette.primary, size: 22),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   l.favoritesTitle,
-                  style: HomeType.sectionTitle.copyWith(fontSize: 18, fontWeight: FontWeight.w800),
+                  style: context.homeType.sectionTitle.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
               if (count != null && count! > 0)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.bgSoft,
+                    color: context.palette.pageSoft,
                     borderRadius: AppRadii.pillRadius,
                   ),
                   child: Text(
                     l.favoritesCount(count!),
-                    style: HomeType.pill.copyWith(color: AppColors.primary),
+                    style: context.homeType.pill.copyWith(color: context.palette.primary),
                   ),
                 ),
             ],
@@ -144,7 +153,10 @@ class _FavoritesListState extends ConsumerState<_FavoritesList> {
       final gone = _shown.removeAt(i);
       _listKey.currentState?.removeItem(
         i,
-        (context, animation) => _Animated(animation: animation, child: _FavoriteTile(entry: gone)),
+        (context, animation) => _Animated(
+          animation: animation,
+          child: _FavoriteTile(entry: gone),
+        ),
         duration: _removeDuration,
       );
     }
@@ -242,10 +254,8 @@ class _FavoriteTile extends ConsumerWidget {
           onRemove: () =>
               ref.read(favoritesProvider.notifier).toggle(id: entry.id, slug: entry.slug),
         ),
-        data: (d) => DoctorResultCard(
-          doctor: d.card,
-          onOpen: () => context.push(Routes.doctorPath(d.slug)),
-        ),
+        data: (d) =>
+            DoctorResultCard(doctor: d.card, onOpen: () => context.push(Routes.doctorPath(d.slug))),
       ),
     );
   }
@@ -266,15 +276,15 @@ class _UnavailableCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(homeCardRadius),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.palette.border),
       ),
       child: Column(
         children: [
-          const Icon(Icons.error_outline_rounded, color: AppColors.muted, size: 30),
+          Icon(Icons.error_outline_rounded, color: context.palette.muted, size: 30),
           const SizedBox(height: 8),
-          Text(message, style: HomeType.doctorSpecialty, textAlign: TextAlign.center),
+          Text(message, style: context.homeType.doctorSpecialty, textAlign: TextAlign.center),
           const SizedBox(height: 8),
           Wrap(
             alignment: WrapAlignment.center,
@@ -305,19 +315,19 @@ class _EmptyFavorites extends StatelessWidget {
             Container(
               width: 84,
               height: 84,
-              decoration: const BoxDecoration(color: AppColors.bgSoft, shape: BoxShape.circle),
-              child: const Icon(Icons.favorite_border_rounded, size: 40, color: AppColors.primary),
+              decoration: BoxDecoration(color: context.palette.pageSoft, shape: BoxShape.circle),
+              child: Icon(Icons.favorite_border_rounded, size: 40, color: context.palette.primary),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
               l.favoritesEmptyTitle,
-              style: HomeType.sectionTitle.copyWith(fontSize: 17),
+              style: context.homeType.sectionTitle.copyWith(fontSize: 17),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               l.favoritesEmptyBody,
-              style: HomeType.tagline.copyWith(fontSize: 13),
+              style: context.homeType.tagline.copyWith(fontSize: 13),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -328,7 +338,7 @@ class _EmptyFavorites extends StatelessWidget {
               style: FilledButton.styleFrom(
                 minimumSize: const Size(200, 46),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                textStyle: HomeType.button.copyWith(fontSize: 13.5),
+                textStyle: context.homeType.button.copyWith(fontSize: 13.5),
               ),
             ),
           ],

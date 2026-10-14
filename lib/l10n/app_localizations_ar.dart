@@ -526,14 +526,20 @@ class LAr extends L {
   String get dashboardTitle => 'لوحة التحكم';
 
   @override
-  String dashboardWelcome(String name) {
-    return 'أهلاً $name';
+  String homeGreetingPatient(String name) {
+    return 'أهلاً $name، سلامتك';
   }
 
   @override
-  String dashboardWelcomeDoctor(String name) {
+  String homeGreetingDoctor(String name) {
     return 'أهلاً د. $name';
   }
+
+  @override
+  String get homeGreetingPatientNoName => 'أهلاً بك، سلامتك';
+
+  @override
+  String get homeGreetingDoctorNoName => 'أهلاً بك';
 
   @override
   String get dashboardStatPatients => 'المرضى';
@@ -1873,4 +1879,202 @@ class LAr extends L {
 
   @override
   String get bdViewDoctor => 'عرض صفحة الطبيب';
+
+  @override
+  String get hmSearchHint => 'ابحث عن طبيب أو تخصص';
+
+  @override
+  String get hmQuickDoctors => 'كل الأطباء';
+
+  @override
+  String get hmQuickSpecialties => 'التخصصات';
+
+  @override
+  String get hmQuickOnline => 'حجز إلكتروني';
+
+  @override
+  String get hmQuickLowestFee => 'الأقل سعرًا';
+
+  @override
+  String get hmRecommendedTitle => 'أطباء مقترحون';
+
+  @override
+  String get hmAllSpecialties => 'كل التخصصات';
+
+  @override
+  String hmSpecialtyDoctors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count طبيب',
+      many: '$count طبيبًا',
+      few: '$count أطباء',
+      two: 'طبيبان',
+      one: 'طبيب واحد',
+      zero: 'لا يوجد أطباء بعد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get hmBookNow => 'احجز الآن';
+
+  @override
+  String get hmViewProfile => 'عرض الملف';
+
+  @override
+  String get hmOnlineBooking => 'حجز إلكتروني';
+
+  @override
+  String get hmPhoneBooking => 'حجز عبر الهاتف';
+
+  @override
+  String get hmSeeAllDoctors => 'عرض كل الأطباء';
+
+  @override
+  String get hmClinicDoctors => 'عرض الأطباء';
+
+  @override
+  String get hmLoadErrorTitle => 'تعذّر تحميل البيانات';
+
+  @override
+  String get hmLoadErrorBody => 'تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.';
+
+  @override
+  String get hmGuestTitle => 'سجّل الدخول لتجربة أفضل';
+
+  @override
+  String get hmJoinCta => 'هل أنت طبيب؟ انضم إلى العيادة';
+
+  @override
+  String get acSectionAccount => 'الحساب';
+
+  @override
+  String get acSectionSettings => 'الإعدادات';
+
+  @override
+  String get acPhoneVerified => 'رقم الهاتف موثّق';
+
+  @override
+  String get acPhoneUnverified => 'رقم الهاتف غير موثّق';
+
+  @override
+  String get acVerifyNow => 'تأكيد الرقم';
+
+  @override
+  String get acJoinNow => 'انضم الآن';
+
+  @override
+  String get acLanguageSheetTitle => 'اختر اللغة';
+
+  @override
+  String get accountAppearance => 'المظهر';
+
+  @override
+  String get accountThemeSystem => 'تلقائي';
+
+  @override
+  String get accountThemeLight => 'فاتح';
+
+  @override
+  String get accountThemeDark => 'داكن';
+
+  @override
+  String get acAppearanceSheetTitle => 'اختر المظهر';
+
+  @override
+  String get acGuestTitle => 'مرحباً بك';
+
+  @override
+  String acUnreadBadge(int count) {
+    return '$count جديد';
+  }
+
+  @override
+  String get pfPersonalDetails => 'المعلومات الشخصية';
+
+  @override
+  String get pfContactDetails => 'بيانات التواصل';
+
+  @override
+  String get pfPhoneReadOnly =>
+      'رقم الهاتف هو وسيلة تسجيل الدخول، ولا يمكن تغييره من هنا.';
+
+  @override
+  String get pfSaveChanges => 'حفظ التغييرات';
+
+  @override
+  String get pfReadOnly => 'للعرض فقط';
+
+  @override
+  String get ntToday => 'اليوم';
+
+  @override
+  String get ntYesterday => 'أمس';
+
+  @override
+  String get ntEarlier => 'أقدم';
+
+  @override
+  String ntUnreadCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count إشعار غير مقروء',
+      many: '$count إشعارًا غير مقروء',
+      few: '$count إشعارات غير مقروءة',
+      two: 'إشعاران غير مقروءين',
+      one: 'إشعار واحد غير مقروء',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get ntAllRead => 'لا توجد إشعارات غير مقروءة';
+
+  @override
+  String get ntEmptyTitle => 'لا توجد إشعارات';
+
+  @override
+  String get ntEmptyBody => 'سنخبرك هنا بكل جديد يتعلق بحجوزاتك.';
+
+  @override
+  String get ntErrorTitle => 'تعذّر تحميل الإشعارات';
+
+  @override
+  String get ntErrorBody => 'حدث خطأ أثناء التحميل. حاول مرة أخرى.';
+
+  @override
+  String get ntOffline => 'تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.';
+
+  @override
+  String get ntLoadOlder => 'عرض الإشعارات الأقدم';
+
+  @override
+  String get ntUnread => 'غير مقروء';
+
+  @override
+  String get ntUpdateFailed => 'تعذّر تحديث الإشعارات. حاول مرة أخرى.';
+
+  @override
+  String get ntRefreshFailed => 'تعذّر تحديث القائمة.';
+
+  @override
+  String get auShowPassword => 'إظهار كلمة المرور';
+
+  @override
+  String get auHidePassword => 'إخفاء كلمة المرور';
+
+  @override
+  String get auReadPolicy => 'قراءة';
+
+  @override
+  String get auForgotBody =>
+      'أدخل رقم هاتفك المسجّل لإرسال رمز إعادة تعيين كلمة المرور.';
+
+  @override
+  String get auLogoLabel => 'شعار العيادة';
+
+  @override
+  String get auPoliciesRetry => 'تعذّر تحميل الشروط. حاول مرة أخرى.';
 }

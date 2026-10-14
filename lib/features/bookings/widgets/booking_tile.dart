@@ -8,10 +8,10 @@ import '../../doctors/doctor_detail_logic.dart';
 import '../../doctors/models.dart';
 import '../../doctors/providers.dart';
 import '../../doctors/widgets/doctor_card_tile.dart';
-import '../../doctors/widgets/doctor_profile_sections.dart' show profileNavy;
 import '../../home/home_style.dart';
 import '../booking_logic.dart';
 import '../models.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// The pieces My Bookings and Booking Details are built from.
 ///
@@ -48,57 +48,60 @@ String? countdownLabel(L l, PatientBooking b, DateTime nowUtc) {
 
 /// The visual identity of each status: a label, an icon, and a restrained
 /// colour pair. The label and icon carry the meaning; colour only echoes it.
-({String label, IconData icon, Color fg, Color bg}) statusStyle(L l, BookingStatus s) =>
-    switch (s) {
-      BookingStatus.pending => (
-        label: l.statusPending,
-        icon: Icons.hourglass_top_rounded,
-        fg: const Color(0xFFB45309),
-        bg: const Color(0xFFFEF3C7),
-      ),
-      BookingStatus.confirmed => (
-        label: l.statusConfirmed,
-        icon: Icons.check_circle_rounded,
-        fg: const Color(0xFF15803D),
-        bg: const Color(0xFFDCFCE7),
-      ),
-      BookingStatus.completed => (
-        label: l.statusCompleted,
-        icon: Icons.task_alt_rounded,
-        fg: AppColors.primary,
-        bg: AppColors.bgSoft,
-      ),
-      BookingStatus.cancelledByPatient || BookingStatus.cancelledByClinic => (
-        label: l.statusCancelled,
-        icon: Icons.cancel_rounded,
-        fg: const Color(0xFFB91C1C),
-        bg: const Color(0xFFFEE2E2),
-      ),
-      BookingStatus.noShow => (
-        label: l.statusNoShow,
-        icon: Icons.person_off_outlined,
-        fg: const Color(0xFFC2410C),
-        bg: const Color(0xFFFFEDD5),
-      ),
-      BookingStatus.rescheduled => (
-        label: l.statusRescheduled,
-        icon: Icons.update_rounded,
-        fg: AppColors.muted,
-        bg: const Color(0xFFEEF2F7),
-      ),
-      BookingStatus.expired => (
-        label: l.statusExpired,
-        icon: Icons.schedule_rounded,
-        fg: AppColors.muted,
-        bg: const Color(0xFFEEF2F7),
-      ),
-      BookingStatus.unknown => (
-        label: '—',
-        icon: Icons.help_outline_rounded,
-        fg: AppColors.muted,
-        bg: const Color(0xFFEEF2F7),
-      ),
-    };
+({String label, IconData icon, Color fg, Color bg}) statusStyle(
+  L l,
+  AppPalette p,
+  BookingStatus s,
+) => switch (s) {
+  BookingStatus.pending => (
+    label: l.statusPending,
+    icon: Icons.hourglass_top_rounded,
+    fg: p.toneWarning.fg,
+    bg: p.toneWarning.bg,
+  ),
+  BookingStatus.confirmed => (
+    label: l.statusConfirmed,
+    icon: Icons.check_circle_rounded,
+    fg: p.toneSuccess.fg,
+    bg: p.toneSuccess.bg,
+  ),
+  BookingStatus.completed => (
+    label: l.statusCompleted,
+    icon: Icons.task_alt_rounded,
+    fg: p.toneInfo.fg,
+    bg: p.toneInfo.bg,
+  ),
+  BookingStatus.cancelledByPatient || BookingStatus.cancelledByClinic => (
+    label: l.statusCancelled,
+    icon: Icons.cancel_rounded,
+    fg: p.toneDanger.fg,
+    bg: p.toneDanger.bg,
+  ),
+  BookingStatus.noShow => (
+    label: l.statusNoShow,
+    icon: Icons.person_off_outlined,
+    fg: p.toneCaution.fg,
+    bg: p.toneCaution.bg,
+  ),
+  BookingStatus.rescheduled => (
+    label: l.statusRescheduled,
+    icon: Icons.update_rounded,
+    fg: p.toneNeutral.fg,
+    bg: p.toneNeutral.bg,
+  ),
+  BookingStatus.expired => (
+    label: l.statusExpired,
+    icon: Icons.schedule_rounded,
+    fg: p.toneNeutral.fg,
+    bg: p.toneNeutral.bg,
+  ),
+  BookingStatus.unknown => (
+    label: '—',
+    icon: Icons.help_outline_rounded,
+    fg: p.toneNeutral.fg,
+    bg: p.toneNeutral.bg,
+  ),
+};
 
 /// A booking's state as a pill: icon, label, tinted background.
 class BookingStatusChip extends StatelessWidget {
@@ -108,7 +111,7 @@ class BookingStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final st = statusStyle(L.of(context), status);
+    final st = statusStyle(L.of(context), context.palette, status);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
@@ -143,12 +146,12 @@ class _DateBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = calendarParts(date, locale);
-    final fg = dark ? Colors.white : AppColors.primary;
+    final fg = dark ? Colors.white : context.palette.primary;
     return Container(
       width: 54,
       padding: const EdgeInsets.symmetric(vertical: 7),
       decoration: BoxDecoration(
-        color: dark ? Colors.white.withValues(alpha: 0.14) : AppColors.bgSoft,
+        color: dark ? Colors.white.withValues(alpha: 0.14) : context.palette.pageSoft,
         borderRadius: BorderRadius.circular(12),
       ),
       child: p == null
@@ -173,7 +176,7 @@ class _DateBlock extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: dark ? Colors.white70 : AppColors.muted,
+                    color: dark ? Colors.white70 : context.palette.muted,
                   ),
                 ),
               ],
@@ -205,10 +208,10 @@ class BookingTile extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(homeCardRadius),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        border: Border.all(color: context.palette.border),
+        boxShadow: context.palette.shadowSoft,
       ),
       child: Material(
         type: MaterialType.transparency,
@@ -233,14 +236,14 @@ class BookingTile extends ConsumerWidget {
                             b.doctorName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: HomeType.doctorName,
+                            style: context.homeType.doctorName,
                           ),
                           if (specialty != null)
                             Text(
                               specialty,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: HomeType.meta,
+                              style: context.homeType.meta,
                             ),
                         ],
                       ),
@@ -249,9 +252,9 @@ class BookingTile extends ConsumerWidget {
                     Flexible(child: BookingStatusChip(status: b.status)),
                   ],
                 ),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Divider(height: 1, color: AppColors.border),
+                  child: Divider(height: 1, color: context.palette.border),
                 ),
                 Row(
                   children: [
@@ -263,7 +266,7 @@ class BookingTile extends ConsumerWidget {
                         children: [
                           Text(
                             dayAndTime(b, locale),
-                            style: HomeType.cardTitle.copyWith(fontSize: 15),
+                            style: context.homeType.cardTitle.copyWith(fontSize: 15),
                           ),
                           if (b.clinicName.isNotEmpty) ...[
                             const SizedBox(height: 3),
@@ -276,7 +279,7 @@ class BookingTile extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                    Icon(Icons.chevron_right_rounded, color: context.palette.muted),
                   ],
                 ),
               ],
@@ -298,14 +301,14 @@ class _IconText extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Icon(icon, size: 15, color: color ?? AppColors.muted),
+      Icon(icon, size: 15, color: color ?? context.palette.muted),
       const SizedBox(width: 5),
       Expanded(
         child: Text(
           text,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: HomeType.meta.copyWith(fontSize: 12.5, color: color),
+          style: context.homeType.meta.copyWith(fontSize: 12.5, color: color),
         ),
       ),
     ],
@@ -340,13 +343,13 @@ class NextBookingCard extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: AlignmentDirectional.topStart,
             end: AlignmentDirectional.bottomEnd,
-            colors: [profileNavy, Color(0xFF0A4A9C)],
+            colors: [context.palette.heroStart, context.palette.heroEnd],
           ),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: AppShadows.float,
+          boxShadow: context.palette.shadowFloat,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,9 +488,9 @@ class NextBookingCard extends ConsumerWidget {
                 onPressed: onOpen,
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.white,
-                  foregroundColor: AppColors.primary,
+                  foregroundColor: context.palette.primary,
                   minimumSize: const Size(0, 46),
-                  textStyle: HomeType.button.copyWith(fontSize: 14),
+                  textStyle: context.homeType.button.copyWith(fontSize: 14),
                 ),
                 child: Text(l.mbViewDetails, maxLines: 1, overflow: TextOverflow.ellipsis),
               ),
@@ -507,9 +510,9 @@ class BookingCardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: AppColors.surface,
+      color: context.palette.surface,
       borderRadius: BorderRadius.circular(homeCardRadius),
-      border: Border.all(color: AppColors.border),
+      border: Border.all(color: context.palette.border),
     ),
     child: const Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -14,6 +14,7 @@ import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
 import '../doctors/models.dart';
 import '../doctors/providers.dart';
+import '../../core/theme/app_palette.dart';
 
 final _policiesProvider = FutureProvider<List<LegalPolicy>>(
   (ref) => ref.watch(authRepositoryProvider).currentPolicies(),
@@ -190,7 +191,7 @@ class _JoinDoctorScreenState extends ConsumerState<JoinDoctorScreen> {
     final areas = selectedCity?.areas ?? const <Area>[];
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       appBar: AppBar(title: Text(l.joinTitle), backgroundColor: Colors.transparent),
       body: SafeArea(
         child: ListView(

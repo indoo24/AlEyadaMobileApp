@@ -149,6 +149,29 @@ asserting both directions from the same tree.
 - Text scaling is honoured and clamped to 0.85–1.6, which is honest about where
   the layouts stop working rather than ignoring the setting.
 
+## Light and dark themes
+
+The app follows the device by default; **Account → Appearance** forces System,
+Light or Dark, saved under `aleyada.theme_mode` and read before the first frame
+(like the language) so nothing flashes.
+
+- Colours are **roles**, not values: `context.palette.surface`, `.heading`,
+  `.muted`, `.primary`, `.toneWarning` … (`lib/core/theme/app_palette.dart`, a
+  `ThemeExtension`). Light is the website's design tokens, unchanged; dark is a
+  deep navy-slate with the same blue, lifted for contrast.
+- Two different blues on purpose: `primary` is the brand blue **as text and
+  icons** (light on dark), `primaryFill` is the brand blue **as a fill** under a
+  white label. Destructive and WhatsApp fills have their own roles too.
+- Statuses (booking pills, notifications, the timeline) use `StatusTone` pairs —
+  foreground and tint chosen together.
+- Type that carries colour is `context.homeType.*`; shadows are
+  `context.palette.shadow*`.
+- **Never** reference `AppColors` or write a `Color(0x…)` outside
+  `lib/core/theme/` (the navy hero and the splash are the only exceptions).
+  `test/unit/theme_guard_test.dart` fails the build if you do, and
+  `test/unit/palette_contrast_test.dart` checks every text, fill and status pair
+  against WCAG AA in both modes — add a role there when you add one.
+
 ## Running and testing
 
 ```bash
@@ -157,8 +180,35 @@ flutter gen-l10n          # after editing lib/l10n/*.arb
 flutter analyze           # must be clean
 flutter test
 dart format --line-length 100 lib test
-flutter build apk --release
+flutter build apk --release --obfuscate --split-debug-info=build/symbols
 ```
+
+### Release builds
+
+Every release build is obfuscated, with its debug symbols written outside the
+binary:
+
+```bash
+flutter build apk --release --obfuscate --split-debug-info=build/symbols
+flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols
+flutter build appbundle --release --obfuscate --split-debug-info=build/symbols
+flutter build ipa --release --obfuscate --split-debug-info=build/symbols
+```
+
+- `--obfuscate` renames Dart classes and functions in the compiled code, so the
+  APK/IPA no longer spells out the app's structure to anyone who unpacks it. It
+  is a speed bump for reverse engineering, not a secret store — nothing secret
+  is in the binary to begin with.
+- `--split-debug-info` is required with `--obfuscate`. It writes the symbol
+  files (`app.android-arm64.symbols`, …) to `build/symbols/`, which is
+  git-ignored and never shipped.
+- **Keep the symbols of every build you release** (archive `build/symbols/`
+  next to the version number). Without them an obfuscated stack trace cannot be
+  read. To decode one:
+
+  ```bash
+  flutter symbolize -i crash.txt -d build/symbols/app.android-arm64.symbols
+  ```
 
 Tests are contract-first: every DTO is parsed from a body **captured off the real
 API** (`test/fixtures/api_fixtures.dart`), so a parser that disagrees with the
@@ -169,8 +219,12 @@ adapter swapped.
 ## Android
 
 - Application id `com.aleyada.app`, `minSdk` = Flutter's floor (24)
-- `INTERNET` is the only permission. No location, no contacts, no storage —
-  `image_picker` uses the system picker
+- `INTERNET` is the only permission. No location, no contacts, no storage
+- No backups: `allowBackup="false"`, plus `backup_rules.xml` (API ≤ 30) and
+  `data_extraction_rules.xml` (API 31+, which also covers device-to-device
+  transfer) excluding every storage domain
+- Flutter deep linking is off (`flutter_deeplinking_enabled=false`; iOS:
+  `FlutterDeepLinkingEnabled=false`) until real App Links exist
 - Cleartext HTTP is **refused** in release (`network_security_config.xml`). The
   debug variant permits it to `localhost` / `10.0.2.2` only
 - `tel:` and `https:` are declared under `<queries>`; without them `url_launcher`
@@ -181,17 +235,29 @@ adapter swapped.
 
 ### Release signing
 
-Never committed. Create `android/key.properties` (git-ignored):
+Google Play App Signing signs what users install; the key here is only the
+**upload key** that proves an AAB came from us. Neither the keystore nor its
+passwords are ever committed.
+
+Keep the upload keystore at `android/upload-keystore.jks` (git-ignored) and
+create `android/key.properties` (git-ignored):
 
 ```properties
-storeFile=/absolute/path/to/upload-keystore.jks
+storeFile=upload-keystore.jks
 storePassword=…
-keyAlias=upload
+keyAlias=aleyada-upload
 keyPassword=…
 ```
 
+`storeFile` is resolved relative to `android/`; an absolute path also works.
+
 The build reads it if present and falls back to the debug key if not, so a fresh
-clone still builds. A debug-signed APK runs but is not publishable.
+clone still builds — Gradle prints a warning when that happens. A debug-signed
+build runs but Play Console rejects it.
+
+Back up the keystore and both passwords somewhere other than this machine. If
+the upload key is lost, the only way back is an upload-key reset in Play Console
+(Setup → App signing).
 
 ## iOS
 
@@ -200,7 +266,7 @@ toolchain exists. Requires macOS with Xcode:
 
 ```bash
 cd ios && pod install && cd ..
-flutter build ios --release
+flutter build ipa --release --obfuscate --split-debug-info=build/symbols
 ```
 
 `Info.plist` already carries the camera and photo-library purpose strings (iOS

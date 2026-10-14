@@ -6,9 +6,6 @@
 # flutter_secure_storage relies on Android's KeyStore reflectively in places.
 -keep class androidx.security.crypto.** { *; }
 
-# image_picker / file provider paths are resolved by name from the manifest.
--keep class androidx.core.content.FileProvider { *; }
-
 # Keep annotations that plugin channel code checks at runtime.
 -keepattributes *Annotation*
 
