@@ -321,12 +321,11 @@ void main() {
       final (_, ctl) = await make();
       await ctl.add('باطنة');
 
+      final key = RecentSearchesController.storageKey(null); // signed out: the guest's list
       final prefs = await SharedPreferences.getInstance();
-      SharedPreferences.setMockInitialValues({
-        RecentSearchesController.storageKey: prefs.getStringList(RecentSearchesController.storageKey)!,
-      });
+      expect(prefs.getStringList(key), ['باطنة']);
       final (c2, _) = await make({
-        RecentSearchesController.storageKey: ['باطنة'],
+        key: ['باطنة'],
       });
       expect(c2.read(recentSearchesProvider), ['باطنة']);
     });

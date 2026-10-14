@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/router.dart';
+import '../../app/safe_redirect.dart';
 import '../../core/api/api_error.dart';
 import '../../core/errors/error_messages.dart';
 import '../../core/providers.dart';
@@ -90,13 +92,19 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
         code: _code.text.trim(),
       );
       if (result.tokens != null) {
-        await ref
-            .read(authControllerProvider.notifier)
-            .adoptSession(result.tokens!, user: result.user);
+        final auth = ref.read(authControllerProvider.notifier);
+        // Read before adopting the session: adopting it forgets it.
+        final endedAccountId = auth.endedAccountId;
+        await auth.adoptSession(result.tokens!, user: result.user);
         if (!mounted) return;
-        // The router's guards take it from here.
-        final next = widget.next;
-        context.go(next != null && next.isNotEmpty ? next : '/');
+        // The router's guards take it from here; `next` is only followed when
+        // it is a safe location of this account's own.
+        final next = resumeLocation(
+          widget.next,
+          endedAccountId: endedAccountId,
+          signedInAccountId: ref.read(authControllerProvider).user?.id,
+        );
+        context.go(next ?? Routes.home);
       } else if (!mounted) {
         return;
       } else {
@@ -161,6 +169,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               inputFormatters: const [DigitsOnlyFormatter(maxLength: 8)],
               textInputAction: _isReset ? TextInputAction.next : TextInputAction.done,
               autofillHints: const [AutofillHints.oneTimeCode],
+              private: true,
               errorText: _fieldErrors['code'],
               enabled: !_busy,
               onSubmitted: (_) => _isReset || _busy ? null : _verify(),

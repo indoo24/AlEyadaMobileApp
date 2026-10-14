@@ -8,6 +8,7 @@ import '../../core/api/api_error.dart';
 import '../../core/errors/error_messages.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/contact_links.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
@@ -49,8 +50,13 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final l = L.of(context);
-    final booking = ref.watch(bookingDetailProvider(widget.id));
-    final b = booking.valueOrNull;
+    final watched = ref.watch(bookingDetailProvider(widget.id));
+    // A reload means the account changed underneath the screen (a refresh or a
+    // retry is a "refresh", not a reload). The value it still carries belongs to
+    // the previous account, so it is not drawn — not even the action bar.
+    final booking = watched.isReloading ? const AsyncLoading<PatientBooking>() : watched;
+    // An error can still carry an older value; the bar is for a loaded booking only.
+    final b = booking is AsyncData<PatientBooking> ? booking.value : null;
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -623,8 +629,8 @@ class _ClinicCard extends ConsumerWidget {
     final map = _mapFor(link);
     final contact = _contactFor(doctor, link);
 
-    void track(String url, String type) =>
-        openContact(ref, detail: doctor!, url: url, type: type, clinicId: c?.id);
+    void track(String url, ContactChannel channel) =>
+        openContact(ref, detail: doctor!, url: url, channel: channel, clinicId: c?.id);
 
     return _Card(
       title: l.bdClinicTitle,
@@ -672,7 +678,7 @@ class _ClinicCard extends ConsumerWidget {
                     icon: Icons.phone_rounded,
                     label: l.doctorCall,
                     color: AppColors.primary,
-                    onTap: () => track(contact!.telUrl!, 'phone'),
+                    onTap: () => track(contact!.telUrl!, ContactChannel.phone),
                   ),
                 if (contact?.canWhatsapp ?? false)
                   _ActionPill(
@@ -680,7 +686,7 @@ class _ClinicCard extends ConsumerWidget {
                     label: l.doctorWhatsapp,
                     // Green is reserved for WhatsApp by the design tokens.
                     color: AppColors.whatsapp,
-                    onTap: () => track(contact!.whatsappUrl!, 'whatsapp'),
+                    onTap: () => track(contact!.whatsappUrl!, ContactChannel.whatsapp),
                   ),
               ],
             ),
@@ -910,7 +916,7 @@ class _ActionBar extends ConsumerWidget {
                 ref,
                 detail: profile.doctor!,
                 url: contact.telUrl!,
-                type: 'phone',
+                channel: ContactChannel.phone,
                 clinicId: profile.clinic?.clinic.id,
               ),
               icon: const Icon(Icons.phone_rounded, size: 20),
@@ -990,7 +996,12 @@ class _CancelDialogState extends State<_CancelDialog> {
           children: [
             Text(l.bookingCancelBody, textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.lg),
-            AppTextField(label: l.bookingCancelReason, controller: _reason, maxLines: 2),
+            AppTextField(
+              label: l.bookingCancelReason,
+              controller: _reason,
+              maxLines: 2,
+              private: true,
+            ),
           ],
         ),
       ),

@@ -157,8 +157,35 @@ flutter gen-l10n          # after editing lib/l10n/*.arb
 flutter analyze           # must be clean
 flutter test
 dart format --line-length 100 lib test
-flutter build apk --release
+flutter build apk --release --obfuscate --split-debug-info=build/symbols
 ```
+
+### Release builds
+
+Every release build is obfuscated, with its debug symbols written outside the
+binary:
+
+```bash
+flutter build apk --release --obfuscate --split-debug-info=build/symbols
+flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols
+flutter build appbundle --release --obfuscate --split-debug-info=build/symbols
+flutter build ipa --release --obfuscate --split-debug-info=build/symbols
+```
+
+- `--obfuscate` renames Dart classes and functions in the compiled code, so the
+  APK/IPA no longer spells out the app's structure to anyone who unpacks it. It
+  is a speed bump for reverse engineering, not a secret store — nothing secret
+  is in the binary to begin with.
+- `--split-debug-info` is required with `--obfuscate`. It writes the symbol
+  files (`app.android-arm64.symbols`, …) to `build/symbols/`, which is
+  git-ignored and never shipped.
+- **Keep the symbols of every build you release** (archive `build/symbols/`
+  next to the version number). Without them an obfuscated stack trace cannot be
+  read. To decode one:
+
+  ```bash
+  flutter symbolize -i crash.txt -d build/symbols/app.android-arm64.symbols
+  ```
 
 Tests are contract-first: every DTO is parsed from a body **captured off the real
 API** (`test/fixtures/api_fixtures.dart`), so a parser that disagrees with the
@@ -169,8 +196,12 @@ adapter swapped.
 ## Android
 
 - Application id `com.aleyada.app`, `minSdk` = Flutter's floor (24)
-- `INTERNET` is the only permission. No location, no contacts, no storage —
-  `image_picker` uses the system picker
+- `INTERNET` is the only permission. No location, no contacts, no storage
+- No backups: `allowBackup="false"`, plus `backup_rules.xml` (API ≤ 30) and
+  `data_extraction_rules.xml` (API 31+, which also covers device-to-device
+  transfer) excluding every storage domain
+- Flutter deep linking is off (`flutter_deeplinking_enabled=false`; iOS:
+  `FlutterDeepLinkingEnabled=false`) until real App Links exist
 - Cleartext HTTP is **refused** in release (`network_security_config.xml`). The
   debug variant permits it to `localhost` / `10.0.2.2` only
 - `tel:` and `https:` are declared under `<queries>`; without them `url_launcher`
@@ -212,7 +243,7 @@ toolchain exists. Requires macOS with Xcode:
 
 ```bash
 cd ios && pod install && cd ..
-flutter build ios --release
+flutter build ipa --release --obfuscate --split-debug-info=build/symbols
 ```
 
 `Info.plist` already carries the camera and photo-library purpose strings (iOS

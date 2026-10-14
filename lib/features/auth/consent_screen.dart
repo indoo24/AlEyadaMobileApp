@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_error.dart';
 import '../../core/auth/models.dart';
+import '../../core/config/env.dart';
 import '../../core/errors/error_messages.dart';
 import '../../core/providers.dart';
 import '../../core/theme/tokens.dart';
@@ -55,10 +56,13 @@ class _ConsentScreenState extends ConsumerState<ConsentScreen> {
   /// This screen has no inputs, so an error the backend pins on a field means
   /// the app built the request wrong — nothing the user can fix. Its bare
   /// detail ("هذا الحقل مطلوب") would read as blaming the checkbox, so it is
-  /// logged for us and replaced with a sentence that says what actually failed.
+  /// logged for us (debug builds with verbose logging only) and replaced with a
+  /// sentence that says what actually failed.
   String _messageFor(ApiException e) {
     if (e.fieldErrors.isEmpty) return messageForError(context, e);
-    developer.log('consent rejected: ${e.fieldErrors}', name: 'aleyada.consent');
+    if (Env.verboseLogging) {
+      developer.log('consent rejected: ${e.fieldErrors}', name: 'aleyada.consent');
+    }
     return L.of(context).consentSubmitRejected;
   }
 

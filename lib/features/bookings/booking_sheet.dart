@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/router.dart';
 import '../../core/api/api_error.dart';
 import '../../core/errors/error_messages.dart';
 import '../../core/providers.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/contact_links.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
@@ -616,10 +616,6 @@ class _ContactOnly extends StatelessWidget {
     final contact = availability.contact.canCall || availability.contact.canWhatsapp
         ? availability.contact
         : doctor.card.contact;
-    Future<void> open(String url) async {
-      final uri = Uri.tryParse(url);
-      if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
 
     return Column(
       children: [
@@ -633,7 +629,7 @@ class _ContactOnly extends StatelessWidget {
             if (contact.canCall)
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: () => open(contact.telUrl!),
+                  onPressed: () => launchContact(ContactChannel.phone, contact.telUrl),
                   icon: const Icon(Icons.phone_rounded, size: 18),
                   label: Text(l.doctorCall),
                 ),
@@ -643,7 +639,7 @@ class _ContactOnly extends StatelessWidget {
               Expanded(
                 child: FilledButton.icon(
                   style: FilledButton.styleFrom(backgroundColor: AppColors.whatsapp),
-                  onPressed: () => open(contact.whatsappUrl!),
+                  onPressed: () => launchContact(ContactChannel.whatsapp, contact.whatsappUrl),
                   icon: const Icon(Icons.chat_rounded, size: 18),
                   label: Text(l.doctorWhatsapp),
                 ),
@@ -781,7 +777,14 @@ class _DayAndTimePicker extends ConsumerWidget {
         ),
 
         const SizedBox(height: 20),
-        AppTextField(label: l.bookingNotes, controller: notes, maxLines: 3, minLines: 2),
+        // Notes for the doctor are health information: kept out of the keyboard.
+        AppTextField(
+          label: l.bookingNotes,
+          controller: notes,
+          maxLines: 3,
+          minLines: 2,
+          private: true,
+        ),
 
         if (availability.paymentRequired || clinic.paymentRequired) ...[
           const SizedBox(height: 14),

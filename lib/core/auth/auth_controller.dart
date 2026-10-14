@@ -76,6 +76,19 @@ class AuthController extends StateNotifier<AuthState> {
   final AuthRepository _repo;
   final TokenStore _tokens;
 
+  /// Whose session ended most recently on this device, until someone signs in
+  /// again. The sign-in screens read it before signing in, to decide whether a
+  /// `next` destination left behind by that session belongs to the person now
+  /// signing in (see `resumeLocation`).
+  String? get endedAccountId => _endedAccountId;
+  String? _endedAccountId;
+
+  /// Remember the current account as the one whose session is ending.
+  void _ending() {
+    final id = state.user?.id;
+    if (id != null) _endedAccountId = id;
+  }
+
   /// Cold start. Reads persisted tokens, then confirms them with one `/auth/me/`.
   ///
   /// The three outcomes are kept distinct on purpose:
@@ -105,6 +118,7 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> signIn({String? phone, String? email, required String password}) async {
     final result = await _repo.login(phone: phone, email: email, password: password);
     await _tokens.save(access: result.tokens.access, refresh: result.tokens.refresh);
+    _endedAccountId = null;
     state = AuthState(status: AuthStatus.authenticated, user: result.user);
   }
 
@@ -112,6 +126,7 @@ class AuthController extends StateNotifier<AuthState> {
   /// returns one, which is what makes "verify your phone" also sign you in.
   Future<void> adoptSession(AuthTokens tokens, {Me? user}) async {
     await _tokens.save(access: tokens.access, refresh: tokens.refresh);
+    _endedAccountId = null;
     if (user != null) {
       state = AuthState(status: AuthStatus.authenticated, user: user);
     } else {
@@ -129,6 +144,7 @@ class AuthController extends StateNotifier<AuthState> {
     } on ApiException catch (e) {
       if (e.isAuthFailure) {
         await _tokens.clear();
+        _ending();
         state = const AuthState.signedOut();
       } else if (state.user != null) {
         // Keep showing what we last knew rather than blanking the UI.
@@ -152,12 +168,14 @@ class AuthController extends StateNotifier<AuthState> {
       }
     }
     await _tokens.clear();
+    _ending();
     state = const AuthState.signedOut();
   }
 
   /// Called by the API client when a refresh was genuinely rejected.
   void onSessionExpired() {
     if (state.status == AuthStatus.signedOut) return;
+    _ending();
     state = const AuthState.signedOut();
   }
 

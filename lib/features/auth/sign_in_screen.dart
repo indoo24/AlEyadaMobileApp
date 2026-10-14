@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
+import '../../app/safe_redirect.dart';
 import '../../core/api/api_error.dart';
 import '../../core/errors/error_messages.dart';
 import '../../core/providers.dart';
@@ -75,21 +76,24 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
     setState(() => _busy = true);
     try {
-      await ref
-          .read(authControllerProvider.notifier)
-          .signIn(
-            phone: _looksLikeEmail ? null : _identifier.text.trim(),
-            email: _looksLikeEmail ? _identifier.text.trim() : null,
-            password: _password.text,
-          );
+      final auth = ref.read(authControllerProvider.notifier);
+      // Read before signing in: signing in forgets it.
+      final endedAccountId = auth.endedAccountId;
+      await auth.signIn(
+        phone: _looksLikeEmail ? null : _identifier.text.trim(),
+        email: _looksLikeEmail ? _identifier.text.trim() : null,
+        password: _password.text,
+      );
       if (!mounted) return;
       // The router's guards decide where to land — a doctor belongs in their
       // practice, a patient in the directory — so this only resumes an
-      // interrupted destination.
-      final next = widget.next;
-      if (next != null && next.isNotEmpty) {
-        context.go(next);
-      }
+      // interrupted destination, and only a safe one of this account's own.
+      final next = resumeLocation(
+        widget.next,
+        endedAccountId: endedAccountId,
+        signedInAccountId: ref.read(authControllerProvider).user?.id,
+      );
+      if (next != null) context.go(next);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {

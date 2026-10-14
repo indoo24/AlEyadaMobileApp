@@ -72,7 +72,9 @@ const staffBookingEvents = {
 String? notificationDestination(AppNotification n, Me? user) {
   final doctor = user?.isActiveDoctor ?? false;
   if (patientBookingEvents.contains(n.type)) {
-    return n.bookingId == null ? null : Routes.bookingPath(n.bookingId!);
+    // The id comes from the payload; encoded, it can only ever be one path
+    // segment of /bookings/, never a different route.
+    return n.bookingId == null ? null : Routes.bookingPath(Uri.encodeComponent(n.bookingId!));
   }
   if (staffBookingEvents.contains(n.type)) return doctor ? Routes.managementSchedule : null;
   // Sent invitations are listed under the clinic; a received one has no screen

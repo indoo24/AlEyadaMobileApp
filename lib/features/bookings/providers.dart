@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/api/api_error.dart';
 import '../../core/providers.dart';
 import 'booking_logic.dart';
 import 'models.dart';
@@ -54,7 +55,26 @@ final bookingGroupsProvider = Provider<AsyncValue<BookingGroups>>((ref) {
   return ref.watch(myBookingsProvider).whenData((all) => groupBookings(all, now()));
 });
 
-final bookingDetailProvider = FutureProvider.family<PatientBooking, String>((ref, id) async {
+/// One booking, as the signed-in account sees it.
+///
+/// Tied to the account like [myBookingsProvider], and auto-disposed like the
+/// management lists: it is dropped as soon as its screen closes, so a booking —
+/// health information — is never kept in memory for whoever signs in next on
+/// the same phone. A change of account while it is watched re-asks the server
+/// with the new account's token; the screen shows that reload as loading, never
+/// the previous account's data.
+final bookingDetailProvider = FutureProvider.autoDispose.family<PatientBooking, String>((
+  ref,
+  id,
+) async {
+  final (hasSession, _) = ref.watch(
+    authControllerProvider.select((s) => (s.hasSession, s.user?.id)),
+  );
+  // Signed out there is nobody to ask for and no token to ask with; the guards
+  // are already taking the screen away.
+  if (!hasSession) {
+    throw ApiException(failure: ApiFailure.unauthenticated, errors: const [], statusCode: 401);
+  }
   return ref.watch(bookingRepositoryProvider).booking(id);
 });
 

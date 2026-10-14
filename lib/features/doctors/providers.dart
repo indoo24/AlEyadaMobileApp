@@ -31,7 +31,13 @@ final onboardingCitiesProvider = FutureProvider<List<City>>((ref) async {
 });
 
 /// The filters currently applied to the doctor list.
-final doctorQueryProvider = StateProvider<DoctorQuery>((ref) => const DoctorQuery());
+///
+/// Back to no filters whenever the signed-in account changes: the next person on
+/// the phone does not inherit the previous one's search text, specialty or area.
+final doctorQueryProvider = StateProvider<DoctorQuery>((ref) {
+  ref.watch(authControllerProvider.select((s) => s.user?.id));
+  return const DoctorQuery();
+});
 
 /// One page of results for a given query.
 final doctorPageProvider = FutureProvider.family<Paginated<DoctorCard>, DoctorQuery>((

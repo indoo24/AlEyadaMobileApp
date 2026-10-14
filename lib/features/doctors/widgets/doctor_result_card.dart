@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/tokens.dart';
+import '../../../core/utils/contact_links.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../favorites/widgets/favorite_button.dart';
 import '../../home/home_style.dart';
@@ -182,15 +182,15 @@ class DoctorResultCard extends ConsumerWidget {
     );
   }
 
-  /// Open the `tel:` link the API built, and record the click. Tracking is not
-  /// awaited and cannot block the call — the same rule the profile page follows.
+  /// Open the `tel:` link the API built, and record the click — only when it
+  /// is a plain phone number (see [safePhoneUri]). Tracking is not awaited and
+  /// cannot block the call — the same rule the profile page follows.
   Future<void> _call(WidgetRef ref, String url) async {
+    if (safePhoneUri(url) == null) return;
     ref
         .read(directoryRepositoryProvider)
-        .trackContactClick(doctorId: doctor.id, contactType: 'phone');
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+        .trackContactClick(doctorId: doctor.id, contactType: ContactChannel.phone.trackingType);
+    await launchContact(ContactChannel.phone, url);
   }
 }
 

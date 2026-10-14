@@ -165,6 +165,7 @@ class AuthTextField extends StatelessWidget {
     this.onSubmitted,
     this.enabled = true,
     this.textCapitalization = TextCapitalization.none,
+    this.private = false,
   });
 
   final String label;
@@ -188,6 +189,13 @@ class AuthTextField extends StatelessWidget {
   final bool enabled;
   final TextCapitalization textCapitalization;
 
+  /// Keep what is typed out of the keyboard: no suggestions, no autocorrect, and
+  /// no personalised learning (the keyboard's own dictionary, which can outlive
+  /// the app and sync to the keyboard vendor). For health notes, reasons and
+  /// codes. Password fields — [obscure], or with a visibility toggle — are
+  /// always private, shown or hidden.
+  final bool private;
+
   static OutlineInputBorder _border(Color c, [double w = 1]) => OutlineInputBorder(
     borderRadius: BorderRadius.circular(14),
     borderSide: BorderSide(color: c, width: w),
@@ -197,6 +205,7 @@ class AuthTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = L.of(context);
     final hasError = (errorText ?? '').isNotEmpty;
+    final isPrivate = private || obscure || onToggleObscure != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,8 +235,9 @@ class AuthTextField extends StatelessWidget {
           focusNode: focusNode,
           enabled: enabled,
           obscureText: obscure,
-          enableSuggestions: !obscure,
-          autocorrect: !obscure,
+          enableSuggestions: !isPrivate,
+          autocorrect: !isPrivate,
+          enableIMEPersonalizedLearning: !isPrivate,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           inputFormatters: inputFormatters,

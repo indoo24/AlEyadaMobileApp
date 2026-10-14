@@ -32,6 +32,7 @@ class AppTextField extends StatelessWidget {
     this.focusNode,
     this.required = false,
     this.textCapitalization = TextCapitalization.none,
+    this.private = false,
   });
 
   final String label;
@@ -57,13 +58,24 @@ class AppTextField extends StatelessWidget {
   final bool required;
   final TextCapitalization textCapitalization;
 
+  /// Keep what is typed out of the keyboard: no suggestions, no autocorrect, and
+  /// no personalised learning (the keyboard's own dictionary, which can outlive
+  /// the app and sync to the keyboard vendor). For health notes, reasons and
+  /// codes. Password fields — [obscure], or with a visibility toggle — are
+  /// always private, shown or hidden.
+  final bool private;
+
   @override
   Widget build(BuildContext context) {
+    final isPrivate = private || obscure || onToggleObscure != null;
     final field = TextField(
       controller: controller,
       focusNode: focusNode,
       enabled: enabled,
       obscureText: obscure,
+      enableSuggestions: !isPrivate,
+      autocorrect: !isPrivate,
+      enableIMEPersonalizedLearning: !isPrivate,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       maxLines: obscure ? 1 : maxLines,

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/providers.dart';
 import '../../core/utils/arabic_text.dart';
 import '../clinics/models.dart';
 import '../clinics/providers.dart';
@@ -14,20 +15,30 @@ import 'repository.dart';
 /// What the person searched for before, newest first, kept on the device.
 ///
 /// SharedPreferences is the project's existing store for non-secret UI state (the
-/// chosen language lives there too). Nothing here is sensitive, but it is also
-/// not synced — it is a convenience, not an account feature.
+/// chosen language lives there too). It is not synced — a convenience, not an
+/// account feature — but what someone searched for in a medical app can say a
+/// lot about them, so it is kept per account, like favourites: each account on
+/// the phone has its own list, and the signed-out guest has a separate one.
+/// Nothing is carried from one to another at sign-in or sign-out.
 class RecentSearchesController extends StateNotifier<List<String>> {
-  RecentSearchesController() : super(const []) {
+  RecentSearchesController({String? userId}) : _key = storageKey(userId), super(const []) {
     _restore();
   }
 
-  static const storageKey = 'recent_doctor_searches';
+  final String _key;
+
+  static String storageKey(String? userId) => 'recent_doctor_searches_v1:${userId ?? 'guest'}';
+
+  /// Where recents were kept when there was one list per device. Whose searches
+  /// those were cannot be known, so the list is deleted rather than adopted.
+  static const legacyStorageKey = 'recent_doctor_searches';
   static const maxEntries = 8;
 
   Future<void> _restore() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getStringList(storageKey);
+      if (prefs.containsKey(legacyStorageKey)) await prefs.remove(legacyStorageKey);
+      final saved = prefs.getStringList(_key);
       if (saved != null && mounted) {
         // Anything added before the disk read finished is newer; keep it first.
         state = [...state, ...saved.where((s) => !state.contains(s))].take(maxEntries).toList();
@@ -40,7 +51,7 @@ class RecentSearchesController extends StateNotifier<List<String>> {
   Future<void> _persist() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(storageKey, state);
+      await prefs.setStringList(_key, state);
     } catch (_) {
       // Losing the history is not worth surfacing.
     }
@@ -67,9 +78,12 @@ class RecentSearchesController extends StateNotifier<List<String>> {
   }
 }
 
-final recentSearchesProvider = StateNotifierProvider<RecentSearchesController, List<String>>(
-  (ref) => RecentSearchesController(),
-);
+/// Rebuilt when the signed-in account changes, so each account (and the
+/// signed-out guest) reads and writes its own list.
+final recentSearchesProvider = StateNotifierProvider<RecentSearchesController, List<String>>((ref) {
+  final userId = ref.watch(authControllerProvider.select((s) => s.user?.id));
+  return RecentSearchesController(userId: userId);
+});
 
 // ---------------------------------------------------------------------------
 // Suggestions

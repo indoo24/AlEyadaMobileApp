@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/tokens.dart';
+import '../../core/utils/contact_links.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
@@ -216,7 +216,7 @@ class _ClinicsBlock extends ConsumerWidget {
                     ref,
                     detail: detail,
                     url: clinics[i].clinic.contact.telUrl!,
-                    type: 'phone',
+                    channel: ContactChannel.phone,
                     clinicId: clinics[i].clinic.id,
                   )
                 : null,
@@ -333,10 +333,10 @@ class _BookingBar extends ConsumerWidget {
     if (!bookable && !contact.canCall && !contact.canWhatsapp) return const SizedBox.shrink();
 
     final call = contact.canCall
-        ? () => openContact(ref, detail: detail, url: contact.telUrl!, type: 'phone')
+        ? () => openContact(ref, detail: detail, url: contact.telUrl!, channel: ContactChannel.phone)
         : null;
     final whatsapp = contact.canWhatsapp
-        ? () => openContact(ref, detail: detail, url: contact.whatsappUrl!, type: 'whatsapp')
+        ? () => openContact(ref, detail: detail, url: contact.whatsappUrl!, channel: ContactChannel.whatsapp)
         : null;
 
     final width = MediaQuery.sizeOf(context).width - 2 * AppSpacing.gutter;
@@ -439,25 +439,26 @@ class _BookingBar extends ConsumerWidget {
 
 /// Open a tel:/wa.me URL the API built, and record the click.
 ///
-/// The tracking call is fired without awaiting and cannot block the launch:
-/// connecting a patient to a clinic matters, an analytics row does not.
+/// The link must pass [safeContactUri] for its [channel]; one that does not is
+/// neither opened nor counted. The tracking call is fired without awaiting and
+/// cannot block the launch: connecting a patient to a clinic matters, an
+/// analytics row does not.
 Future<void> openContact(
   WidgetRef ref, {
   required DoctorDetail detail,
   required String url,
-  required String type,
+  required ContactChannel channel,
   String? clinicId,
 }) async {
+  if (safeContactUri(channel, url) == null) return;
   ref
       .read(directoryRepositoryProvider)
       .trackContactClick(
         doctorId: detail.card.id,
-        contactType: type,
+        contactType: channel.trackingType,
         clinicId: clinicId ?? detail.primaryClinic?.clinic.id,
       );
-  final uri = Uri.tryParse(url);
-  if (uri == null) return;
-  await launchUrl(uri, mode: LaunchMode.externalApplication);
+  await launchContact(channel, url);
 }
 
 class _CircleAction extends StatelessWidget {
