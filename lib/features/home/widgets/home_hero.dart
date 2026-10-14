@@ -8,12 +8,12 @@ import '../../../core/providers.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../doctors/providers.dart';
-import '../../doctors/widgets/doctor_profile_sections.dart' show profileNavy;
 import '../../doctors/widgets/filter_sheet.dart';
 import '../../notifications/notifications_screen.dart';
 import '../home_style.dart';
 import 'location_picker.dart';
 import 'pressable.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// The navy top of Home: greeting, city, notifications, and search.
 ///
@@ -26,13 +26,14 @@ class HomeHero extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [profileNavy, Color(0xFF0A3F86)],
+          colors: [context.palette.heroStart, context.palette.heroEnd],
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+        border: context.palette.isDark ? Border.all(color: context.palette.heroEdge) : null,
       ),
       child: const Padding(
         padding: EdgeInsets.fromLTRB(AppSpacing.gutter, 10, AppSpacing.gutter, 20),
@@ -73,7 +74,7 @@ class _TopRow extends ConsumerWidget {
                 header: true,
                 child: Text(
                   greeting,
-                  style: HomeType.heroGreeting,
+                  style: context.homeType.heroGreeting,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -91,7 +92,7 @@ class _TopRow extends ConsumerWidget {
             child: Badge(
               isLabelVisible: unread > 0,
               label: Text(unread > 99 ? '99+' : '$unread'),
-              backgroundColor: AppColors.danger,
+              backgroundColor: context.palette.dangerFill,
               child: const Icon(Icons.notifications_none_rounded, size: 23, color: Colors.white),
             ),
           ),
@@ -107,7 +108,7 @@ class _Tagline extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     L.of(context).appTagline,
-    style: HomeType.heroTagline,
+    style: context.homeType.heroTagline,
     maxLines: 2,
     overflow: TextOverflow.ellipsis,
   );
@@ -145,7 +146,7 @@ class _CityChip extends StatelessWidget {
                       label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: HomeType.locationChip.copyWith(color: Colors.white),
+                      style: context.homeType.locationChip.copyWith(color: Colors.white),
                     ),
                   ),
                   const Icon(Icons.keyboard_arrow_down_rounded, size: 17, color: Colors.white),
@@ -206,9 +207,9 @@ class HomeSearchField extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: AppShadows.float,
+        boxShadow: context.palette.shadowFloat,
       ),
       padding: const EdgeInsets.all(5),
       child: Row(
@@ -229,12 +230,12 @@ class HomeSearchField extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       child: Row(
                         children: [
-                          const Icon(Icons.search_rounded, color: AppColors.primary, size: 22),
+                          Icon(Icons.search_rounded, color: context.palette.primary, size: 22),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               l.hmSearchHint,
-                              style: HomeType.heroSearch,
+                              style: context.homeType.heroSearch,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -255,7 +256,7 @@ class HomeSearchField extends ConsumerWidget {
               label: l.actionFilter,
               excludeSemantics: true,
               child: Material(
-                color: AppColors.primary,
+                color: context.palette.primaryFill,
                 borderRadius: BorderRadius.circular(12),
                 child: InkWell(
                   onTap: openFilters,
@@ -266,7 +267,7 @@ class HomeSearchField extends ConsumerWidget {
                     child: Center(
                       child: Badge(
                         isLabelVisible: hasFilters,
-                        backgroundColor: AppColors.star,
+                        backgroundColor: context.palette.star,
                         smallSize: 8,
                         child: const Icon(Icons.tune_rounded, color: Colors.white, size: 21),
                       ),

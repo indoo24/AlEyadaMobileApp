@@ -8,6 +8,7 @@ import '../../core/api/api_error.dart';
 import '../../core/errors/error_messages.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/contact_links.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
@@ -16,13 +17,14 @@ import '../doctors/doctor_detail_screen.dart' show openContact;
 import '../doctors/models.dart';
 import '../doctors/providers.dart' show doctorDetailProvider;
 import '../doctors/widgets/doctor_card_tile.dart';
-import '../doctors/widgets/doctor_profile_sections.dart' show openExternalLink, profileNavy;
+import '../doctors/widgets/doctor_profile_sections.dart' show openExternalLink;
 import '../doctors/widgets/doctor_rating.dart';
 import '../home/home_style.dart';
 import 'booking_logic.dart';
 import 'models.dart';
 import 'providers.dart';
 import 'widgets/booking_tile.dart';
+import '../../core/theme/app_palette.dart';
 
 /// One appointment, with the actions the *server* says are available.
 ///
@@ -49,14 +51,19 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final l = L.of(context);
-    final booking = ref.watch(bookingDetailProvider(widget.id));
-    final b = booking.valueOrNull;
+    final watched = ref.watch(bookingDetailProvider(widget.id));
+    // A reload means the account changed underneath the screen (a refresh or a
+    // retry is a "refresh", not a reload). The value it still carries belongs to
+    // the previous account, so it is not drawn — not even the action bar.
+    final booking = watched.isReloading ? const AsyncLoading<PatientBooking>() : watched;
+    // An error can still carry an older value; the bar is for a loaded booking only.
+    final b = booking is AsyncData<PatientBooking> ? booking.value : null;
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       appBar: AppBar(
         title: Text(l.bdTitle),
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.palette.surface,
         surfaceTintColor: Colors.transparent,
       ),
       body: AsyncValueView<PatientBooking>(
@@ -160,7 +167,7 @@ class _Content extends ConsumerWidget {
     final upcoming = sectionFor(b, nowUtc) == BookingsTab.upcoming;
     const gap = SizedBox(height: 14);
 
-    final notice = _cancellationNotice(l, b, upcoming);
+    final notice = _cancellationNotice(context, l, b, upcoming);
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -182,11 +189,12 @@ class _Content extends ConsumerWidget {
     );
   }
 
-  Widget? _cancellationNotice(L l, PatientBooking b, bool upcoming) {
+  Widget? _cancellationNotice(BuildContext context, L l, PatientBooking b, bool upcoming) {
+    final p = context.palette;
     if (b.status.isCancelled && b.cancellationReason.trim().isNotEmpty) {
       return _Notice(
         icon: Icons.info_outline_rounded,
-        color: const Color(0xFFB91C1C),
+        color: p.toneDanger.fg,
         title: l.bdCancellationReason,
         text: b.cancellationReason.trim(),
       );
@@ -200,14 +208,14 @@ class _Content extends ConsumerWidget {
       if (hours < 1) return null;
       return _Notice(
         icon: Icons.event_repeat_rounded,
-        color: AppColors.primary,
+        color: p.primary,
         text: l.bdCancelBefore(hours),
       );
     }
     if (!b.canCancel && cutoff != null) {
       return _Notice(
         icon: Icons.lock_clock_outlined,
-        color: const Color(0xFFB45309),
+        color: p.toneWarning.fg,
         text: l.bdCancelClosed,
       );
     }
@@ -228,10 +236,10 @@ class _Card extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: AppColors.surface,
+      color: context.palette.surface,
       borderRadius: BorderRadius.circular(homeCardRadius),
-      border: Border.all(color: AppColors.border),
-      boxShadow: AppShadows.soft,
+      border: Border.all(color: context.palette.border),
+      boxShadow: context.palette.shadowSoft,
     ),
     child: Material(
       type: MaterialType.transparency,
@@ -246,15 +254,18 @@ class _Card extends StatelessWidget {
                     width: 30,
                     height: 30,
                     decoration: BoxDecoration(
-                      color: AppColors.bgSoft,
+                      color: context.palette.pageSoft,
                       borderRadius: BorderRadius.circular(9),
                     ),
-                    child: Icon(icon, size: 17, color: AppColors.primary),
+                    child: Icon(icon, size: 17, color: context.palette.primary),
                   ),
                   const SizedBox(width: 10),
                 ],
                 Expanded(
-                  child: Semantics(header: true, child: Text(title!, style: HomeType.sectionTitle)),
+                  child: Semantics(
+                    header: true,
+                    child: Text(title!, style: context.homeType.sectionTitle),
+                  ),
                 ),
               ],
             ),
@@ -282,10 +293,10 @@ class _DoctorHeader extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(homeCardRadius),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        border: Border.all(color: context.palette.border),
+        boxShadow: context.palette.shadowSoft,
       ),
       child: Material(
         type: MaterialType.transparency,
@@ -305,13 +316,16 @@ class _DoctorHeader extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(b.doctorName, style: HomeType.doctorName.copyWith(fontSize: 16)),
+                        Text(
+                          b.doctorName,
+                          style: context.homeType.doctorName.copyWith(fontSize: 16),
+                        ),
                         if (specialty != null)
                           Text(
                             specialty,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: HomeType.meta.copyWith(fontSize: 12.5),
+                            style: context.homeType.meta.copyWith(fontSize: 12.5),
                           ),
                         const SizedBox(height: 6),
                         Wrap(
@@ -327,7 +341,7 @@ class _DoctorHeader extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (canOpen) const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                  if (canOpen) Icon(Icons.chevron_right_rounded, color: context.palette.muted),
                 ],
               ),
             ),
@@ -360,21 +374,23 @@ class _AppointmentCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: upcoming
-            ? const LinearGradient(
+            ? LinearGradient(
                 begin: AlignmentDirectional.topStart,
                 end: AlignmentDirectional.bottomEnd,
-                colors: [profileNavy, Color(0xFF0A4A9C)],
+                colors: [context.palette.heroStart, context.palette.heroEnd],
               )
             : null,
-        color: upcoming ? null : AppColors.surface,
+        color: upcoming ? null : context.palette.surface,
         borderRadius: BorderRadius.circular(20),
-        border: upcoming ? null : Border.all(color: AppColors.border),
-        boxShadow: upcoming ? AppShadows.float : AppShadows.soft,
+        border: upcoming
+            ? (context.palette.isDark ? Border.all(color: context.palette.heroEdge) : null)
+            : Border.all(color: context.palette.border),
+        boxShadow: upcoming ? context.palette.shadowFloat : context.palette.shadowSoft,
       ),
       child: Builder(
         builder: (context) {
-          final fg = upcoming ? Colors.white : AppColors.navy;
-          final sub = upcoming ? Colors.white.withValues(alpha: 0.8) : AppColors.muted;
+          final fg = upcoming ? Colors.white : context.palette.heading;
+          final sub = upcoming ? Colors.white.withValues(alpha: 0.8) : context.palette.muted;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -439,7 +455,9 @@ class _AppointmentCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: upcoming ? Colors.white.withValues(alpha: 0.12) : AppColors.bgSoft,
+                        color: upcoming
+                            ? Colors.white.withValues(alpha: 0.12)
+                            : context.palette.pageSoft,
                         borderRadius: AppRadii.pillRadius,
                       ),
                       child: Text(
@@ -500,7 +518,7 @@ class _Notice extends StatelessWidget {
                   title!,
                   style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: color),
                 ),
-              Text(text, style: const TextStyle(fontSize: 13, color: AppColors.ink, height: 1.6)),
+              Text(text, style: TextStyle(fontSize: 13, color: context.palette.body, height: 1.6)),
             ],
           ),
         ),
@@ -543,7 +561,7 @@ class _InfoCard extends StatelessWidget {
       child: Column(
         children: [
           for (var i = 0; i < rows.length; i++) ...[
-            if (i > 0) const Divider(height: 18, color: AppColors.border),
+            if (i > 0) Divider(height: 18, color: context.palette.border),
             _InfoRow(label: rows[i].$1, value: rows[i].$2, ltr: rows[i].$3),
           ],
         ],
@@ -579,11 +597,11 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labelText = Text(label, style: HomeType.meta.copyWith(fontSize: 12.5));
+    final labelText = Text(label, style: context.homeType.meta.copyWith(fontSize: 12.5));
     final valueText = Text(
       value,
       textDirection: ltr ? TextDirection.ltr : null,
-      style: HomeType.cardTitle.copyWith(fontSize: 13.5),
+      style: context.homeType.cardTitle.copyWith(fontSize: 13.5),
     );
     if (value.length > 32 || value.contains('\n')) {
       return Column(
@@ -623,8 +641,8 @@ class _ClinicCard extends ConsumerWidget {
     final map = _mapFor(link);
     final contact = _contactFor(doctor, link);
 
-    void track(String url, String type) =>
-        openContact(ref, detail: doctor!, url: url, type: type, clinicId: c?.id);
+    void track(String url, ContactChannel channel) =>
+        openContact(ref, detail: doctor!, url: url, channel: channel, clinicId: c?.id);
 
     return _Card(
       title: l.bdClinicTitle,
@@ -633,22 +651,22 @@ class _ClinicCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (b.clinicName.isNotEmpty)
-            Text(b.clinicName, style: HomeType.cardTitle.copyWith(fontSize: 15)),
-          if (area.isNotEmpty) Text(area, style: HomeType.meta),
+            Text(b.clinicName, style: context.homeType.cardTitle.copyWith(fontSize: 15)),
+          if (area.isNotEmpty) Text(area, style: context.homeType.meta),
           if (address.isNotEmpty || landmark.isNotEmpty) ...[
             const SizedBox(height: 8),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(top: 2),
-                  child: Icon(Icons.location_on_outlined, size: 17, color: AppColors.muted),
+                  child: Icon(Icons.location_on_outlined, size: 17, color: context.palette.muted),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     [address, landmark].where((s) => s.isNotEmpty).join(' — '),
-                    style: const TextStyle(fontSize: 13, color: AppColors.ink, height: 1.6),
+                    style: TextStyle(fontSize: 13, color: context.palette.body, height: 1.6),
                   ),
                 ),
               ],
@@ -664,23 +682,23 @@ class _ClinicCard extends ConsumerWidget {
                   _ActionPill(
                     icon: Icons.map_outlined,
                     label: l.ddOpenLocation,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                     onTap: () => openExternalLink(context, map),
                   ),
                 if (contact?.canCall ?? false)
                   _ActionPill(
                     icon: Icons.phone_rounded,
                     label: l.doctorCall,
-                    color: AppColors.primary,
-                    onTap: () => track(contact!.telUrl!, 'phone'),
+                    color: context.palette.primary,
+                    onTap: () => track(contact!.telUrl!, ContactChannel.phone),
                   ),
                 if (contact?.canWhatsapp ?? false)
                   _ActionPill(
                     icon: Icons.chat_rounded,
                     label: l.doctorWhatsapp,
                     // Green is reserved for WhatsApp by the design tokens.
-                    color: AppColors.whatsapp,
-                    onTap: () => track(contact!.whatsappUrl!, 'whatsapp'),
+                    color: context.palette.whatsappFg,
+                    onTap: () => track(contact!.whatsappUrl!, ContactChannel.whatsapp),
                   ),
               ],
             ),
@@ -715,7 +733,7 @@ class _ActionPill extends StatelessWidget {
       backgroundColor: color.withValues(alpha: 0.05),
       minimumSize: const Size(0, 44),
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      textStyle: HomeType.button.copyWith(fontSize: 13),
+      textStyle: context.homeType.button.copyWith(fontSize: 13),
     ),
   );
 }
@@ -754,7 +772,7 @@ class _TimelineCard extends StatelessWidget {
         BookingStatus.cancelledByClinic => l.bdStepCancelledByClinic,
         BookingStatus.expired => l.bdStepExpired,
         BookingStatus.rescheduled => l.bdStepRescheduled,
-        _ => statusStyle(l, b.status).label,
+        _ => statusStyle(l, context.palette, b.status).label,
       },
     };
 
@@ -798,10 +816,10 @@ class _StepRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, icon) = switch (state) {
-      TimelineState.done => (const Color(0xFF15803D), Icons.check_rounded),
-      TimelineState.current => (AppColors.primary, Icons.radio_button_checked_rounded),
-      TimelineState.upcoming => (AppColors.border, Icons.circle_outlined),
-      TimelineState.failed => (const Color(0xFFB91C1C), Icons.close_rounded),
+      TimelineState.done => (context.palette.toneSuccess.fg, Icons.check_rounded),
+      TimelineState.current => (context.palette.primary, Icons.radio_button_checked_rounded),
+      TimelineState.upcoming => (context.palette.border, Icons.circle_outlined),
+      TimelineState.failed => (context.palette.toneDanger.fg, Icons.close_rounded),
     };
     final filled = state == TimelineState.done || state == TimelineState.failed;
 
@@ -817,18 +835,26 @@ class _StepRow extends StatelessWidget {
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: filled ? color : AppColors.surface,
+                    color: filled ? color : context.palette.surface,
                     shape: BoxShape.circle,
                     border: Border.all(color: color, width: 2),
                   ),
-                  child: Icon(icon, size: 14, color: filled ? Colors.white : color),
+                  // On the filled circle: white in light; in dark the circle is a pale tone,
+                  // so the glyph is the dark page colour instead.
+                  child: Icon(
+                    icon,
+                    size: 14,
+                    color: filled
+                        ? (context.palette.isDark ? context.palette.page : Colors.white)
+                        : color,
+                  ),
                 ),
                 if (!last)
                   Expanded(
                     child: Container(
                       width: 2,
                       margin: const EdgeInsets.symmetric(vertical: 2),
-                      color: filled ? color.withValues(alpha: 0.4) : AppColors.border,
+                      color: filled ? color.withValues(alpha: 0.4) : context.palette.border,
                     ),
                   ),
               ],
@@ -843,12 +869,14 @@ class _StepRow extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: HomeType.cardTitle.copyWith(
+                    style: context.homeType.cardTitle.copyWith(
                       fontSize: 13.5,
-                      color: state == TimelineState.upcoming ? AppColors.muted : AppColors.navy,
+                      color: state == TimelineState.upcoming
+                          ? context.palette.muted
+                          : context.palette.heading,
                     ),
                   ),
-                  if (subtitle != null) Text(subtitle!, style: HomeType.meta),
+                  if (subtitle != null) Text(subtitle!, style: context.homeType.meta),
                 ],
               ),
             ),
@@ -885,10 +913,10 @@ class _ActionBar extends ConsumerWidget {
             child: OutlinedButton(
               onPressed: cancelling ? null : onCancel,
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.danger,
-                side: const BorderSide(color: AppColors.danger),
+                foregroundColor: context.palette.danger,
+                side: BorderSide(color: context.palette.danger),
                 minimumSize: const Size(0, 52),
-                textStyle: HomeType.button.copyWith(fontSize: 14.5),
+                textStyle: context.homeType.button.copyWith(fontSize: 14.5),
               ),
               child: cancelling
                   ? const SizedBox(
@@ -910,14 +938,14 @@ class _ActionBar extends ConsumerWidget {
                 ref,
                 detail: profile.doctor!,
                 url: contact.telUrl!,
-                type: 'phone',
+                channel: ContactChannel.phone,
                 clinicId: profile.clinic?.clinic.id,
               ),
               icon: const Icon(Icons.phone_rounded, size: 20),
               label: Text(l.bdCallClinic, maxLines: 1, overflow: TextOverflow.ellipsis),
               style: FilledButton.styleFrom(
                 minimumSize: const Size(0, 52),
-                textStyle: HomeType.button.copyWith(fontSize: 14.5),
+                textStyle: context.homeType.button.copyWith(fontSize: 14.5),
               ),
             ),
           ),
@@ -936,7 +964,7 @@ class _ActionBar extends ConsumerWidget {
             ),
             style: FilledButton.styleFrom(
               minimumSize: const Size(0, 52),
-              textStyle: HomeType.button.copyWith(fontSize: 14.5),
+              textStyle: context.homeType.button.copyWith(fontSize: 14.5),
             ),
           ),
         ),
@@ -945,9 +973,9 @@ class _ActionBar extends ConsumerWidget {
     if (buttons.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        boxShadow: [BoxShadow(color: Color(0x140F172A), blurRadius: 20, offset: Offset(0, -4))],
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        boxShadow: context.palette.shadowBar,
       ),
       child: SafeArea(
         top: false,
@@ -982,7 +1010,7 @@ class _CancelDialogState extends State<_CancelDialog> {
   Widget build(BuildContext context) {
     final l = L.of(context);
     return AlertDialog(
-      icon: const Icon(Icons.event_busy_rounded, color: AppColors.danger),
+      icon: Icon(Icons.event_busy_rounded, color: context.palette.danger),
       title: Text(l.bookingCancelTitle),
       content: SingleChildScrollView(
         child: Column(
@@ -990,7 +1018,12 @@ class _CancelDialogState extends State<_CancelDialog> {
           children: [
             Text(l.bookingCancelBody, textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.lg),
-            AppTextField(label: l.bookingCancelReason, controller: _reason, maxLines: 2),
+            AppTextField(
+              label: l.bookingCancelReason,
+              controller: _reason,
+              maxLines: 2,
+              private: true,
+            ),
           ],
         ),
       ),
@@ -1008,9 +1041,9 @@ class _CancelDialogState extends State<_CancelDialog> {
         FilledButton(
           onPressed: () => Navigator.of(context).pop(_reason.text.trim()),
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.danger,
+            backgroundColor: context.palette.dangerFill,
             minimumSize: const Size(100, 44),
-            textStyle: HomeType.button.copyWith(fontSize: 14),
+            textStyle: context.homeType.button.copyWith(fontSize: 14),
           ),
           child: Text(l.bdCancelConfirm),
         ),

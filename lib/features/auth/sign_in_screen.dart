@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
+import '../../app/safe_redirect.dart';
 import '../../core/api/api_error.dart';
 import '../../core/errors/error_messages.dart';
 import '../../core/providers.dart';
@@ -11,6 +12,7 @@ import '../../core/theme/tokens.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
 import 'widgets/auth_widgets.dart';
+import '../../core/theme/app_palette.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key, this.next});
@@ -75,21 +77,24 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
     setState(() => _busy = true);
     try {
-      await ref
-          .read(authControllerProvider.notifier)
-          .signIn(
-            phone: _looksLikeEmail ? null : _identifier.text.trim(),
-            email: _looksLikeEmail ? _identifier.text.trim() : null,
-            password: _password.text,
-          );
+      final auth = ref.read(authControllerProvider.notifier);
+      // Read before signing in: signing in forgets it.
+      final endedAccountId = auth.endedAccountId;
+      await auth.signIn(
+        phone: _looksLikeEmail ? null : _identifier.text.trim(),
+        email: _looksLikeEmail ? _identifier.text.trim() : null,
+        password: _password.text,
+      );
       if (!mounted) return;
       // The router's guards decide where to land — a doctor belongs in their
       // practice, a patient in the directory — so this only resumes an
-      // interrupted destination.
-      final next = widget.next;
-      if (next != null && next.isNotEmpty) {
-        context.go(next);
-      }
+      // interrupted destination, and only a safe one of this account's own.
+      final next = resumeLocation(
+        widget.next,
+        endedAccountId: endedAccountId,
+        signedInAccountId: ref.read(authControllerProvider).user?.id,
+      );
+      if (next != null) context.go(next);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -192,7 +197,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.palette.surfaceRaised,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -257,7 +262,10 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
             child: Container(
               width: 40,
               height: 4,
-              decoration: BoxDecoration(color: AppColors.border, borderRadius: AppRadii.pillRadius),
+              decoration: BoxDecoration(
+                color: context.palette.border,
+                borderRadius: AppRadii.pillRadius,
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -265,17 +273,17 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
             header: true,
             child: Text(
               l.authForgotPassword,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 19,
                 fontWeight: FontWeight.w800,
-                color: AppColors.navy,
+                color: context.palette.heading,
               ),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             l.auForgotBody,
-            style: const TextStyle(fontSize: 13.5, color: AppColors.muted, height: 1.6),
+            style: TextStyle(fontSize: 13.5, color: context.palette.muted, height: 1.6),
           ),
           const SizedBox(height: 16),
           AuthTextField(

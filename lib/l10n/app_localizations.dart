@@ -3631,6 +3631,36 @@ abstract class L {
   /// **'اختر اللغة'**
   String get acLanguageSheetTitle;
 
+  /// No description provided for @accountAppearance.
+  ///
+  /// In ar, this message translates to:
+  /// **'المظهر'**
+  String get accountAppearance;
+
+  /// No description provided for @accountThemeSystem.
+  ///
+  /// In ar, this message translates to:
+  /// **'تلقائي'**
+  String get accountThemeSystem;
+
+  /// No description provided for @accountThemeLight.
+  ///
+  /// In ar, this message translates to:
+  /// **'فاتح'**
+  String get accountThemeLight;
+
+  /// No description provided for @accountThemeDark.
+  ///
+  /// In ar, this message translates to:
+  /// **'داكن'**
+  String get accountThemeDark;
+
+  /// No description provided for @acAppearanceSheetTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر المظهر'**
+  String get acAppearanceSheetTitle;
+
   /// No description provided for @acGuestTitle.
   ///
   /// In ar, this message translates to:

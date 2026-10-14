@@ -20,6 +20,7 @@ import '../home/home_style.dart';
 import '../management/management_widgets.dart';
 import 'doctor_profile_models.dart';
 import 'doctor_profile_providers.dart';
+import '../../core/theme/app_palette.dart';
 
 /// The label for one of the profile's fields.
 String profileFieldLabel(L l, String key) => switch (key) {
@@ -82,7 +83,7 @@ class DoctorProfileScreen extends ConsumerWidget {
     final profile = ref.watch(doctorOwnProfileProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       appBar: AppBar(title: Text(l.dpTitle)),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -136,7 +137,8 @@ class _ProfileBody extends ConsumerStatefulWidget {
 class _ProfileBodyState extends ConsumerState<_ProfileBody> {
   late final Map<String, TextEditingController> _controllers = {
     for (final f in profileFields)
-      if (isEditable(widget.profile, f)) f.key: TextEditingController(text: widget.profile.valueOf(f.key)),
+      if (isEditable(widget.profile, f))
+        f.key: TextEditingController(text: widget.profile.valueOf(f.key)),
   };
 
   bool _editing = false;
@@ -199,7 +201,9 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
       // The response body is undeclared; read the profile back instead.
       await container.refresh(doctorOwnProfileProvider.future);
       await container.read(authControllerProvider.notifier).refreshUser();
-      messenger.showSnackBar(SnackBar(content: Text(staged ? '${l.dpSaved}. ${l.dpSentForReview}' : l.dpSaved)));
+      messenger.showSnackBar(
+        SnackBar(content: Text(staged ? '${l.dpSaved}. ${l.dpSentForReview}' : l.dpSaved)),
+      );
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -217,7 +221,12 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, HomeSpacing.top, AppSpacing.gutter, AppSpacing.xl),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.gutter,
+        HomeSpacing.top,
+        AppSpacing.gutter,
+        AppSpacing.xl,
+      ),
       children: [
         _Header(profile: _p),
         const SizedBox(height: HomeSpacing.card),
@@ -236,7 +245,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                     label: Text(l.dpEdit),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(0, 40),
-                      textStyle: HomeType.button,
+                      textStyle: context.homeType.button,
                     ),
                   ),
           ),
@@ -265,14 +274,16 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
       final controller = _controllers[f.key];
       final value = _p.valueOf(f.key);
       if (_editing && controller != null) {
-        rows.add(_EditField(
-          field: f,
-          label: profileFieldLabel(l, f.key),
-          controller: controller,
-          enabled: !_busy,
-          errorText: _errors[f.key],
-          reviewNote: isCredential(_p, f) ? l.dpReviewNote : null,
-        ));
+        rows.add(
+          _EditField(
+            field: f,
+            label: profileFieldLabel(l, f.key),
+            controller: controller,
+            enabled: !_busy,
+            errorText: _errors[f.key],
+            reviewNote: isCredential(_p, f) ? l.dpReviewNote : null,
+          ),
+        );
       } else if (value.isNotEmpty) {
         rows.add(_ReadRow(field: f, label: profileFieldLabel(l, f.key), value: value));
       }
@@ -299,17 +310,29 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         'female' => l.doctorsFilterFemale,
         _ => '',
       };
-      if (gender.isNotEmpty) out.add(_ReadRow(label: profileFieldLabel(l, 'gender'), value: gender));
+      if (gender.isNotEmpty) {
+        out.add(_ReadRow(label: profileFieldLabel(l, 'gender'), value: gender));
+      }
 
       // City and area arrive as ids; show them only once they can be named.
       final cities = ref.watch(citiesProvider).valueOrNull ?? const <City>[];
       final city = cities.where((c) => c.id == _p.cityId).firstOrNull;
       final area = city?.areas.where((a) => a.id == _p.areaId).firstOrNull;
       if (city != null) {
-        out.add(_ReadRow(label: profileFieldLabel(l, 'city'), value: english && city.nameEn.isNotEmpty ? city.nameEn : city.nameAr));
+        out.add(
+          _ReadRow(
+            label: profileFieldLabel(l, 'city'),
+            value: english && city.nameEn.isNotEmpty ? city.nameEn : city.nameAr,
+          ),
+        );
       }
       if (area != null) {
-        out.add(_ReadRow(label: profileFieldLabel(l, 'area'), value: english && area.nameEn.isNotEmpty ? area.nameEn : area.nameAr));
+        out.add(
+          _ReadRow(
+            label: profileFieldLabel(l, 'area'),
+            value: english && area.nameEn.isNotEmpty ? area.nameEn : area.nameAr,
+          ),
+        );
       }
     }
 
@@ -322,7 +345,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l.dpSpecializations, style: HomeType.meta),
+                Text(l.dpSpecializations, style: context.homeType.meta),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 6,
@@ -330,9 +353,12 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                   children: [
                     for (final s in specs)
                       MgmtBadge(
-                        label: (english && s.nameEn.isNotEmpty ? s.nameEn : s.nameAr) +
+                        label:
+                            (english && s.nameEn.isNotEmpty ? s.nameEn : s.nameAr) +
                             (s.isPrimary == true ? ' · ${l.dpPrimarySpec}' : ''),
-                        color: s.isPrimary == true ? AppColors.primary : AppColors.muted,
+                        color: s.isPrimary == true
+                            ? context.palette.primary
+                            : context.palette.muted,
                       ),
                   ],
                 ),
@@ -370,13 +396,15 @@ class _Header extends ConsumerWidget {
     final status = profile.verificationStatus;
 
     final (statusLabel, statusColor) = switch (status) {
-      'approved' => (l.dpStatusApproved, AppColors.success),
-      'pending_review' => (l.dpStatusPending, AppColors.star),
-      'rejected' => (l.dpStatusRejected, AppColors.danger),
-      'draft' => (l.dpStatusDraft, AppColors.muted),
-      _ => ('', AppColors.muted),
+      'approved' => (l.dpStatusApproved, context.palette.success),
+      'pending_review' => (l.dpStatusPending, context.palette.star),
+      'rejected' => (l.dpStatusRejected, context.palette.danger),
+      'draft' => (l.dpStatusDraft, context.palette.muted),
+      _ => ('', context.palette.muted),
     };
-    final rejection = status == 'rejected' ? ref.watch(doctorRejectionReasonProvider).valueOrNull : null;
+    final rejection = status == 'rejected'
+        ? ref.watch(doctorRejectionReasonProvider).valueOrNull
+        : null;
 
     return MgmtCard(
       child: Column(
@@ -395,12 +423,17 @@ class _Header extends ConsumerWidget {
                       Text(
                         // `display_title` is the Arabic prefix ("د."); it only belongs
                         // with the Arabic name.
-                        showEnglishName || title.isEmpty || name.startsWith(title) ? name : '$title $name',
-                        style: HomeType.doctorName.copyWith(fontSize: 17),
+                        showEnglishName || title.isEmpty || name.startsWith(title)
+                            ? name
+                            : '$title $name',
+                        style: context.homeType.doctorName.copyWith(fontSize: 17),
                       ),
-                    if (job.isNotEmpty) Text(job, style: HomeType.doctorSpecialty),
+                    if (job.isNotEmpty) Text(job, style: context.homeType.doctorSpecialty),
                     const SizedBox(height: 4),
-                    DoctorRating.values(avgRating: profile.avgRating, reviewsCount: profile.reviewsCount),
+                    DoctorRating.values(
+                      avgRating: profile.avgRating,
+                      reviewsCount: profile.reviewsCount,
+                    ),
                   ],
                 ),
               ),
@@ -416,14 +449,17 @@ class _Header extends ConsumerWidget {
                 MgmtBadge(label: statusLabel, color: statusColor),
                 Text(
                   profile.isPublished ? l.dashboardPublished : l.dashboardNotPublished,
-                  style: HomeType.meta,
+                  style: context.homeType.meta,
                 ),
               ],
             ),
           ],
           if (rejection != null) ...[
             const SizedBox(height: 8),
-            Text('${l.dpRejectionReason}: $rejection', style: HomeType.meta.copyWith(color: AppColors.danger)),
+            Text(
+              '${l.dpRejectionReason}: $rejection',
+              style: context.homeType.meta.copyWith(color: context.palette.danger),
+            ),
           ],
         ],
       ),
@@ -446,7 +482,7 @@ class _SectionCard extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: HomeType.sectionTitle),
+        Text(title, style: context.homeType.sectionTitle),
         const SizedBox(height: 12),
         ...children,
       ],
@@ -477,9 +513,9 @@ class _ReadRow extends StatelessWidget {
     Widget text = Text(
       value,
       textDirection: latin ? TextDirection.ltr : null,
-      style: HomeType.doctorSpecialty.copyWith(
+      style: context.homeType.doctorSpecialty.copyWith(
         fontSize: 14,
-        color: link != null ? AppColors.primary : AppColors.ink,
+        color: link != null ? context.palette.primary : context.palette.body,
       ),
     );
     if (link != null) {
@@ -501,7 +537,7 @@ class _ReadRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: HomeType.meta),
+          Text(label, style: context.homeType.meta),
           const SizedBox(height: 2),
           Align(alignment: AlignmentDirectional.centerStart, child: text),
         ],
@@ -551,7 +587,8 @@ class _EditField extends StatelessWidget {
         },
         inputFormatters: [
           if (field.kind == ProfileFieldKind.integer) FilteringTextInputFormatter.digitsOnly,
-          if (field.kind == ProfileFieldKind.money) FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+          if (field.kind == ProfileFieldKind.money)
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
           if (field.maxLength != null) LengthLimitingTextInputFormatter(field.maxLength),
         ],
       ),
@@ -587,7 +624,10 @@ class _ExtraLists extends ConsumerWidget {
             final place = pick(e.institutionAr, e.institutionEn);
             return _ListEntry(
               title: degree,
-              subtitle: [place, if (e.year != null) '${e.year}'].where((s) => s.isNotEmpty).join(' · '),
+              subtitle: [
+                place,
+                if (e.year != null) '${e.year}',
+              ].where((s) => s.isNotEmpty).join(' · '),
             );
           },
         ),
@@ -597,7 +637,10 @@ class _ExtraLists extends ConsumerWidget {
           onRetry: () => ref.invalidate(doctorCertificatesProvider),
           rowBuilder: (c) => _ListEntry(
             title: pick(c.titleAr, c.titleEn),
-            subtitle: [c.issuer, if (c.year != null) '${c.year}'].where((s) => s.isNotEmpty).join(' · '),
+            subtitle: [
+              c.issuer,
+              if (c.year != null) '${c.year}',
+            ].where((s) => s.isNotEmpty).join(' · '),
             badge: c.isPublic ? l.dpCertPublic : null,
           ),
         ),
@@ -645,7 +688,7 @@ class _AsyncCard<T> extends StatelessWidget {
         child: _SectionCard(
           title: title,
           children: [
-            Text(l.homeSectionError, style: HomeType.meta),
+            Text(l.homeSectionError, style: context.homeType.meta),
             TextButton(onPressed: onRetry, child: Text(l.actionRetry)),
           ],
         ),
@@ -679,14 +722,14 @@ class _ListEntry extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: HomeType.cardTitle),
-                if (subtitle.isNotEmpty) Text(subtitle, style: HomeType.meta),
+                Text(title, style: context.homeType.cardTitle),
+                if (subtitle.isNotEmpty) Text(subtitle, style: context.homeType.meta),
               ],
             ),
           ),
           if (badge != null) ...[
             const SizedBox(width: 8),
-            MgmtBadge(label: badge!, color: AppColors.muted),
+            MgmtBadge(label: badge!, color: context.palette.muted),
           ],
         ],
       ),
@@ -703,9 +746,9 @@ class _AccountTile extends StatelessWidget {
     return MgmtCard(
       padding: EdgeInsets.zero,
       child: ListTile(
-        leading: const Icon(Icons.manage_accounts_outlined, color: AppColors.primary),
-        title: Text(l.dpAccountTile, style: HomeType.cardTitle),
-        subtitle: Text(l.dpAccountTileHint, style: HomeType.meta),
+        leading: Icon(Icons.manage_accounts_outlined, color: context.palette.primary),
+        title: Text(l.dpAccountTile, style: context.homeType.cardTitle),
+        subtitle: Text(l.dpAccountTileHint, style: context.homeType.meta),
         trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
         onTap: () => context.push(Routes.editAccount),
       ),

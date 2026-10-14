@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../app/router.dart';
 import '../../core/auth/models.dart';
-import '../../core/theme/tokens.dart';
 import 'notifications_data.dart';
+import '../../core/theme/app_palette.dart';
 
 /// What each `NotificationEventEnum` value looks like and where it leads.
 ///
@@ -33,12 +33,15 @@ const staffBookingEvents = {
   'duration_verification_requested',
 };
 
-({IconData icon, Color fg, Color bg}) notificationStyle(String type) {
-  const blue = (fg: AppColors.primary, bg: AppColors.bgSoft);
-  const green = (fg: Color(0xFF15803D), bg: Color(0xFFDCFCE7));
-  const red = (fg: Color(0xFFB91C1C), bg: Color(0xFFFEE2E2));
-  const amber = (fg: Color(0xFFB45309), bg: Color(0xFFFEF3C7));
-  const orange = (fg: Color(0xFFC2410C), bg: Color(0xFFFFEDD5));
+({IconData icon, Color fg, Color bg}) notificationStyle(
+  String type, {
+  AppPalette palette = AppPalette.light,
+}) {
+  final blue = (fg: palette.toneInfo.fg, bg: palette.toneInfo.bg);
+  final green = (fg: palette.toneSuccess.fg, bg: palette.toneSuccess.bg);
+  final red = (fg: palette.toneDanger.fg, bg: palette.toneDanger.bg);
+  final amber = (fg: palette.toneWarning.fg, bg: palette.toneWarning.bg);
+  final orange = (fg: palette.toneCaution.fg, bg: palette.toneCaution.bg);
 
   (IconData, ({Color fg, Color bg})) pick() => switch (type) {
     'booking_confirmed' || 'booking_confirmed_staff' => (Icons.event_available_rounded, green),
@@ -72,7 +75,9 @@ const staffBookingEvents = {
 String? notificationDestination(AppNotification n, Me? user) {
   final doctor = user?.isActiveDoctor ?? false;
   if (patientBookingEvents.contains(n.type)) {
-    return n.bookingId == null ? null : Routes.bookingPath(n.bookingId!);
+    // The id comes from the payload; encoded, it can only ever be one path
+    // segment of /bookings/, never a different route.
+    return n.bookingId == null ? null : Routes.bookingPath(Uri.encodeComponent(n.bookingId!));
   }
   if (staffBookingEvents.contains(n.type)) return doctor ? Routes.managementSchedule : null;
   // Sent invitations are listed under the clinic; a received one has no screen

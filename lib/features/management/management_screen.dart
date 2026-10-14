@@ -13,6 +13,7 @@ import '../home/home_style.dart';
 import '../home/widgets/home_section_header.dart';
 import '../practice/practice_screen.dart';
 import 'providers.dart';
+import '../../core/theme/app_palette.dart';
 
 /// The approved doctor's management hub: how the practice is doing, a link to the
 /// web system, and the three places the practice is run from — clinics,
@@ -36,7 +37,7 @@ class ManagementScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       body: Column(
         children: [
           _Header(title: l.managementTitle),
@@ -75,19 +76,25 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: const BoxDecoration(color: AppColors.surface, boxShadow: AppShadows.soft),
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        boxShadow: context.palette.shadowSoft,
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 14, AppSpacing.gutter, 14),
           child: Row(
             children: [
-              const Icon(Icons.space_dashboard_rounded, color: AppColors.primary, size: 22),
+              Icon(Icons.space_dashboard_rounded, color: context.palette.primary, size: 22),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
-                  style: HomeType.sectionTitle.copyWith(fontSize: 18, fontWeight: FontWeight.w800),
+                  style: context.homeType.sectionTitle.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ],
@@ -118,7 +125,7 @@ class _ActivationBanner extends ConsumerWidget {
       error: (_, __) => const SizedBox.shrink(),
       data: (a) {
         final live = a.isPublished;
-        final color = live ? AppColors.success : AppColors.star;
+        final color = live ? context.palette.success : context.palette.star;
         return Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
@@ -140,14 +147,14 @@ class _ActivationBanner extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       live ? l.dashboardPublished : l.dashboardNotPublished,
-                      style: HomeType.cardTitle,
+                      style: context.homeType.cardTitle,
                     ),
                   ),
                 ],
               ),
               if (!a.isComplete && a.missing.isNotEmpty) ...[
                 const SizedBox(height: 6),
-                Text(l.dashboardActivationMissing, style: HomeType.meta),
+                Text(l.dashboardActivationMissing, style: context.homeType.meta),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
@@ -157,11 +164,11 @@ class _ActivationBanner extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
+                          color: context.palette.surface,
                           borderRadius: AppRadii.pillRadius,
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(color: context.palette.border),
                         ),
-                        child: Text(activationFieldLabel(context, m), style: HomeType.pill),
+                        child: Text(activationFieldLabel(context, m), style: context.homeType.pill),
                       ),
                   ],
                 ),
@@ -194,7 +201,10 @@ class _StatisticsSection extends ConsumerWidget {
           children: [
             Expanded(child: HomeSectionHeader(title: l.managementStatsTitle)),
             if (stats.valueOrNull != null && stats.requireValue.periodDays > 0)
-              Text(l.managementStatsPeriod(stats.requireValue.periodDays), style: HomeType.meta),
+              Text(
+                l.managementStatsPeriod(stats.requireValue.periodDays),
+                style: context.homeType.meta,
+              ),
           ],
         ),
         const SizedBox(height: HomeSpacing.heading),
@@ -202,9 +212,9 @@ class _StatisticsSection extends ConsumerWidget {
           loading: () => const _StatsSkeleton(),
           error: (e, _) => Container(
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.palette.surface,
               borderRadius: BorderRadius.circular(homeCardRadius),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: context.palette.border),
             ),
             child: AppErrorView(error: e, onRetry: () => ref.invalidate(doctorStatsProvider)),
           ),
@@ -230,11 +240,19 @@ class _StatsGrid extends StatelessWidget {
     final rated = stats.reviewsCount > 0 && parseRating(stats.avgRating) != null;
 
     final cards = [
-      _StatCard(icon: Icons.people_alt_outlined, label: l.statPatients, value: '${stats.uniquePatients}'),
-      _StatCard(icon: Icons.task_alt_rounded, label: l.statCompletedVisits, value: '${stats.completedVisits}'),
+      _StatCard(
+        icon: Icons.people_alt_outlined,
+        label: l.statPatients,
+        value: '${stats.uniquePatients}',
+      ),
+      _StatCard(
+        icon: Icons.task_alt_rounded,
+        label: l.statCompletedVisits,
+        value: '${stats.completedVisits}',
+      ),
       _StatCard(
         icon: Icons.star_rounded,
-        iconColor: AppColors.star,
+        iconColor: context.palette.star,
         label: l.statRating,
         value: rated ? formatRating(parseRating(stats.avgRating)!) : '—',
         sub: stats.reviewsCount > 0 ? l.doctorReviewsCount(stats.reviewsCount) : null,
@@ -245,10 +263,22 @@ class _StatsGrid extends StatelessWidget {
         value: formatPercent(stats.contactRate),
         sub: l.statViewsSub(stats.profileViews),
       ),
-      _StatCard(icon: Icons.visibility_outlined, label: l.statViews, value: '${stats.profileViews}'),
+      _StatCard(
+        icon: Icons.visibility_outlined,
+        label: l.statViews,
+        value: '${stats.profileViews}',
+      ),
       _StatCard(icon: Icons.call_outlined, label: l.statContacts, value: '${stats.contacts}'),
-      _StatCard(icon: Icons.event_note_outlined, label: l.statBookings, value: '${stats.bookingsCreated}'),
-      _StatCard(icon: Icons.check_circle_outline_rounded, label: l.statBookingsDone, value: '${stats.bookingsCompleted}'),
+      _StatCard(
+        icon: Icons.event_note_outlined,
+        label: l.statBookings,
+        value: '${stats.bookingsCreated}',
+      ),
+      _StatCard(
+        icon: Icons.check_circle_outline_rounded,
+        label: l.statBookingsDone,
+        value: '${stats.bookingsCompleted}',
+      ),
     ];
 
     // Two columns, each row as tall as its taller card — a fixed aspect ratio
@@ -291,11 +321,13 @@ class _StatCard extends StatelessWidget {
     required this.label,
     required this.value,
     this.sub,
-    this.iconColor = AppColors.primary,
+    this.iconColor,
   });
 
   final IconData icon;
-  final Color iconColor;
+
+  /// Defaults to the brand blue of the theme in force.
+  final Color? iconColor;
   final String label;
   final String value;
   final String? sub;
@@ -309,10 +341,10 @@ class _StatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.palette.surface,
           borderRadius: BorderRadius.circular(homeCardRadius),
-          border: Border.all(color: AppColors.border),
-          boxShadow: AppShadows.soft,
+          border: Border.all(color: context.palette.border),
+          boxShadow: context.palette.shadowSoft,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -324,10 +356,10 @@ class _StatCard extends StatelessWidget {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.12),
+                    color: (iconColor ?? context.palette.primary).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Icon(icon, size: 16, color: iconColor),
+                  child: Icon(icon, size: 16, color: iconColor ?? context.palette.primary),
                 ),
                 const SizedBox(width: 8),
                 // Scales down rather than overflowing a narrow card at large text.
@@ -338,10 +370,10 @@ class _StatCard extends StatelessWidget {
                     child: Text(
                       value,
                       textDirection: TextDirection.ltr,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         height: 1.1,
                       ),
                     ),
@@ -350,8 +382,11 @@ class _StatCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Text(label, style: HomeType.doctorSpecialty.copyWith(fontWeight: FontWeight.w600)),
-            if (sub != null) Text(sub!, style: HomeType.meta.copyWith(fontSize: 11)),
+            Text(
+              label,
+              style: context.homeType.doctorSpecialty.copyWith(fontWeight: FontWeight.w600),
+            ),
+            if (sub != null) Text(sub!, style: context.homeType.meta.copyWith(fontSize: 11)),
           ],
         ),
       ),
@@ -408,7 +443,7 @@ class _PortalButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           minimumSize: const Size(0, 46),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          textStyle: HomeType.button.copyWith(fontSize: 13.5),
+          textStyle: context.homeType.button.copyWith(fontSize: 13.5),
         ),
       ),
     );
@@ -482,10 +517,10 @@ class ManagementModuleCard extends StatelessWidget {
       // Material shows through as grey.)
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.palette.surface,
           borderRadius: BorderRadius.circular(homeCardRadius),
-          border: Border.all(color: AppColors.border),
-          boxShadow: AppShadows.soft,
+          border: Border.all(color: context.palette.border),
+          boxShadow: context.palette.shadowSoft,
         ),
         child: Material(
           type: MaterialType.transparency,
@@ -500,25 +535,25 @@ class ManagementModuleCard extends StatelessWidget {
                     width: 46,
                     height: 46,
                     decoration: BoxDecoration(
-                      color: AppColors.bgSoft,
+                      color: context.palette.pageSoft,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(icon, color: AppColors.primary, size: 24),
+                    child: Icon(icon, color: context.palette.primary, size: 24),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: HomeType.cardTitle.copyWith(fontSize: 15.5)),
+                        Text(title, style: context.homeType.cardTitle.copyWith(fontSize: 15.5)),
                         const SizedBox(height: 2),
-                        Text(description, style: HomeType.meta, maxLines: 2),
+                        Text(description, style: context.homeType.meta, maxLines: 2),
                       ],
                     ),
                   ),
                   Icon(
                     rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
-                    color: AppColors.muted,
+                    color: context.palette.muted,
                   ),
                 ],
               ),

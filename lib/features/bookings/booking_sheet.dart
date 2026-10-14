@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/router.dart';
 import '../../core/api/api_error.dart';
 import '../../core/errors/error_messages.dart';
 import '../../core/providers.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/contact_links.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
@@ -20,6 +20,7 @@ import '../doctors/widgets/doctor_card_tile.dart';
 import '../home/home_style.dart';
 import 'models.dart';
 import 'providers.dart';
+import '../../core/theme/app_palette.dart';
 
 /// Booking flow: pick a clinic (when there is a choice), a day, a time, confirm.
 ///
@@ -51,7 +52,7 @@ Future<void> showBookingSheet(BuildContext context, DoctorDetail doctor, {String
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: AppColors.surface,
+    backgroundColor: context.palette.surfaceRaised,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -179,7 +180,7 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
           builder: (context, controller) => Column(
             children: [
               _Header(doctor: widget.doctor, canClose: !draft.submitting),
-              const Divider(height: 1, color: AppColors.border),
+              Divider(height: 1, color: context.palette.border),
               Expanded(
                 child: ListView(
                   controller: controller,
@@ -319,25 +320,28 @@ class _VerifyPhoneNotice extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgSoft,
+        color: context.palette.pageSoft,
         borderRadius: AppRadii.inputRadius,
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: context.palette.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.verified_user_outlined, color: AppColors.primary, size: 22),
+          Icon(Icons.verified_user_outlined, color: context.palette.primary, size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l.bkVerifyPhoneTitle, style: HomeType.cardTitle.copyWith(fontSize: 14)),
+                Text(
+                  l.bkVerifyPhoneTitle,
+                  style: context.homeType.cardTitle.copyWith(fontSize: 14),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   // Isolated so "+20…" keeps its order inside Arabic text.
                   l.bkVerifyPhoneBody('\u2066$phone\u2069'),
-                  style: HomeType.meta.copyWith(fontSize: 12.5, height: 1.6),
+                  style: context.homeType.meta.copyWith(fontSize: 12.5, height: 1.6),
                 ),
               ],
             ),
@@ -368,7 +372,10 @@ class _Header extends StatelessWidget {
           Container(
             width: 40,
             height: 4,
-            decoration: BoxDecoration(color: AppColors.border, borderRadius: AppRadii.pillRadius),
+            decoration: BoxDecoration(
+              color: context.palette.border,
+              borderRadius: AppRadii.pillRadius,
+            ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -386,20 +393,20 @@ class _Header extends StatelessWidget {
                   children: [
                     Text(
                       l.bookingTitle,
-                      style: HomeType.meta.copyWith(fontWeight: FontWeight.w700),
+                      style: context.homeType.meta.copyWith(fontWeight: FontWeight.w700),
                     ),
                     Text(
                       doctor.displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: HomeType.cardTitle.copyWith(fontSize: 16),
+                      style: context.homeType.cardTitle.copyWith(fontSize: 16),
                     ),
                     if (subtitle.isNotEmpty)
                       Text(
                         subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: HomeType.meta,
+                        style: context.homeType.meta,
                       ),
                   ],
                 ),
@@ -430,9 +437,9 @@ class _ClinicPicker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l.bkChooseClinic, style: HomeType.sectionTitle),
+        Text(l.bkChooseClinic, style: context.homeType.sectionTitle),
         const SizedBox(height: 4),
-        Text(l.bkChooseClinicHint, style: HomeType.meta.copyWith(fontSize: 12.5)),
+        Text(l.bkChooseClinicHint, style: context.homeType.meta.copyWith(fontSize: 12.5)),
         const SizedBox(height: 14),
         for (final c in clinics) ...[
           _ClinicOption(link: c, onTap: () => onPick(c.clinic.id)),
@@ -454,7 +461,7 @@ class _ClinicOption extends StatelessWidget {
     final l = L.of(context);
     final c = link.clinic;
     return Material(
-      color: AppColors.input,
+      color: context.palette.input,
       borderRadius: BorderRadius.circular(homeCardRadius),
       child: InkWell(
         onTap: onTap,
@@ -463,7 +470,7 @@ class _ClinicOption extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(homeCardRadius),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.palette.border),
           ),
           child: Row(
             children: [
@@ -471,10 +478,10 @@ class _ClinicOption extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: AppColors.bgSoft,
+                  color: context.palette.pageSoft,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.local_hospital_rounded, color: AppColors.primary),
+                child: Icon(Icons.local_hospital_rounded, color: context.palette.primary),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -483,13 +490,13 @@ class _ClinicOption extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Flexible(child: Text(c.nameAr, style: HomeType.cardTitle)),
+                        Flexible(child: Text(c.nameAr, style: context.homeType.cardTitle)),
                         if (link.isPrimary) ...[
                           const SizedBox(width: 6),
                           Text(
                             '· ${l.clinicBadgePrimary}',
-                            style: HomeType.meta.copyWith(
-                              color: AppColors.primary,
+                            style: context.homeType.meta.copyWith(
+                              color: context.palette.primary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -501,15 +508,15 @@ class _ClinicOption extends StatelessWidget {
                         c.addressLine,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: HomeType.meta,
+                        style: context.homeType.meta,
                       ),
                     if (link.consultationFee != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
                           '${l.clinicFeeConsult}: ${l.ddMoney(link.consultationFee!)}',
-                          style: HomeType.meta.copyWith(
-                            color: AppColors.primary,
+                          style: context.homeType.meta.copyWith(
+                            color: context.palette.primary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -517,7 +524,7 @@ class _ClinicOption extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+              Icon(Icons.chevron_right_rounded, color: context.palette.muted),
             ],
           ),
         ),
@@ -538,23 +545,26 @@ class _SelectedClinic extends StatelessWidget {
     final l = L.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
-      decoration: BoxDecoration(color: AppColors.bgSoft, borderRadius: AppRadii.inputRadius),
+      decoration: BoxDecoration(
+        color: context.palette.pageSoft,
+        borderRadius: AppRadii.inputRadius,
+      ),
       child: Row(
         children: [
-          const Icon(Icons.local_hospital_outlined, color: AppColors.primary, size: 20),
+          Icon(Icons.local_hospital_outlined, color: context.palette.primary, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l.bookingClinic, style: HomeType.meta),
-                Text(link.clinic.nameAr, style: HomeType.cardTitle.copyWith(fontSize: 14)),
+                Text(l.bookingClinic, style: context.homeType.meta),
+                Text(link.clinic.nameAr, style: context.homeType.cardTitle.copyWith(fontSize: 14)),
                 if (link.clinic.addressLine.isNotEmpty)
                   Text(
                     link.clinic.addressLine,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: HomeType.meta,
+                    style: context.homeType.meta,
                   ),
               ],
             ),
@@ -562,7 +572,9 @@ class _SelectedClinic extends StatelessWidget {
           if (onChange != null)
             TextButton(
               onPressed: onChange,
-              style: TextButton.styleFrom(textStyle: HomeType.button.copyWith(fontSize: 13)),
+              style: TextButton.styleFrom(
+                textStyle: context.homeType.button.copyWith(fontSize: 13),
+              ),
               child: Text(l.bkChangeClinic),
             ),
         ],
@@ -616,10 +628,6 @@ class _ContactOnly extends StatelessWidget {
     final contact = availability.contact.canCall || availability.contact.canWhatsapp
         ? availability.contact
         : doctor.card.contact;
-    Future<void> open(String url) async {
-      final uri = Uri.tryParse(url);
-      if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
 
     return Column(
       children: [
@@ -633,7 +641,7 @@ class _ContactOnly extends StatelessWidget {
             if (contact.canCall)
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: () => open(contact.telUrl!),
+                  onPressed: () => launchContact(ContactChannel.phone, contact.telUrl),
                   icon: const Icon(Icons.phone_rounded, size: 18),
                   label: Text(l.doctorCall),
                 ),
@@ -642,8 +650,8 @@ class _ContactOnly extends StatelessWidget {
             if (contact.canWhatsapp)
               Expanded(
                 child: FilledButton.icon(
-                  style: FilledButton.styleFrom(backgroundColor: AppColors.whatsapp),
-                  onPressed: () => open(contact.whatsappUrl!),
+                  style: FilledButton.styleFrom(backgroundColor: context.palette.whatsapp),
+                  onPressed: () => launchContact(ContactChannel.whatsapp, contact.whatsappUrl),
                   icon: const Icon(Icons.chat_rounded, size: 18),
                   label: Text(l.doctorWhatsapp),
                 ),
@@ -745,9 +753,9 @@ class _DayAndTimePicker extends ConsumerWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              const Icon(Icons.public_rounded, size: 14, color: AppColors.muted),
+              Icon(Icons.public_rounded, size: 14, color: context.palette.muted),
               const SizedBox(width: 6),
-              Expanded(child: Text(l.bkTimezoneNote, style: HomeType.meta)),
+              Expanded(child: Text(l.bkTimezoneNote, style: context.homeType.meta)),
             ],
           ),
         ],
@@ -766,13 +774,13 @@ class _DayAndTimePicker extends ConsumerWidget {
                 label: Text(label),
                 selected: draft.visitType == type,
                 onSelected: (_) => controller.setVisitType(type),
-                labelStyle: HomeType.chip.copyWith(
-                  color: draft.visitType == type ? Colors.white : AppColors.navy,
+                labelStyle: context.homeType.chip.copyWith(
+                  color: draft.visitType == type ? Colors.white : context.palette.heading,
                 ),
-                selectedColor: AppColors.primary,
-                backgroundColor: AppColors.input,
+                selectedColor: context.palette.primaryFill,
+                backgroundColor: context.palette.input,
                 side: BorderSide(
-                  color: draft.visitType == type ? AppColors.primary : AppColors.border,
+                  color: draft.visitType == type ? context.palette.primary : context.palette.border,
                 ),
                 showCheckmark: false,
                 shape: const StadiumBorder(),
@@ -781,7 +789,14 @@ class _DayAndTimePicker extends ConsumerWidget {
         ),
 
         const SizedBox(height: 20),
-        AppTextField(label: l.bookingNotes, controller: notes, maxLines: 3, minLines: 2),
+        // Notes for the doctor are health information: kept out of the keyboard.
+        AppTextField(
+          label: l.bookingNotes,
+          controller: notes,
+          maxLines: 3,
+          minLines: 2,
+          private: true,
+        ),
 
         if (availability.paymentRequired || clinic.paymentRequired) ...[
           const SizedBox(height: 14),
@@ -792,9 +807,9 @@ class _DayAndTimePicker extends ConsumerWidget {
         if (selected == null)
           Row(
             children: [
-              const Icon(Icons.touch_app_outlined, size: 18, color: AppColors.muted),
+              Icon(Icons.touch_app_outlined, size: 18, color: context.palette.muted),
               const SizedBox(width: 6),
-              Text(l.bkPickTimeHint, style: HomeType.meta.copyWith(fontSize: 12.5)),
+              Text(l.bkPickTimeHint, style: context.homeType.meta.copyWith(fontSize: 12.5)),
             ],
           )
         else
@@ -835,9 +850,9 @@ class _StepTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Icon(icon, size: 18, color: AppColors.primary),
+      Icon(icon, size: 18, color: context.palette.primary),
       const SizedBox(width: 8),
-      Text(title, style: HomeType.sectionTitle.copyWith(fontSize: 15)),
+      Text(title, style: context.homeType.sectionTitle.copyWith(fontSize: 15)),
     ],
   );
 }
@@ -862,8 +877,8 @@ class _DayChip extends StatelessWidget {
     final l = L.of(context);
     // `date` is the clinic-local calendar day; parsed only for its labels.
     final parts = calendarParts(date, locale);
-    final fg = selected ? Colors.white : AppColors.navy;
-    final sub = selected ? Colors.white70 : AppColors.muted;
+    final fg = selected ? Colors.white : context.palette.heading;
+    final sub = selected ? Colors.white70 : context.palette.muted;
 
     return Semantics(
       selected: selected,
@@ -871,7 +886,7 @@ class _DayChip extends StatelessWidget {
       label: longDayLabel(date, locale),
       excludeSemantics: true,
       child: Material(
-        color: selected ? AppColors.primary : AppColors.input,
+        color: selected ? context.palette.primaryFill : context.palette.input,
         borderRadius: AppRadii.inputRadius,
         child: InkWell(
           onTap: onTap,
@@ -882,7 +897,9 @@ class _DayChip extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             decoration: BoxDecoration(
               borderRadius: AppRadii.inputRadius,
-              border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+              border: Border.all(
+                color: selected ? context.palette.primaryFill : context.palette.border,
+              ),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -909,7 +926,7 @@ class _DayChip extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 10,
-                    color: selected ? Colors.white : AppColors.success,
+                    color: selected ? Colors.white : context.palette.success,
                   ),
                 ),
               ],
@@ -938,15 +955,15 @@ class _TimeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = L.of(context);
     final bg = unavailable
-        ? AppColors.bg
+        ? context.palette.page
         : selected
-        ? AppColors.primary
-        : AppColors.surface;
+        ? context.palette.primaryFill
+        : context.palette.surface;
     final fg = unavailable
-        ? AppColors.muted.withValues(alpha: 0.6)
+        ? context.palette.muted.withValues(alpha: 0.6)
         : selected
         ? Colors.white
-        : AppColors.navy;
+        : context.palette.heading;
 
     return Semantics(
       button: true,
@@ -968,8 +985,10 @@ class _TimeChip extends StatelessWidget {
               borderRadius: AppRadii.pillRadius,
               border: Border.all(
                 color: selected
-                    ? AppColors.primary
-                    : (unavailable ? AppColors.border : AppColors.primary.withValues(alpha: 0.35)),
+                    ? context.palette.primaryFill
+                    : (unavailable
+                          ? context.palette.border
+                          : context.palette.primary.withValues(alpha: 0.35)),
               ),
             ),
             // Sized to the label (a Wrap child that aligns would fill the row),
@@ -1010,14 +1029,14 @@ class _Summary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgSoft,
+        color: context.palette.pageSoft,
         borderRadius: AppRadii.cardRadius,
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.palette.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l.bookingSummary, style: HomeType.sectionTitle.copyWith(fontSize: 15)),
+          Text(l.bookingSummary, style: context.homeType.sectionTitle.copyWith(fontSize: 15)),
           const SizedBox(height: 8),
           for (final (label, value, ltr) in rows) _SummaryRow(label: label, value: value, ltr: ltr),
         ],
@@ -1039,7 +1058,10 @@ class _SummaryRow extends StatelessWidget {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(width: 104, child: Text(label, style: HomeType.meta.copyWith(fontSize: 12.5))),
+        SizedBox(
+          width: 104,
+          child: Text(label, style: context.homeType.meta.copyWith(fontSize: 12.5)),
+        ),
         Expanded(
           // Aligned to the row's end in the page's direction, even for a
           // left-to-right value such as a time.
@@ -1049,7 +1071,7 @@ class _SummaryRow extends StatelessWidget {
               value,
               textAlign: TextAlign.start,
               textDirection: ltr ? TextDirection.ltr : null,
-              style: HomeType.cardTitle.copyWith(fontSize: 13.5),
+              style: context.homeType.cardTitle.copyWith(fontSize: 13.5),
             ),
           ),
         ),
@@ -1082,9 +1104,9 @@ class _ConfirmBar extends ConsumerWidget {
     final signedIn = ref.watch(authControllerProvider.select((s) => s.isAuthenticated));
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        border: Border(top: BorderSide(color: context.palette.border)),
       ),
       child: SafeArea(
         top: false,
@@ -1096,7 +1118,7 @@ class _ConfirmBar extends ConsumerWidget {
                 : (!draft.isComplete || draft.submitting ? null : onConfirm),
             style: FilledButton.styleFrom(
               minimumSize: const Size.fromHeight(52),
-              textStyle: HomeType.button.copyWith(fontSize: 15),
+              textStyle: context.homeType.button.copyWith(fontSize: 15),
             ),
             child: draft.submitting || verifying
                 ? const SizedBox(
@@ -1142,15 +1164,18 @@ class _SuccessView extends StatelessWidget {
           width: 76,
           height: 76,
           decoration: BoxDecoration(
-            color: AppColors.success.withValues(alpha: 0.12),
+            color: context.palette.success.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 48),
+          child: Icon(Icons.check_circle_rounded, color: context.palette.success, size: 48),
         ),
         const SizedBox(height: 14),
         Semantics(
           liveRegion: true,
-          child: Text(l.bookingSuccessTitle, style: HomeType.greeting.copyWith(fontSize: 19)),
+          child: Text(
+            l.bookingSuccessTitle,
+            style: context.homeType.greeting.copyWith(fontSize: 19),
+          ),
         ),
         const SizedBox(height: 18),
         _Summary(
@@ -1176,7 +1201,7 @@ class _SuccessView extends StatelessWidget {
           },
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(50),
-            textStyle: HomeType.button.copyWith(fontSize: 15),
+            textStyle: context.homeType.button.copyWith(fontSize: 15),
           ),
           child: Text(l.bkViewBooking),
         ),
@@ -1185,7 +1210,7 @@ class _SuccessView extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
           style: TextButton.styleFrom(
             minimumSize: const Size.fromHeight(46),
-            textStyle: HomeType.button.copyWith(fontSize: 14),
+            textStyle: context.homeType.button.copyWith(fontSize: 14),
           ),
           child: Text(l.bkDone),
         ),

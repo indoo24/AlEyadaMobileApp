@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme/tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// The heart on a doctor card.
 ///
@@ -57,7 +57,7 @@ class FavoriteButton extends ConsumerWidget {
                   isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                   key: ValueKey(isFavorite),
                   size: size,
-                  color: isFavorite ? AppColors.primary : AppColors.muted,
+                  color: isFavorite ? context.palette.primary : context.palette.muted,
                 ),
               ),
             ),

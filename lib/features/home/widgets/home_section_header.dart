@@ -25,7 +25,7 @@ class HomeSectionHeader extends StatelessWidget {
         Expanded(
           // Wraps rather than truncating: the title is the point of the section,
           // and the action beside it can be wide.
-          child: Semantics(header: true, child: Text(title, style: HomeType.sectionTitle)),
+          child: Semantics(header: true, child: Text(title, style: context.homeType.sectionTitle)),
         ),
         if (onSeeAll != null)
           TextButton(
@@ -37,7 +37,7 @@ class HomeSectionHeader extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(seeAllLabel ?? l.actionSeeAll, style: HomeType.seeAll),
+                Text(seeAllLabel ?? l.actionSeeAll, style: context.homeType.seeAll),
                 const Icon(Icons.chevron_right_rounded, size: 18),
               ],
             ),

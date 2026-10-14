@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
-import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../bookings/booking_sheet.dart';
@@ -15,6 +14,7 @@ import '../../doctors/widgets/doctor_rating.dart';
 import '../../favorites/widgets/favorite_button.dart';
 import '../home_style.dart';
 import 'pressable.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// A doctor in a horizontal strip: who, how they are rated, where, from how
 /// much, and one clear action.
@@ -43,10 +43,10 @@ class HomeDoctorCard extends StatelessWidget {
       child: Pressable(
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.palette.surface,
             borderRadius: BorderRadius.circular(homeCardRadius),
-            border: Border.all(color: AppColors.border),
-            boxShadow: AppShadows.soft,
+            border: Border.all(color: context.palette.border),
+            boxShadow: context.palette.shadowSoft,
           ),
           child: Material(
             type: MaterialType.transparency,
@@ -71,14 +71,16 @@ class HomeDoctorCard extends StatelessWidget {
                                 d.displayName,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: HomeType.doctorName.copyWith(fontSize: 14.5),
+                                style: context.homeType.doctorName.copyWith(fontSize: 14.5),
                               ),
                               if (specialty.isNotEmpty)
                                 Text(
                                   specialty,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: HomeType.doctorSpecialty.copyWith(color: AppColors.muted),
+                                  style: context.homeType.doctorSpecialty.copyWith(
+                                    color: context.palette.muted,
+                                  ),
                                 ),
                               const SizedBox(height: 4),
                               DoctorRating(doctor: d, fontSize: 12),
@@ -100,12 +102,12 @@ class HomeDoctorCard extends StatelessWidget {
                       text: d.bookingEnabled ? l.hmOnlineBooking : l.hmPhoneBooking,
                       // Green is the tokens' availability colour; the words say
                       // it too, so it is never colour alone.
-                      color: d.bookingEnabled ? AppColors.success : null,
+                      color: d.bookingEnabled ? context.palette.success : null,
                     ),
                     const Spacer(),
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Divider(height: 1, color: AppColors.border),
+                      child: Divider(height: 1, color: context.palette.border),
                     ),
                     Row(
                       children: [
@@ -114,12 +116,12 @@ class HomeDoctorCard extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(l.ddStatFee, maxLines: 1, style: HomeType.feeLabel),
+                                Text(l.ddStatFee, maxLines: 1, style: context.homeType.feeLabel),
                                 Text(
                                   l.ddMoney(d.minFee!),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: HomeType.feeAmount,
+                                  style: context.homeType.feeAmount,
                                 ),
                               ],
                             ),
@@ -161,14 +163,14 @@ class _Meta extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Icon(icon, size: 14, color: color ?? AppColors.muted),
+      Icon(icon, size: 14, color: color ?? context.palette.muted),
       const SizedBox(width: 4),
       Expanded(
         child: Text(
           text,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: HomeType.meta.copyWith(
+          style: context.homeType.meta.copyWith(
             color: color,
             fontWeight: color == null ? null : FontWeight.w600,
           ),
@@ -225,7 +227,7 @@ class _BookButtonState extends ConsumerState<_BookButton> {
       minimumSize: const Size(0, 40),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      textStyle: HomeType.button.copyWith(fontSize: 13),
+      textStyle: context.homeType.button.copyWith(fontSize: 13),
     );
     if (!bookable) {
       return OutlinedButton(
@@ -234,7 +236,7 @@ class _BookButtonState extends ConsumerState<_BookButton> {
           minimumSize: const Size(0, 40),
           padding: const EdgeInsets.symmetric(horizontal: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          textStyle: HomeType.button.copyWith(fontSize: 13),
+          textStyle: context.homeType.button.copyWith(fontSize: 13),
         ),
         child: Text(l.hmViewProfile, maxLines: 1),
       );
@@ -243,10 +245,10 @@ class _BookButtonState extends ConsumerState<_BookButton> {
       onPressed: _loading ? null : _book,
       style: style,
       child: _loading
-          ? const SizedBox(
+          ? SizedBox(
               width: 18,
               height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+              child: CircularProgressIndicator(strokeWidth: 2, color: context.palette.primary),
             )
           : Text(l.hmBookNow, maxLines: 1),
     );
@@ -264,9 +266,9 @@ class HomeDoctorCardSkeleton extends StatelessWidget {
     width: width,
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: AppColors.surface,
+      color: context.palette.surface,
       borderRadius: BorderRadius.circular(homeCardRadius),
-      border: Border.all(color: AppColors.border),
+      border: Border.all(color: context.palette.border),
     ),
     child: const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,7 +317,7 @@ class SeeAllDoctorsTile extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     width: 132,
     child: Material(
-      color: AppColors.bgSoft,
+      color: context.palette.pageSoft,
       borderRadius: BorderRadius.circular(homeCardRadius),
       child: InkWell(
         onTap: onTap,
@@ -328,14 +330,14 @@ class SeeAllDoctorsTile extends StatelessWidget {
               Container(
                 width: 46,
                 height: 46,
-                decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
-                child: const Icon(Icons.arrow_forward_rounded, color: AppColors.primary),
+                decoration: BoxDecoration(color: context.palette.surface, shape: BoxShape.circle),
+                child: Icon(Icons.arrow_forward_rounded, color: context.palette.primary),
               ),
               const SizedBox(height: 10),
               Text(
                 label,
                 textAlign: TextAlign.center,
-                style: HomeType.tileLabel.copyWith(color: AppColors.primary),
+                style: context.homeType.tileLabel.copyWith(color: context.palette.primary),
               ),
             ],
           ),

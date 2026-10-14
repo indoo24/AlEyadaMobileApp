@@ -12,6 +12,7 @@ import '../../l10n/app_localizations.dart';
 import '../home/home_style.dart';
 import 'notification_kinds.dart';
 import 'notifications_data.dart';
+import '../../core/theme/app_palette.dart';
 
 export 'notifications_data.dart';
 
@@ -64,7 +65,7 @@ class NotificationsScreen extends ConsumerWidget {
           label: Text(l.actionRetry),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(160, 48),
-            textStyle: HomeType.button.copyWith(fontSize: 14),
+            textStyle: context.homeType.button.copyWith(fontSize: 14),
           ),
         ),
       );
@@ -80,10 +81,10 @@ class NotificationsScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       appBar: AppBar(
         title: Text(l.notificationsTitle),
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.palette.surface,
         surfaceTintColor: Colors.transparent,
         actions: [
           if (state.hasUnread)
@@ -139,7 +140,7 @@ class _List extends ConsumerWidget {
         padding: const EdgeInsetsDirectional.only(start: 4, bottom: 4),
         child: Text(
           unread > 0 ? l.ntUnreadCount(unread) : l.ntAllRead,
-          style: HomeType.meta.copyWith(fontSize: 12.5),
+          style: context.homeType.meta.copyWith(fontSize: 12.5),
         ),
       ),
       for (final d in NotificationDay.values)
@@ -186,14 +187,14 @@ class _Group extends StatelessWidget {
         padding: const EdgeInsetsDirectional.only(start: 4, bottom: 8),
         child: Semantics(
           header: true,
-          child: Text(title, style: HomeType.sectionTitle.copyWith(fontSize: 14.5)),
+          child: Text(title, style: context.homeType.sectionTitle.copyWith(fontSize: 14.5)),
         ),
       ),
       Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.palette.surface,
           borderRadius: BorderRadius.circular(homeCardRadius),
-          boxShadow: AppShadows.soft,
+          boxShadow: context.palette.shadowSoft,
         ),
         clipBehavior: Clip.antiAlias,
         child: Material(
@@ -202,7 +203,7 @@ class _Group extends StatelessWidget {
             children: [
               for (var i = 0; i < items.length; i++) ...[
                 if (i > 0)
-                  const Divider(height: 1, thickness: 1, indent: 68, color: AppColors.border),
+                  Divider(height: 1, thickness: 1, indent: 68, color: context.palette.border),
                 NotificationTile(notification: items[i]),
               ],
             ],
@@ -225,7 +226,7 @@ class NotificationTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = L.of(context);
     final n = notification;
-    final style = notificationStyle(n.type);
+    final style = notificationStyle(n.type, palette: context.palette);
     final user = ref.watch(currentUserProvider);
     final destination = notificationDestination(n, user);
     final when = _timeLabel(context, n.createdAt);
@@ -254,7 +255,7 @@ class NotificationTile extends ConsumerWidget {
       excludeSemantics: true,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        color: n.isRead ? Colors.transparent : AppColors.primary.withValues(alpha: 0.04),
+        color: n.isRead ? Colors.transparent : context.palette.primary.withValues(alpha: 0.04),
         child: InkWell(
           onTap: destination != null || !n.isRead ? open : null,
           child: Padding(
@@ -279,10 +280,10 @@ class NotificationTile extends ConsumerWidget {
                           Expanded(
                             child: Text(
                               n.title,
-                              style: HomeType.cardTitle.copyWith(
+                              style: context.homeType.cardTitle.copyWith(
                                 fontSize: 14,
                                 fontWeight: n.isRead ? FontWeight.w600 : FontWeight.w800,
-                                color: n.isRead ? AppColors.ink : AppColors.navy,
+                                color: n.isRead ? context.palette.body : context.palette.heading,
                               ),
                             ),
                           ),
@@ -293,8 +294,8 @@ class NotificationTile extends ConsumerWidget {
                               width: 9,
                               height: 9,
                               margin: const EdgeInsetsDirectional.only(start: 8, top: 6),
-                              decoration: const BoxDecoration(
-                                color: AppColors.primary,
+                              decoration: BoxDecoration(
+                                color: context.palette.primary,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -307,12 +308,12 @@ class NotificationTile extends ConsumerWidget {
                           n.body,
                           maxLines: 4,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13, color: AppColors.ink, height: 1.55),
+                          style: TextStyle(fontSize: 13, color: context.palette.body, height: 1.55),
                         ),
                       ],
                       if (when != null) ...[
                         const SizedBox(height: 4),
-                        Text(when, style: HomeType.meta.copyWith(fontSize: 11.5)),
+                        Text(when, style: context.homeType.meta.copyWith(fontSize: 11.5)),
                       ],
                     ],
                   ),
@@ -355,7 +356,7 @@ class _Skeleton extends StatelessWidget {
       const SizedBox(height: 10),
       Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.palette.surface,
           borderRadius: BorderRadius.circular(homeCardRadius),
         ),
         child: Column(
@@ -420,16 +421,16 @@ class _Message extends StatelessWidget {
               Container(
                 width: 84,
                 height: 84,
-                decoration: const BoxDecoration(color: AppColors.bgSoft, shape: BoxShape.circle),
-                child: Icon(icon, size: 38, color: AppColors.primary),
+                decoration: BoxDecoration(color: context.palette.pageSoft, shape: BoxShape.circle),
+                child: Icon(icon, size: 38, color: context.palette.primary),
               ),
               const SizedBox(height: 16),
-              Text(title, textAlign: TextAlign.center, style: HomeType.sectionTitle),
+              Text(title, textAlign: TextAlign.center, style: context.homeType.sectionTitle),
               const SizedBox(height: 6),
               Text(
                 body,
                 textAlign: TextAlign.center,
-                style: HomeType.articleBody.copyWith(fontSize: 13),
+                style: context.homeType.articleBody.copyWith(fontSize: 13),
               ),
               if (action != null) ...[const SizedBox(height: 18), action!],
             ],

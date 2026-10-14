@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/tokens.dart';
+import '../theme/app_palette.dart';
 
 /// A labelled text field with the product's shape and RTL-aware alignment.
 ///
@@ -32,6 +33,7 @@ class AppTextField extends StatelessWidget {
     this.focusNode,
     this.required = false,
     this.textCapitalization = TextCapitalization.none,
+    this.private = false,
   });
 
   final String label;
@@ -57,13 +59,24 @@ class AppTextField extends StatelessWidget {
   final bool required;
   final TextCapitalization textCapitalization;
 
+  /// Keep what is typed out of the keyboard: no suggestions, no autocorrect, and
+  /// no personalised learning (the keyboard's own dictionary, which can outlive
+  /// the app and sync to the keyboard vendor). For health notes, reasons and
+  /// codes. Password fields — [obscure], or with a visibility toggle — are
+  /// always private, shown or hidden.
+  final bool private;
+
   @override
   Widget build(BuildContext context) {
+    final isPrivate = private || obscure || onToggleObscure != null;
     final field = TextField(
       controller: controller,
       focusNode: focusNode,
       enabled: enabled,
       obscureText: obscure,
+      enableSuggestions: !isPrivate,
+      autocorrect: !isPrivate,
+      enableIMEPersonalizedLearning: !isPrivate,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       maxLines: obscure ? 1 : maxLines,
@@ -103,7 +116,7 @@ class AppTextField extends StatelessWidget {
               // Flexible: a long label wraps instead of overflowing at large text.
               Flexible(child: Text(label, style: Theme.of(context).textTheme.labelLarge)),
               if (required)
-                const Text(' *', style: TextStyle(color: AppColors.danger, fontSize: 15)),
+                Text(' *', style: TextStyle(color: context.palette.danger, fontSize: 15)),
             ],
           ),
         ),
@@ -147,7 +160,7 @@ class AppDropdown<T> extends StatelessWidget {
             children: [
               Text(label, style: Theme.of(context).textTheme.labelLarge),
               if (required)
-                const Text(' *', style: TextStyle(color: AppColors.danger, fontSize: 15)),
+                Text(' *', style: TextStyle(color: context.palette.danger, fontSize: 15)),
             ],
           ),
         ),
@@ -180,14 +193,14 @@ class FormErrorBanner extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.danger.withValues(alpha: 0.06),
+        color: context.palette.danger.withValues(alpha: 0.06),
         borderRadius: AppRadii.inputRadius,
-        border: Border.all(color: AppColors.danger.withValues(alpha: 0.35)),
+        border: Border.all(color: context.palette.danger.withValues(alpha: 0.35)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 20),
+          Icon(Icons.error_outline_rounded, color: context.palette.danger, size: 20),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -195,7 +208,7 @@ class FormErrorBanner extends StatelessWidget {
               // Announced to a screen reader, because a form that fails silently
               // for a blind user has not reported anything at all.
               semanticsLabel: message,
-              style: const TextStyle(color: AppColors.danger, fontSize: 14, height: 1.5),
+              style: TextStyle(color: context.palette.danger, fontSize: 14, height: 1.5),
             ),
           ),
         ],
@@ -218,14 +231,14 @@ class InfoNote extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.input,
+        color: context.palette.input,
         borderRadius: AppRadii.inputRadius,
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.palette.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon ?? Icons.info_outline_rounded, size: 18, color: AppColors.muted),
+          Icon(icon ?? Icons.info_outline_rounded, size: 18, color: context.palette.muted),
           const SizedBox(width: AppSpacing.sm),
           Expanded(child: Text(text, style: Theme.of(context).textTheme.bodySmall)),
         ],

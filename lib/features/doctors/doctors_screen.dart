@@ -15,6 +15,7 @@ import 'search_state.dart';
 import 'widgets/doctor_result_card.dart';
 import 'widgets/search_filter_row.dart';
 import 'widgets/search_panels.dart';
+import '../../core/theme/app_palette.dart';
 
 /// How long typing must pause before the search runs.
 const kSearchDebounce = Duration(milliseconds: 400);
@@ -150,7 +151,7 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> {
     final showIdle = _focus.hasFocus && _search.text.trim().isEmpty;
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.palette.page,
       body: Column(
         children: [
           _Header(
@@ -220,7 +221,12 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(gutter, HomeSpacing.top, gutter, HomeSpacing.heading),
+            padding: const EdgeInsets.fromLTRB(
+              gutter,
+              HomeSpacing.top,
+              gutter,
+              HomeSpacing.heading,
+            ),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,7 +334,10 @@ class _Header extends StatelessWidget {
     final l = L.of(context);
 
     return DecoratedBox(
-      decoration: const BoxDecoration(color: AppColors.surface, boxShadow: AppShadows.soft),
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        boxShadow: context.palette.shadowSoft,
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -344,13 +353,17 @@ class _Header extends StatelessWidget {
                   textInputAction: TextInputAction.search,
                   onChanged: onChanged,
                   onSubmitted: onSubmitted,
-                  style: const TextStyle(fontSize: 14, color: AppColors.ink),
+                  style: TextStyle(fontSize: 14, color: context.palette.body),
                   decoration: InputDecoration(
                     hintText: l.doctorsSearchHint,
-                    hintStyle: HomeType.searchHint,
+                    hintStyle: context.homeType.searchHint,
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 13),
-                    prefixIcon: const Icon(Icons.search_rounded, size: 22, color: AppColors.primary),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      size: 22,
+                      color: context.palette.primary,
+                    ),
                     suffixIcon: controller.text.isEmpty
                         ? null
                         : IconButton(
@@ -358,9 +371,9 @@ class _Header extends StatelessWidget {
                             icon: const Icon(Icons.close_rounded, size: 18),
                             onPressed: onClear,
                           ),
-                    border: _border(AppColors.border),
-                    enabledBorder: _border(AppColors.border),
-                    focusedBorder: _border(AppColors.primary, width: 1.4),
+                    border: _border(context.palette.border),
+                    enabledBorder: _border(context.palette.border),
+                    focusedBorder: _border(context.palette.primary, width: 1.4),
                   ),
                 ),
               ),
@@ -397,19 +410,19 @@ class _EmptyResults extends StatelessWidget {
             Container(
               width: 64,
               height: 64,
-              decoration: const BoxDecoration(color: AppColors.bgSoft, shape: BoxShape.circle),
-              child: const Icon(Icons.search_off_rounded, size: 30, color: AppColors.primary),
+              decoration: BoxDecoration(color: context.palette.pageSoft, shape: BoxShape.circle),
+              child: Icon(Icons.search_off_rounded, size: 30, color: context.palette.primary),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
               l.searchEmptyTitle,
-              style: HomeType.sectionTitle,
+              style: context.homeType.sectionTitle,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               l.searchEmptyHint,
-              style: HomeType.tagline.copyWith(fontSize: 13),
+              style: context.homeType.tagline.copyWith(fontSize: 13),
               textAlign: TextAlign.center,
             ),
             if (canClear) ...[
@@ -418,7 +431,7 @@ class _EmptyResults extends StatelessWidget {
                 onPressed: onClear,
                 style: FilledButton.styleFrom(
                   minimumSize: const Size(180, 44),
-                  textStyle: HomeType.button.copyWith(fontSize: 13.5),
+                  textStyle: context.homeType.button.copyWith(fontSize: 13.5),
                 ),
                 child: Text(l.searchClearFilters),
               ),

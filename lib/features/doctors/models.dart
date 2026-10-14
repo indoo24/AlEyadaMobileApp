@@ -1,4 +1,5 @@
 import '../../core/api/envelope.dart';
+import '../../core/utils/contact_links.dart';
 
 /// A city or area as the directory returns it inside another object: just an id
 /// and an Arabic name.
@@ -123,8 +124,11 @@ class ContactInfo {
   final String? telUrl;
   final String? whatsappUrl;
 
-  bool get canCall => (telUrl ?? '').isNotEmpty;
-  bool get canWhatsapp => (whatsappUrl ?? '').isNotEmpty;
+  /// Whether there is a link the app will actually open — a missing or unsafe
+  /// one (see `contact_links.dart`) hides the button rather than leaving one
+  /// that does nothing.
+  bool get canCall => safePhoneUri(telUrl) != null;
+  bool get canWhatsapp => safeWhatsappUri(whatsappUrl) != null;
 
   factory ContactInfo.fromJson(Map<String, dynamic> j) => ContactInfo(
     phone: j['phone'] as String?,

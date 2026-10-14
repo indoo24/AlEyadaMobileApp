@@ -9,6 +9,7 @@ import '../../home/home_style.dart';
 import '../models.dart';
 import '../providers.dart';
 import '../repository.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// The directory filters.
 ///
@@ -77,7 +78,9 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.gutter),
             child: Row(
               children: [
-                Expanded(child: Text(l.searchFilterTitle, style: Theme.of(context).textTheme.titleLarge)),
+                Expanded(
+                  child: Text(l.searchFilterTitle, style: Theme.of(context).textTheme.titleLarge),
+                ),
                 TextButton(
                   onPressed: () => _edit((q) => q.withoutFilters()),
                   child: Text(l.searchClearFilters),
@@ -88,7 +91,12 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
           Expanded(
             child: ListView(
               controller: controller,
-              padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.sm, AppSpacing.gutter, AppSpacing.lg),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.gutter,
+                AppSpacing.sm,
+                AppSpacing.gutter,
+                AppSpacing.lg,
+              ),
               children: [
                 specs.when(
                   loading: () => const Skeleton(height: 56, radius: AppRadii.input),
@@ -126,7 +134,8 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                         hint: l.doctorsFilterAny,
                         items: [
                           DropdownMenuItem(value: null, child: Text(l.doctorsFilterAny)),
-                          for (final c in list) DropdownMenuItem(value: c.slug, child: Text(c.nameAr)),
+                          for (final c in list)
+                            DropdownMenuItem(value: c.slug, child: Text(c.nameAr)),
                         ],
                         // Changing city clears the area: keeping a stale area would
                         // produce a filter combination with no possible results.
@@ -140,7 +149,8 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                         enabled: areas.isNotEmpty,
                         items: [
                           DropdownMenuItem(value: null, child: Text(l.doctorsFilterAny)),
-                          for (final a in areas) DropdownMenuItem(value: a.slug, child: Text(a.nameAr)),
+                          for (final a in areas)
+                            DropdownMenuItem(value: a.slug, child: Text(a.nameAr)),
                         ],
                         onChanged: (v) => _edit((q) => q.copyWith(area: v, page: 1)),
                       ),
@@ -185,10 +195,14 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                   title: l.searchFilterBooking,
                   child: SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text(l.searchFilterBookingOnly, style: HomeType.doctorSpecialty.copyWith(fontSize: 14)),
+                    title: Text(
+                      l.searchFilterBookingOnly,
+                      style: context.homeType.doctorSpecialty.copyWith(fontSize: 14),
+                    ),
                     value: _draft.bookingEnabled == true,
                     // Off means "don't filter", not "only doctors without booking".
-                    onChanged: (on) => _edit((q) => q.copyWith(bookingEnabled: on ? true : null, page: 1)),
+                    onChanged: (on) =>
+                        _edit((q) => q.copyWith(bookingEnabled: on ? true : null, page: 1)),
                   ),
                 ),
               ],
@@ -197,7 +211,12 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.sm, AppSpacing.gutter, AppSpacing.md),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.gutter,
+                AppSpacing.sm,
+                AppSpacing.gutter,
+                AppSpacing.md,
+              ),
               child: FilledButton(
                 onPressed: () {
                   ref.read(doctorQueryProvider.notifier).state = _draft.copyWith(page: 1);
@@ -228,7 +247,7 @@ class _Section extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: HomeType.sectionTitle.copyWith(fontSize: 15)),
+          Text(title, style: context.homeType.sectionTitle.copyWith(fontSize: 15)),
           const SizedBox(height: 10),
           child,
         ],
@@ -264,9 +283,11 @@ class _Choices<T> extends StatelessWidget {
             button: true,
             selected: o == value,
             child: Material(
-              color: o == value ? AppColors.primary : AppColors.surface,
+              color: o == value ? context.palette.primaryFill : context.palette.surface,
               shape: StadiumBorder(
-                side: BorderSide(color: o == value ? AppColors.primary : AppColors.border),
+                side: BorderSide(
+                  color: o == value ? context.palette.primaryFill : context.palette.border,
+                ),
               ),
               child: InkWell(
                 customBorder: const StadiumBorder(),
@@ -280,14 +301,14 @@ class _Choices<T> extends StatelessWidget {
                         Icon(
                           leading!(o),
                           size: 15,
-                          color: o == value ? Colors.white : AppColors.star,
+                          color: o == value ? Colors.white : context.palette.star,
                         ),
                         const SizedBox(width: 4),
                       ],
                       Text(
                         label(o),
-                        style: HomeType.chip.copyWith(
-                          color: o == value ? Colors.white : AppColors.navy,
+                        style: context.homeType.chip.copyWith(
+                          color: o == value ? Colors.white : context.palette.heading,
                         ),
                       ),
                     ],

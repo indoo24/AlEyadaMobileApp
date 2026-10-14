@@ -2,7 +2,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
-import '../core/theme/tokens.dart';
+import '../core/theme/app_palette.dart';
 
 /// One destination in [GlassBottomNav].
 class BottomNavItem {
@@ -55,7 +55,9 @@ class GlassBottomNav extends StatelessWidget {
           children: [
             // Shadow is painted outside the capsule only: a normal BoxShadow also
             // shows *through* a translucent surface and greys the glass.
-            Positioned.fill(child: CustomPaint(painter: _DockShadowPainter(shape))),
+            Positioned.fill(
+              child: CustomPaint(painter: _DockShadowPainter(shape, context.palette.dockShadow)),
+            ),
             ClipRRect(
               borderRadius: shape,
               child: BackdropFilter(
@@ -67,11 +69,15 @@ class GlassBottomNav extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        AppColors.surface.withValues(alpha: 0.82),
-                        AppColors.surface.withValues(alpha: 0.64),
+                        context.palette.surfaceRaised.withValues(alpha: 0.82),
+                        context.palette.surfaceRaised.withValues(alpha: 0.64),
                       ],
                     ),
-                    border: Border.all(color: AppColors.surface.withValues(alpha: 0.7)),
+                    border: Border.all(
+                      color: context.palette.isDark
+                          ? context.palette.border
+                          : context.palette.surface.withValues(alpha: 0.7),
+                    ),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(_inset),
@@ -129,8 +135,8 @@ class _ActivePill extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(GlassBottomNav._radius - GlassBottomNav._inset),
-          color: AppColors.primary.withValues(alpha: 0.11),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.10)),
+          color: context.palette.primary.withValues(alpha: 0.11),
+          border: Border.all(color: context.palette.primary.withValues(alpha: 0.10)),
         ),
       ),
     );
@@ -146,7 +152,7 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final target = selected ? AppColors.primary : AppColors.muted;
+    final target = selected ? context.palette.primary : context.palette.muted;
 
     return Semantics(
       button: true,
@@ -194,9 +200,10 @@ class _NavButton extends StatelessWidget {
 }
 
 class _DockShadowPainter extends CustomPainter {
-  const _DockShadowPainter(this.radius);
+  const _DockShadowPainter(this.radius, this.color);
 
   final BorderRadius radius;
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -212,12 +219,12 @@ class _DockShadowPainter extends CustomPainter {
       ..drawRRect(
         capsule.shift(const Offset(0, 10)),
         Paint()
-          ..color = const Color(0x260F172A)
+          ..color = color
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16),
       )
       ..restore();
   }
 
   @override
-  bool shouldRepaint(_DockShadowPainter old) => old.radius != radius;
+  bool shouldRepaint(_DockShadowPainter old) => old.radius != radius || old.color != color;
 }

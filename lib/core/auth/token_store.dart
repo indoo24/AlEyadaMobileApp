@@ -15,7 +15,13 @@ class TokenStore {
           storage ??
           const FlutterSecureStorage(
             aOptions: AndroidOptions(encryptedSharedPreferences: true),
-            iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+            // `_this_device`: readable after the first unlock (so a request
+            // made in the background still has its token), and never copied
+            // off this phone — not into an iCloud Keychain, not into a backup
+            // restored on another device. Tokens saved under the older
+            // `first_unlock` are still read (reads do not filter on it) and
+            // move to this class at the next token write.
+            iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock_this_device),
           );
 
   final FlutterSecureStorage _storage;

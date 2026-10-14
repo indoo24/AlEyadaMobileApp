@@ -8,6 +8,7 @@ import '../models.dart';
 import '../providers.dart';
 import '../repository.dart';
 import 'filter_sheet.dart';
+import '../../../core/theme/app_palette.dart';
 
 /// One applied filter as a chip: what to call it, and the query without it.
 class ActiveFilter {
@@ -124,7 +125,7 @@ class SearchFilterRow extends ConsumerWidget {
                         visualDensity: VisualDensity.compact,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
-                      child: Text(l.searchClearAll, style: HomeType.seeAll),
+                      child: Text(l.searchClearAll, style: context.homeType.seeAll),
                     ),
                   for (final chip in chips) ...[
                     const SizedBox(width: 4),
@@ -150,7 +151,7 @@ class _FilterButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.primary,
+      color: context.palette.primaryFill,
       shape: const StadiumBorder(),
       child: InkWell(
         customBorder: const StadiumBorder(),
@@ -162,7 +163,7 @@ class _FilterButton extends StatelessWidget {
             children: [
               const Icon(Icons.tune_rounded, size: 17, color: Colors.white),
               const SizedBox(width: 6),
-              Text(label, style: HomeType.chip.copyWith(color: Colors.white)),
+              Text(label, style: context.homeType.chip.copyWith(color: Colors.white)),
               if (count > 0) ...[
                 const SizedBox(width: 6),
                 Container(
@@ -172,10 +173,10 @@ class _FilterButton extends StatelessWidget {
                   decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                   child: Text(
                     '$count',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.primary,
+                      color: context.palette.primaryFill,
                       height: 1,
                     ),
                   ),
@@ -198,8 +199,10 @@ class _RemovableChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.bgSoft,
-      shape: StadiumBorder(side: BorderSide(color: AppColors.primary.withValues(alpha: 0.18))),
+      color: context.palette.pageSoft,
+      shape: StadiumBorder(
+        side: BorderSide(color: context.palette.primary.withValues(alpha: 0.18)),
+      ),
       child: InkWell(
         customBorder: const StadiumBorder(),
         onTap: onRemove,
@@ -214,11 +217,11 @@ class _RemovableChip extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: HomeType.chip.copyWith(color: AppColors.primary),
+                  style: context.homeType.chip.copyWith(color: context.palette.primary),
                 ),
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.close_rounded, size: 15, color: AppColors.primary),
+              Icon(Icons.close_rounded, size: 15, color: context.palette.primary),
             ],
           ),
         ),

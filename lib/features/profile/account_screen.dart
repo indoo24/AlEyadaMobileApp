@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/locale_controller.dart';
+import '../../app/theme_mode_controller.dart';
 import '../../app/router.dart';
 import '../../core/auth/models.dart';
 import '../../core/providers.dart';
@@ -11,12 +12,13 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/phone_verification.dart';
-import '../doctors/widgets/doctor_profile_sections.dart' show profileNavy;
 import '../home/home_screen.dart' show ApplicationStatusCard;
 import '../home/home_style.dart';
 import '../home/widgets/pressable.dart';
 import '../notifications/notifications_data.dart';
 import 'widgets/account_widgets.dart';
+import 'widgets/choice_sheet.dart';
+import '../../core/theme/app_palette.dart';
 
 /// My Account: who is signed in, where their details and notifications are,
 /// joining as a doctor, the language, and signing out.
@@ -74,6 +76,12 @@ class AccountScreen extends ConsumerWidget {
                 : l.accountLanguageArabic,
             onTap: () => showLanguageSheet(context),
           ),
+          SettingsRow(
+            icon: Icons.brightness_6_outlined,
+            label: l.accountAppearance,
+            value: themeModeLabel(l, ref.watch(themeModeControllerProvider)),
+            onTap: () => showAppearanceSheet(context),
+          ),
         ],
       ),
       if (user != null)
@@ -92,10 +100,10 @@ class AccountScreen extends ConsumerWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: AppColors.bg,
+        backgroundColor: context.palette.page,
         body: Column(
           children: [
-            Container(color: profileNavy, height: MediaQuery.paddingOf(context).top),
+            Container(color: context.palette.heroStart, height: MediaQuery.paddingOf(context).top),
             Expanded(
               child: MediaQuery.removePadding(
                 context: context,
@@ -134,7 +142,7 @@ class AccountScreen extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(Icons.logout_rounded, color: AppColors.danger),
+        icon: Icon(Icons.logout_rounded, color: context.palette.danger),
         content: Text(l.accountSignOutConfirm, textAlign: TextAlign.center),
         actions: [
           TextButton(
@@ -150,9 +158,9 @@ class AccountScreen extends ConsumerWidget {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.danger,
+              backgroundColor: context.palette.dangerFill,
               minimumSize: const Size(100, 44),
-              textStyle: HomeType.button.copyWith(fontSize: 14),
+              textStyle: context.homeType.button.copyWith(fontSize: 14),
             ),
             child: Text(l.authSignOut),
           ),
@@ -179,20 +187,21 @@ class _Header extends ConsumerWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 14, AppSpacing.gutter, 22),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [profileNavy, Color(0xFF0A3F86)],
+          colors: [context.palette.heroStart, context.palette.heroEnd],
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+        border: context.palette.isDark ? Border.all(color: context.palette.heroEdge) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Semantics(
             header: true,
-            child: Text(l.accountTitle, style: HomeType.heroTagline.copyWith(fontSize: 14)),
+            child: Text(l.accountTitle, style: context.homeType.heroTagline.copyWith(fontSize: 14)),
           ),
           const SizedBox(height: 12),
           Row(
@@ -207,14 +216,14 @@ class _Header extends ConsumerWidget {
                       u?.displayName ?? l.acGuestTitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: HomeType.heroGreeting.copyWith(fontSize: 18),
+                      style: context.homeType.heroGreeting.copyWith(fontSize: 18),
                     ),
                     if (u != null && u.phone.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         u.phone,
                         textDirection: TextDirection.ltr,
-                        style: HomeType.heroTagline.copyWith(fontSize: 13.5),
+                        style: context.homeType.heroTagline.copyWith(fontSize: 13.5),
                       ),
                     ],
                     if (u != null) ...[
@@ -236,7 +245,7 @@ class _Header extends ConsumerWidget {
                     ],
                     if (u == null) ...[
                       const SizedBox(height: 2),
-                      Text(l.authGuestPrompt, style: HomeType.heroTagline),
+                      Text(l.authGuestPrompt, style: context.homeType.heroTagline),
                     ],
                   ],
                 ),
@@ -252,9 +261,9 @@ class _Header extends ConsumerWidget {
                     onPressed: () => context.push(Routes.signIn),
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: AppColors.primary,
+                      foregroundColor: context.palette.primaryFill,
                       minimumSize: const Size(0, 46),
-                      textStyle: HomeType.button.copyWith(fontSize: 14),
+                      textStyle: context.homeType.button.copyWith(fontSize: 14),
                     ),
                     child: Text(l.authSignIn),
                   ),
@@ -267,7 +276,7 @@ class _Header extends ConsumerWidget {
                       foregroundColor: Colors.white,
                       side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
                       minimumSize: const Size(0, 46),
-                      textStyle: HomeType.button.copyWith(fontSize: 14),
+                      textStyle: context.homeType.button.copyWith(fontSize: 14),
                     ),
                     child: Text(l.authSignUp),
                   ),
@@ -293,10 +302,10 @@ class _JoinCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.palette.surface,
           borderRadius: BorderRadius.circular(homeCardRadius),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.22)),
-          boxShadow: AppShadows.soft,
+          border: Border.all(color: context.palette.primary.withValues(alpha: 0.22)),
+          boxShadow: context.palette.shadowSoft,
         ),
         child: Row(
           children: [
@@ -304,19 +313,19 @@ class _JoinCard extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.bgSoft,
+                color: context.palette.pageSoft,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.medical_services_outlined, color: AppColors.primary),
+              child: Icon(Icons.medical_services_outlined, color: context.palette.primary),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l.joinTitle, style: HomeType.cardTitle.copyWith(fontSize: 15)),
+                  Text(l.joinTitle, style: context.homeType.cardTitle.copyWith(fontSize: 15)),
                   const SizedBox(height: 2),
-                  Text(l.joinIntro, style: HomeType.meta.copyWith(fontSize: 12.5)),
+                  Text(l.joinIntro, style: context.homeType.meta.copyWith(fontSize: 12.5)),
                 ],
               ),
             ),
@@ -327,7 +336,7 @@ class _JoinCard extends StatelessWidget {
                 minimumSize: const Size(0, 40),
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                textStyle: HomeType.button.copyWith(fontSize: 13),
+                textStyle: context.homeType.button.copyWith(fontSize: 13),
               ),
               child: Text(l.acJoinNow),
             ),
@@ -358,15 +367,8 @@ class _Entrance extends StatelessWidget {
 }
 
 /// The language picker: the two languages, the current one marked.
-Future<void> showLanguageSheet(BuildContext context) => showModalBottomSheet<void>(
-  context: context,
-  useSafeArea: true,
-  backgroundColor: AppColors.surface,
-  shape: const RoundedRectangleBorder(
-    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-  ),
-  builder: (_) => const _LanguageSheet(),
-);
+Future<void> showLanguageSheet(BuildContext context) =>
+    showChoiceSheetFrame(context, (_) => const _LanguageSheet());
 
 class _LanguageSheet extends ConsumerWidget {
   const _LanguageSheet();
@@ -374,89 +376,40 @@ class _LanguageSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = L.of(context);
-    final current = Localizations.localeOf(context).languageCode;
+    return ChoiceSheet<String>(
+      title: l.acLanguageSheetTitle,
+      current: Localizations.localeOf(context).languageCode,
+      options: [
+        ChoiceOption('ar', l.accountLanguageArabic),
+        ChoiceOption('en', l.accountLanguageEnglish),
+      ],
+      onSelected: (code) => ref.read(localeControllerProvider.notifier).setLocale(Locale(code)),
+    );
+  }
+}
 
-    Widget option(String code, String label) {
-      final selected = current == code;
-      return Semantics(
-        selected: selected,
-        button: true,
-        label: label,
-        excludeSemantics: true,
-        child: Material(
-          color: selected ? AppColors.bgSoft : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () {
-              ref.read(localeControllerProvider.notifier).setLocale(Locale(code));
-              Navigator.of(context).pop();
-            },
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 56),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        label,
-                        style: HomeType.cardTitle.copyWith(
-                          fontSize: 15,
-                          color: selected ? AppColors.primary : AppColors.navy,
-                        ),
-                      ),
-                    ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 180),
-                      child: selected
-                          ? const Icon(
-                              Icons.check_circle_rounded,
-                              key: ValueKey('on'),
-                              color: AppColors.primary,
-                            )
-                          : const Icon(
-                              Icons.radio_button_unchecked_rounded,
-                              key: ValueKey('off'),
-                              color: AppColors.border,
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
+/// The appearance picker: follow the device, or force light or dark.
+Future<void> showAppearanceSheet(BuildContext context) =>
+    showChoiceSheetFrame(context, (_) => const _AppearanceSheet());
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 10, AppSpacing.gutter, 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(color: AppColors.border, borderRadius: AppRadii.pillRadius),
-            ),
-          ),
-          const SizedBox(height: 14),
-          Semantics(
-            header: true,
-            child: Text(
-              l.acLanguageSheetTitle,
-              style: HomeType.sectionTitle.copyWith(fontSize: 17),
-            ),
-          ),
-          const SizedBox(height: 12),
-          option('ar', l.accountLanguageArabic),
-          const SizedBox(height: 6),
-          option('en', l.accountLanguageEnglish),
-        ],
-      ),
+/// What a theme mode is called, in the current language.
+String themeModeLabel(L l, ThemeMode mode) => switch (mode) {
+  ThemeMode.system => l.accountThemeSystem,
+  ThemeMode.light => l.accountThemeLight,
+  ThemeMode.dark => l.accountThemeDark,
+};
+
+class _AppearanceSheet extends ConsumerWidget {
+  const _AppearanceSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = L.of(context);
+    return ChoiceSheet<ThemeMode>(
+      title: l.acAppearanceSheetTitle,
+      current: ref.watch(themeModeControllerProvider),
+      options: [for (final m in ThemeMode.values) ChoiceOption(m, themeModeLabel(l, m))],
+      onSelected: (mode) => ref.read(themeModeControllerProvider.notifier).setMode(mode),
     );
   }
 }
