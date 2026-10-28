@@ -40,6 +40,12 @@ enum ApiFailure {
   /// 401 — no credentials, or they have expired and could not be refreshed.
   unauthenticated,
 
+  /// The request was sent under a session that has since ended or been
+  /// replaced (signed out, or someone else signed in). Its answer belongs to
+  /// that old session: it is neither retried under the current one nor read
+  /// as anything about it — in particular, not as a reason to sign out.
+  sessionChanged,
+
   /// 403 — authenticated, but not allowed. A different screen from 401: asking
   /// this user to log in again would not help them.
   forbidden,
@@ -76,6 +82,7 @@ class ApiException implements Exception {
   String get _syntheticCode => switch (failure) {
     ApiFailure.network => 'network_error',
     ApiFailure.unauthenticated => 'not_authenticated',
+    ApiFailure.sessionChanged => 'session_changed',
     ApiFailure.forbidden => 'permission_denied',
     ApiFailure.notFound => 'not_found',
     ApiFailure.rateLimited => 'throttled',

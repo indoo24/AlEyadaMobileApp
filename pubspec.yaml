@@ -4,7 +4,7 @@ description: >-
   A native client of the existing Django API; it holds no business rules of
   its own.
 publish_to: "none"
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.12.2

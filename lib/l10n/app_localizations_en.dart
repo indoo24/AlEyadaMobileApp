@@ -1655,6 +1655,32 @@ class LEn extends L {
   String get bkTime => 'Time';
 
   @override
+  String get bkUnconfirmedTitle => 'We couldn\'t confirm your booking';
+
+  @override
+  String get bkUnconfirmedBody =>
+      'The connection dropped before the server\'s answer reached us, so the booking may already have gone through. Check your bookings before trying to book again.';
+
+  @override
+  String get bkUnconfirmedNotFound =>
+      'This appointment isn\'t in your bookings yet — but that doesn\'t necessarily mean it wasn\'t booked. Check again in a moment, or in My Bookings, before booking another time.';
+
+  @override
+  String get bkUnconfirmedCheck => 'Check my bookings';
+
+  @override
+  String get bkUnconfirmedCheckAgain => 'Check again';
+
+  @override
+  String get bkUnconfirmedOpenBookings => 'Open My Bookings';
+
+  @override
+  String get bkUnconfirmedBookAnyway => 'Choose another time';
+
+  @override
+  String get bkUnconfirmedFoundTitle => 'We found your booking';
+
+  @override
   String get bkVerifyPhoneTitle => 'Verify your phone to book';
 
   @override

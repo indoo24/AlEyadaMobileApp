@@ -7,6 +7,7 @@ import 'package:aleyada_mobile/core/theme/app_theme.dart';
 import 'package:aleyada_mobile/features/bookings/providers.dart';
 import 'package:aleyada_mobile/features/doctors/doctor_detail_screen.dart';
 import 'package:aleyada_mobile/l10n/app_localizations.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,10 +44,10 @@ void main() {
     }
   }
 
-  Future<void> signInAs(Map<String, dynamic> user) => container
+  Future<void> signInAs(Map<String, dynamic> user, {String refresh = 'r'}) => container
       .read(authControllerProvider.notifier)
       .adoptSession(
-        const AuthTokens(access: 'a', refresh: 'r'),
+        AuthTokens(access: 'a', refresh: refresh),
         user: Me.fromJson(user),
       );
 
@@ -83,6 +84,10 @@ void main() {
         GoRoute(
           path: Routes.bookingDetail,
           builder: (_, s) => Scaffold(body: Text('booking ${s.pathParameters['id']}')),
+        ),
+        GoRoute(
+          path: Routes.bookings,
+          builder: (_, __) => const Scaffold(body: Text('my bookings')),
         ),
       ],
     );
@@ -746,5 +751,262 @@ void main() {
         }
       }
     }
+  });
+
+  // ============================================ booking: an answer that never came
+  group('booking: an answer that never arrived', () {
+    const unconfirmedTitle = 'لم نتمكّن من تأكيد حجزك';
+    const checkLabel = 'تحقّق من حجوزاتي';
+    const networkError = 'تعذّر الاتصال بالخادم. تحقق من الإنترنت.';
+
+    Finder confirmButton() => inSheet(find.widgetWithText(FilledButton, 'تأكيد الحجز'));
+
+    Future<void> openOnClinicA(WidgetTester tester) async {
+      await pumpDetail(tester, size: const Size(390, 820));
+      await tap(tester, find.text('احجز موعد').first);
+    }
+
+    Future<void> pickAndConfirm(WidgetTester tester) async {
+      await tap(tester, inSheet(find.text('09:00')));
+      await tap(tester, confirmButton());
+    }
+
+    for (final lost in [
+      DioExceptionType.receiveTimeout,
+      DioExceptionType.sendTimeout,
+      DioExceptionType.connectionError,
+    ]) {
+      testWidgets('no answer (${lost.name}): "could not confirm", and nothing is sent again', (
+        tester,
+      ) async {
+        await signInPatient();
+        server.bookAnswerLost = lost;
+        server.bookSavedBeforeLoss = true;
+        await openOnClinicA(tester);
+        await pickAndConfirm(tester);
+        await settle(tester, 20);
+
+        expect(inSheet(find.text(unconfirmedTitle)), findsOneWidget);
+        expect(find.text(networkError), findsNothing, reason: 'not a plain network failure');
+        expect(inSheet(find.text('تم تأكيد حجزك')), findsNothing);
+        expect(confirmButton(), findsNothing, reason: 'nothing to confirm a second time');
+        expect(inSheet(find.text('09:00')), findsOneWidget, reason: 'which appointment it was');
+        expect(server.bookings, hasLength(1), reason: 'never resubmitted');
+      });
+    }
+
+    testWidgets('found in My Bookings: shown with the server\'s own status, and its details open', (
+      tester,
+    ) async {
+      await signInPatient();
+      server.bookAnswerLost = DioExceptionType.receiveTimeout;
+      server.bookSavedBeforeLoss = true;
+      await openOnClinicA(tester);
+      await pickAndConfirm(tester);
+      // What the server holds now, whatever the lost answer would have said.
+      server.booked.single['status'] = 'pending';
+
+      await tap(tester, inSheet(find.text(checkLabel)));
+
+      expect(server.bookingsLists, isNotEmpty);
+      expect(inSheet(find.text('وجدنا حجزك')), findsOneWidget);
+      expect(inSheet(find.text('بانتظار التأكيد')), findsOneWidget);
+      expect(inSheet(find.text(unconfirmedTitle)), findsNothing);
+      expect(server.bookings, hasLength(1));
+
+      await tap(tester, inSheet(find.text('عرض تفاصيل الحجز')));
+      expect(find.text('booking booking-123'), findsOneWidget);
+    });
+
+    testWidgets('not in My Bookings: said without claiming it was never made; another time only '
+        'on the patient\'s say-so', (tester) async {
+      await signInPatient();
+      server.bookAnswerLost = DioExceptionType.connectionError;
+      await openOnClinicA(tester);
+      await pickAndConfirm(tester);
+
+      await tap(tester, inSheet(find.text(checkLabel)));
+
+      expect(inSheet(find.textContaining('لم نجد هذا الموعد في حجوزاتك')), findsOneWidget);
+      expect(inSheet(find.textContaining('لا يعني بالضرورة أنه لم يُحجز')), findsOneWidget);
+      expect(inSheet(find.text(unconfirmedTitle)), findsOneWidget);
+      expect(inSheet(find.text('تحقّق مرة أخرى')), findsOneWidget);
+      expect(confirmButton(), findsNothing);
+
+      await tap(tester, inSheet(find.text('اختيار موعد آخر')));
+      expect(inSheet(find.text(unconfirmedTitle)), findsNothing);
+      expect(confirmButton(), findsOneWidget);
+      expect(
+        tester.widget<FilledButton>(confirmButton()).onPressed,
+        isNull,
+        reason: 'no time is chosen for them',
+      );
+      expect(server.bookings, hasLength(1));
+    });
+
+    testWidgets('closing and reopening the sheet still asks to check first', (tester) async {
+      await signInPatient();
+      server.bookAnswerLost = DioExceptionType.receiveTimeout;
+      await openOnClinicA(tester);
+      await pickAndConfirm(tester);
+
+      await tap(tester, inSheet(find.byTooltip('إغلاق')));
+      expect(find.byType(BottomSheet), findsNothing);
+      await tap(tester, find.text('احجز موعد').first);
+
+      expect(inSheet(find.text(unconfirmedTitle)), findsOneWidget);
+      expect(confirmButton(), findsNothing);
+      expect(server.bookings, hasLength(1));
+    });
+
+    testWidgets('"open My Bookings" goes there', (tester) async {
+      await signInPatient();
+      server.bookAnswerLost = DioExceptionType.receiveTimeout;
+      await openOnClinicA(tester);
+      await pickAndConfirm(tester);
+
+      await tap(tester, inSheet(find.text('فتح حجوزاتي')));
+      expect(find.text('my bookings'), findsOneWidget);
+    });
+
+    for (final status in [500, 502, 504]) {
+      testWidgets('a $status: the server may have saved it — uncertain, not "server error"', (
+        tester,
+      ) async {
+        await signInPatient();
+        server.bookError = errorBody('server_error', 'upstream failed');
+        server.bookErrorStatus = status;
+        await openOnClinicA(tester);
+        await pickAndConfirm(tester);
+
+        expect(inSheet(find.text(unconfirmedTitle)), findsOneWidget);
+        expect(find.text('الخادم لا يستجيب حاليًا. حاول بعد قليل.'), findsNothing);
+        expect(confirmButton(), findsNothing);
+        expect(server.bookings, hasLength(1));
+      });
+    }
+
+    testWidgets('a 201 that cannot be read: uncertain, and the check finds the booking', (
+      tester,
+    ) async {
+      await signInPatient();
+      server.bookUnreadable = true;
+      await openOnClinicA(tester);
+      await pickAndConfirm(tester);
+      expect(inSheet(find.text(unconfirmedTitle)), findsOneWidget);
+
+      await tap(tester, inSheet(find.text(checkLabel)));
+      expect(inSheet(find.text('وجدنا حجزك')), findsOneWidget);
+      expect(inSheet(find.text('مؤكد')), findsOneWidget);
+    });
+
+    testWidgets('checking is one request however many taps, and a failed check can be retried', (
+      tester,
+    ) async {
+      await signInPatient();
+      server.bookAnswerLost = DioExceptionType.receiveTimeout;
+      server.bookSavedBeforeLoss = true;
+      await openOnClinicA(tester);
+      await pickAndConfirm(tester);
+      final before = server.bookingsLists.length;
+
+      server.bookingsListGate = Completer<void>();
+      final check = inSheet(find.text(checkLabel));
+      await tester.ensureVisible(check);
+      await tester.tap(check);
+      await tester.pump();
+      await tester.tap(inSheet(find.byType(FilledButton)).first, warnIfMissed: false);
+      await settle(tester, 3);
+      expect(server.bookingsLists.length, before + 1);
+
+      // That check's answer is lost too: said so, and the check stays on offer.
+      server.bookingsListLost = true;
+      server.bookingsListGate!.complete();
+      await settle(tester);
+      expect(inSheet(find.text(networkError)), findsOneWidget);
+      expect(inSheet(find.text(unconfirmedTitle)), findsOneWidget);
+
+      server.bookingsListGate = null;
+      server.bookingsListLost = false;
+      await tap(tester, inSheet(find.text(checkLabel)));
+      expect(inSheet(find.text('وجدنا حجزك')), findsOneWidget);
+      expect(server.bookings, hasLength(1));
+    });
+
+    for (final (status, code) in [
+      (400, 'does_not_exist'),
+      (401, 'token_not_valid'),
+      (403, 'permission_denied'),
+      (409, 'doctor_busy'),
+      (422, 'invalid'),
+      (429, 'throttled'),
+    ]) {
+      testWidgets('a $status ($code) is a refusal the server sent: never "could not confirm"', (
+        tester,
+      ) async {
+        await signInPatient();
+        server.bookError = errorBody(code, 'refused');
+        server.bookErrorStatus = status;
+        await openOnClinicA(tester);
+        await pickAndConfirm(tester);
+
+        expect(inSheet(find.text(unconfirmedTitle)), findsNothing);
+        expect(container.read(unconfirmedBookingProvider(slug)), isNull);
+        expect(server.bookings, hasLength(1));
+      });
+    }
+
+    Future<void> confirmThenSwitchAccount(WidgetTester tester) async {
+      await signInPatient();
+      server.bookGate = Completer<void>();
+      await openOnClinicA(tester);
+      await tap(tester, inSheet(find.text('09:00')));
+      await tester.ensureVisible(confirmButton());
+      await tester.tap(confirmButton());
+      await tester.pump();
+      expect(container.read(bookingDraftProvider(slug)).submitting, isTrue);
+
+      // While it is out, the patient signs out and someone else signs in. Signing
+      // out calls the server, so time is moved on while it does.
+      final signingOut = container.read(authControllerProvider.notifier).signOut();
+      await settle(tester);
+      await signingOut;
+      await signInAs(patientUser(id: 'patient-b'), refresh: 'r-b');
+      await settle(tester);
+    }
+
+    testWidgets('a booking answered after the account changed is not shown to the next account', (
+      tester,
+    ) async {
+      await confirmThenSwitchAccount(tester);
+      expect(
+        container.read(bookingDraftProvider(slug)).submitting,
+        isFalse,
+        reason: 'the next account\'s draft is its own, not held by the old request',
+      );
+
+      server.bookGate!.complete();
+      await settle(tester);
+
+      expect(inSheet(find.text('تم تأكيد حجزك')), findsNothing);
+      expect(inSheet(find.text(unconfirmedTitle)), findsNothing);
+      expect(container.read(unconfirmedBookingProvider(slug)), isNull);
+      expect(container.read(bookingDraftProvider(slug)).submitting, isFalse);
+      expect(container.read(authControllerProvider).user?.id, 'patient-b');
+    });
+
+    testWidgets('a lost answer after the account changed leaves nothing for the next account', (
+      tester,
+    ) async {
+      await confirmThenSwitchAccount(tester);
+      server.bookAnswerLost = DioExceptionType.receiveTimeout;
+
+      server.bookGate!.complete();
+      await settle(tester);
+
+      expect(inSheet(find.text(unconfirmedTitle)), findsNothing);
+      expect(container.read(unconfirmedBookingProvider(slug)), isNull);
+      expect(container.read(authControllerProvider).user?.id, 'patient-b');
+    });
   });
 }
