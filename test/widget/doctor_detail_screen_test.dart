@@ -1009,4 +1009,213 @@ void main() {
       expect(container.read(authControllerProvider).user?.id, 'patient-b');
     });
   });
+
+  // ============================================ booking: the sheet swiped away mid-request
+  group('booking: the sheet swiped away while the request is out', () {
+    const bookedNotice = 'تم تأكيد حجزك مع';
+    const unconfirmedNotice = 'لم نتمكّن من تأكيد حجزك مع';
+    const notBookedNotice = 'لم يتم حجز موعدك مع';
+    const successTitle = 'تم تأكيد حجزك';
+
+    Finder confirmButton() => inSheet(find.widgetWithText(FilledButton, 'تأكيد الحجز'));
+
+    /// Open clinic A's sheet, pick 09:00 and confirm — with the request held
+    /// at the server until the test lets it go.
+    Future<void> confirmAndHold(WidgetTester tester) async {
+      server.bookGate = Completer<void>();
+      await pumpDetail(tester, size: const Size(390, 820));
+      await tap(tester, find.text('احجز موعد').first);
+      await tap(tester, inSheet(find.text('09:00')));
+      await tester.ensureVisible(confirmButton());
+      await tester.tap(confirmButton());
+      await tester.pump();
+      expect(container.read(bookingDraftProvider(slug)).submitting, isTrue);
+    }
+
+    /// Swipe the sheet down, as a person would: by its header. The close button
+    /// is off while the request is out; a drag still closes the sheet.
+    Future<void> swipeAway(WidgetTester tester) async {
+      await tester.fling(inSheet(find.text('حجز موعد')), const Offset(0, 700), 2500);
+      await settle(tester);
+      expect(find.byType(BottomSheet), findsNothing, reason: 'the sheet is gone');
+    }
+
+    Future<void> answer(WidgetTester tester) async {
+      server.bookGate!.complete();
+      await settle(tester);
+    }
+
+    testWidgets('made after the sheet was swiped away: announced where the patient is, with the '
+        'way to its details — and sent only once', (tester) async {
+      await signInPatient();
+      await confirmAndHold(tester);
+      await swipeAway(tester);
+      await answer(tester);
+
+      expect(tester.takeException(), isNull, reason: 'nothing reached the disposed sheet');
+      expect(find.textContaining(bookedNotice), findsOneWidget);
+      expect(find.byType(DoctorDetailScreen), findsOneWidget, reason: 'no navigation of its own');
+      expect(server.bookings, hasLength(1), reason: 'swiping away neither cancels nor resends');
+      // My Bookings is read from the server, so time is moved on while it is.
+      final listing = container.read(myBookingsProvider.future);
+      await settle(tester);
+      final listed = await listing;
+      expect(listed.map((b) => b.id), ['booking-123'], reason: 'My Bookings lists it');
+
+      await tester.tap(find.text('عرض تفاصيل الحجز'));
+      await settle(tester);
+      expect(find.text('booking booking-123'), findsOneWidget);
+    });
+
+    testWidgets('made after the sheet was swiped away: opening it again shows the booking, once — '
+        'not the times as if nothing happened', (tester) async {
+      await signInPatient();
+      await confirmAndHold(tester);
+      await swipeAway(tester);
+      await answer(tester);
+
+      await tap(tester, find.text('احجز موعد').first);
+      expect(inSheet(find.text(successTitle)), findsOneWidget);
+      expect(confirmButton(), findsNothing);
+
+      await tap(tester, inSheet(find.text('تم')));
+      await tap(tester, find.text('احجز موعد').first);
+      expect(inSheet(find.text(successTitle)), findsNothing, reason: 'shown once');
+      expect(confirmButton(), findsOneWidget);
+      expect(server.bookings, hasLength(1));
+    });
+
+    testWidgets('made while the sheet had been opened again: that sheet shows it', (tester) async {
+      await signInPatient();
+      await confirmAndHold(tester);
+      await swipeAway(tester);
+      await tap(tester, find.text('احجز موعد').first);
+      expect(container.read(bookingDraftProvider(slug)).submitting, isTrue);
+
+      await answer(tester);
+
+      expect(tester.takeException(), isNull);
+      expect(inSheet(find.text(successTitle)), findsOneWidget);
+      expect(confirmButton(), findsNothing, reason: 'no second booking on offer');
+      expect(server.bookings, hasLength(1));
+
+      await tap(tester, inSheet(find.text('تم')));
+      await tap(tester, find.text('احجز موعد').first);
+      expect(inSheet(find.text(successTitle)), findsNothing, reason: 'already shown');
+    });
+
+    testWidgets('an answer lost after the sheet was swiped away: the F-03 marker, announced, '
+        'and My Bookings one tap away', (tester) async {
+      await signInPatient();
+      server.bookAnswerLost = DioExceptionType.receiveTimeout;
+      server.bookSavedBeforeLoss = true;
+      await confirmAndHold(tester);
+      await swipeAway(tester);
+      await answer(tester);
+
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining(unconfirmedNotice), findsOneWidget);
+      expect(find.textContaining(bookedNotice), findsNothing, reason: 'not a success');
+      expect(container.read(unconfirmedBookingProvider(slug)), isNotNull);
+      expect(server.bookings, hasLength(1), reason: 'never resent');
+
+      await tap(tester, find.text('احجز موعد').first);
+      expect(inSheet(find.text('لم نتمكّن من تأكيد حجزك')), findsOneWidget);
+      expect(confirmButton(), findsNothing);
+      await tap(tester, inSheet(find.text('فتح حجوزاتي')));
+      expect(find.text('my bookings'), findsOneWidget);
+    });
+
+    testWidgets('the notice\'s "open My Bookings" goes there', (tester) async {
+      await signInPatient();
+      server.bookAnswerLost = DioExceptionType.connectionError;
+      await confirmAndHold(tester);
+      await swipeAway(tester);
+      await answer(tester);
+
+      await tester.tap(find.text('فتح حجوزاتي'));
+      await settle(tester);
+      expect(find.text('my bookings'), findsOneWidget);
+    });
+
+    for (final (status, code, reason) in [
+      (409, 'doctor_busy', 'الطبيب محجوز في هذا الوقت. اختر موعدًا آخر.'),
+      (400, 'does_not_exist', 'refused'),
+      (429, 'throttled', null),
+    ]) {
+      testWidgets(
+        'refused ($status) after the sheet was swiped away: said so, never as a success',
+        (tester) async {
+          await signInPatient();
+          server.bookError = errorBody(code, 'refused');
+          server.bookErrorStatus = status;
+          await confirmAndHold(tester);
+          await swipeAway(tester);
+          await answer(tester);
+
+          expect(tester.takeException(), isNull);
+          expect(find.textContaining(notBookedNotice), findsOneWidget);
+          if (reason != null) expect(find.textContaining(reason), findsOneWidget);
+          expect(find.textContaining(bookedNotice), findsNothing);
+          expect(container.read(completedBookingProvider(slug)), isNull);
+          expect(container.read(unconfirmedBookingProvider(slug)), isNull);
+          expect(find.text('عرض تفاصيل الحجز'), findsNothing);
+        },
+      );
+    }
+
+    testWidgets('A signs out and B signs in before the answer: B sees nothing of A\'s booking', (
+      tester,
+    ) async {
+      await signInPatient();
+      await confirmAndHold(tester);
+      await swipeAway(tester);
+      final signingOut = container.read(authControllerProvider.notifier).signOut();
+      await settle(tester);
+      await signingOut;
+      await signInAs(patientUser(id: 'patient-b'), refresh: 'r-b');
+      server.me = patientUser(id: 'patient-b'); // whom `/auth/me/` describes now
+      await settle(tester);
+
+      await answer(tester);
+
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining(bookedNotice), findsNothing);
+      expect(container.read(completedBookingProvider(slug)), isNull);
+      expect(container.read(unconfirmedBookingProvider(slug)), isNull);
+      await tap(tester, find.text('احجز موعد').first);
+      expect(inSheet(find.text(successTitle)), findsNothing);
+      expect(container.read(authControllerProvider).user?.id, 'patient-b');
+    });
+
+    testWidgets('the notice goes away on its own after a few seconds', (tester) async {
+      await signInPatient();
+      await confirmAndHold(tester);
+      await swipeAway(tester);
+      await answer(tester);
+      expect(find.textContaining(bookedNotice), findsOneWidget);
+
+      // It does not stay until dismissed, as a snack bar with an action would.
+      await tester.pump(const Duration(seconds: 7));
+      await settle(tester);
+      expect(find.textContaining(bookedNotice), findsNothing);
+    });
+
+    testWidgets('A\'s notice is taken down when the account changes', (tester) async {
+      await signInPatient();
+      await confirmAndHold(tester);
+      await swipeAway(tester);
+      await answer(tester);
+      expect(find.textContaining(bookedNotice), findsOneWidget);
+
+      final signingOut = container.read(authControllerProvider.notifier).signOut();
+      await settle(tester);
+      await signingOut;
+      await signInAs(patientUser(id: 'patient-b'), refresh: 'r-b');
+      await settle(tester);
+
+      expect(find.textContaining(bookedNotice), findsNothing);
+      expect(find.text('booking booking-123'), findsNothing);
+    });
+  });
 }

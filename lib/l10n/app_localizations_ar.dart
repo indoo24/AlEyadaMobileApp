@@ -1676,6 +1676,21 @@ class LAr extends L {
   String get bkUnconfirmedFoundTitle => 'وجدنا حجزك';
 
   @override
+  String bkBookedAfterClose(String doctor) {
+    return 'تم تأكيد حجزك مع $doctor.';
+  }
+
+  @override
+  String bkUnconfirmedAfterClose(String doctor) {
+    return 'لم نتمكّن من تأكيد حجزك مع $doctor. تحقّق من حجوزاتك قبل أن تحجز مرة أخرى.';
+  }
+
+  @override
+  String bkNotBookedAfterClose(String doctor, String reason) {
+    return 'لم يتم حجز موعدك مع $doctor: $reason';
+  }
+
+  @override
   String get bkVerifyPhoneTitle => 'أكّد رقم هاتفك لإتمام الحجز';
 
   @override

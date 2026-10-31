@@ -1681,6 +1681,21 @@ class LEn extends L {
   String get bkUnconfirmedFoundTitle => 'We found your booking';
 
   @override
+  String bkBookedAfterClose(String doctor) {
+    return 'Your booking with $doctor is confirmed.';
+  }
+
+  @override
+  String bkUnconfirmedAfterClose(String doctor) {
+    return 'We couldn\'t confirm your booking with $doctor. Check your bookings before booking again.';
+  }
+
+  @override
+  String bkNotBookedAfterClose(String doctor, String reason) {
+    return 'Your booking with $doctor was not made: $reason';
+  }
+
+  @override
   String get bkVerifyPhoneTitle => 'Verify your phone to book';
 
   @override

@@ -172,6 +172,15 @@ class UnconfirmedBooking {
   );
 }
 
+/// A booking the server confirmed after its sheet had been swiped away (a drag
+/// closes the sheet even while a request is out). Kept, for the account that
+/// made it, until a sheet for this doctor has shown it — so opening the sheet
+/// again shows the booking instead of offering the times as if nothing happened.
+final completedBookingProvider = StateProvider.family<PatientBooking?, String>((ref, slug) {
+  ref.watch(authControllerProvider.select((s) => s.user?.id));
+  return null;
+});
+
 /// The unconfirmed booking with this doctor, if any. It outlives the sheet, so
 /// closing and reopening it cannot lead to a second booking before the first
 /// was looked for — and it belongs to the account that sent it.

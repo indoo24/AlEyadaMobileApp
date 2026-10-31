@@ -3163,6 +3163,24 @@ abstract class L {
   /// **'وجدنا حجزك'**
   String get bkUnconfirmedFoundTitle;
 
+  /// No description provided for @bkBookedAfterClose.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تأكيد حجزك مع {doctor}.'**
+  String bkBookedAfterClose(String doctor);
+
+  /// No description provided for @bkUnconfirmedAfterClose.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نتمكّن من تأكيد حجزك مع {doctor}. تحقّق من حجوزاتك قبل أن تحجز مرة أخرى.'**
+  String bkUnconfirmedAfterClose(String doctor);
+
+  /// No description provided for @bkNotBookedAfterClose.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يتم حجز موعدك مع {doctor}: {reason}'**
+  String bkNotBookedAfterClose(String doctor, String reason);
+
   /// No description provided for @bkVerifyPhoneTitle.
   ///
   /// In ar, this message translates to:

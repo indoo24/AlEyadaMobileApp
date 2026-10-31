@@ -285,7 +285,7 @@ Other configuration files:
 |---|---|
 | `l10n.yaml` | gen-l10n: `lib/l10n`, template `app_ar.arb`, class `L` |
 | `analysis_options.yaml` | Includes `package:flutter_lints/flutter.yaml` |
-| `android/key.properties` | **Optional, git-ignored.** Release signing (see [Android signing](#android-release-signing)) |
+| `android/key.properties` | **Git-ignored; required for release builds only.** Release signing (see [Android signing](#android-release-signing)) |
 
 ## API and backend integration
 
@@ -407,10 +407,24 @@ flutter symbolize -i crash.txt -d build/symbols/app.android-arm64.symbols
 
 #### Android release signing
 
-The build reads `android/key.properties` if present and otherwise falls back to the
-debug key, printing a Gradle warning. A debug-signed build runs but cannot be
-published. Never commit the keystore or its passwords (`key.properties`, `*.jks`,
-`*.keystore` are git-ignored).
+Release builds (`flutter build apk --release`, `flutter build appbundle --release`)
+are signed only with the upload key described in `android/key.properties`. There is
+**no fallback to the debug key**: before anything is compiled, the
+`checkReleaseSigning` Gradle task opens the keystore and the key, and the build
+stops with `Release signing is not configured: …` if
+
+- `android/key.properties` does not exist;
+- any of `storeFile`, `storePassword`, `keyAlias`, `keyPassword` is missing or blank;
+- the keystore named by `storeFile` does not exist;
+- `storePassword` does not open it, it has no entry for `keyAlias`, or
+  `keyPassword` does not unlock that key.
+
+The message names the property or file at fault, never a password or other value.
+Debug builds (`flutter run`, `flutter build apk --debug`) do not need any of this.
+To check the configuration without building: `cd android && ./gradlew app:checkReleaseSigning`.
+
+Never commit the keystore or its passwords (`key.properties`, `*.jks`, `*.keystore`
+are git-ignored).
 
 ```properties
 # android/key.properties (do not commit)
@@ -453,12 +467,20 @@ parked under `ci/` because the token used to create the repo lacked the `workflo
 scope. See [`ci/README.md`](ci/README.md) to enable it. No release/deployment
 automation exists.
 
+**Its release-build step no longer works as written.** It ran
+`flutter build apk --release` with no keystore, relying on the debug-key fallback,
+which has been removed (see [Android release signing](#android-release-signing)).
+Before enabling the workflow, either change that step to a build that needs no
+upload key (for example `flutter build apk --debug`), or have the job write
+`android/key.properties` and the keystore from encrypted repository secrets before
+building. No signing secrets are defined for this repository yet.
+
 ## Troubleshooting
 
 | Symptom | Cause / fix |
 |---|---|
 | Cleartext/connection error to a local backend on a physical device | Cleartext is allowed only to `10.0.2.2`, `localhost` and `127.0.0.1` in debug builds. Use HTTPS or extend the debug network security config. |
-| Release build reports `android/key.properties not found` | Expected on a fresh clone: it falls back to the debug key. Create `key.properties` to sign for release. |
+| Release build fails with `Release signing is not configured: …` | Expected without the upload key (for example on a fresh clone): release builds are never debug-signed. The message names what is missing or wrong; fix `android/key.properties` (see [Android release signing](#android-release-signing)). Debug builds are unaffected. |
 | Gradle "Could not close incremental caches" (Windows) | Handled by `kotlin.incremental=false` in `android/gradle.properties`; keep it. |
 | `l10n` out of date / missing `L` strings | Run `flutter gen-l10n` after editing `lib/l10n/*.arb`; commit the output (CI checks it). |
 | Call / WhatsApp / website buttons do nothing on Android 11+ | Needs the `<queries>` entries already present in `AndroidManifest.xml`; check they were not removed. |

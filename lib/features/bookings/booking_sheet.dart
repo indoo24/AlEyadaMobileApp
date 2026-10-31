@@ -50,6 +50,12 @@ Future<void> showBookingSheet(BuildContext context, DoctorDetail doctor, {String
   if (container.read(authControllerProvider).isAuthenticated) {
     unawaited(container.read(authControllerProvider.notifier).refreshUser());
   }
+  // A booking confirmed after an earlier sheet was swiped away: this sheet opens
+  // on it, once, rather than on times that no longer include it.
+  final completed = container.read(completedBookingProvider(doctor.slug));
+  if (completed != null) {
+    container.read(completedBookingProvider(doctor.slug).notifier).state = null;
+  }
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -58,14 +64,17 @@ Future<void> showBookingSheet(BuildContext context, DoctorDetail doctor, {String
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (_) => _BookingSheet(doctor: doctor),
+    builder: (_) => _BookingSheet(doctor: doctor, completed: completed),
   );
 }
 
 class _BookingSheet extends ConsumerStatefulWidget {
-  const _BookingSheet({required this.doctor});
+  const _BookingSheet({required this.doctor, this.completed});
 
   final DoctorDetail doctor;
+
+  /// See [completedBookingProvider].
+  final PatientBooking? completed;
 
   @override
   ConsumerState<_BookingSheet> createState() => _BookingSheetState();
@@ -95,6 +104,12 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
   Object? _checkError;
 
   @override
+  void initState() {
+    super.initState();
+    _booked = widget.completed;
+  }
+
+  @override
   void dispose() {
     _notes.dispose();
     super.dispose();
@@ -117,6 +132,17 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
     // would only earn a 403.
     final unverifiedPhone = user != null && !user.isPhoneVerified ? user.phone : null;
     final unconfirmed = ref.watch(unconfirmedBookingProvider(_slug));
+    // A confirm from a sheet that was swiped away, answered while this one is
+    // open: shown here, and so not again at the next opening.
+    ref.listen<PatientBooking?>(completedBookingProvider(_slug), (_, next) {
+      if (next == null || _booked != null) return;
+      setState(() => _booked = next);
+      final kept = ref.read(completedBookingProvider(_slug).notifier);
+      // Once this change has finished notifying its listeners.
+      scheduleMicrotask(() {
+        if (kept.mounted && identical(kept.state, next)) kept.state = null;
+      });
+    });
 
     final Widget content;
     if (_booked != null) {
@@ -269,6 +295,20 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
     final session = container.read(authRepositoryProvider).session;
     bool sessionEnded() => container.read(authRepositoryProvider).session != session;
 
+    // A drag closes the sheet even while the request is out, and the request
+    // carries on regardless — it is never cancelled or sent again for that. So
+    // everything needed to tell the patient how it ended is read now, from
+    // things that outlive the sheet: the app's messenger and router, and the
+    // words. Nothing below reaches the sheet's context or state unless it is
+    // still mounted.
+    final slug = _slug;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final router = GoRouter.maybeOf(context);
+    final l = L.of(context);
+    final doctorName = widget.doctor.displayName;
+    void announce(String message, [(String, VoidCallback)? action]) =>
+        _announceAfterClose(container, messenger, session, message, action);
+
     setState(() => _error = null);
     controller.setSubmitting(true);
     try {
@@ -287,7 +327,16 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
       container.invalidate(myBookingsProvider);
       container.invalidate(availabilityProvider(key));
       controller.reset();
-      if (!mounted) return;
+      if (!mounted) {
+        // Made, after the sheet was swiped away: kept for the next opening of
+        // this doctor's sheet, and announced where the patient is now.
+        container.read(completedBookingProvider(slug).notifier).state = booking;
+        announce(l.bkBookedAfterClose(doctorName), (
+          l.bkViewBooking,
+          () => router?.push(Routes.bookingPath(booking.id)),
+        ));
+        return;
+      }
       setState(() => _booked = booking);
     } catch (error) {
       // This session's own credentials refused: the client has just dropped
@@ -304,13 +353,20 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
         // and no other time is offered, until My Bookings has been looked at —
         // even if this sheet is closed and opened again.
         container.invalidate(myBookingsProvider);
-        container.read(unconfirmedBookingProvider(_slug).notifier).state = UnconfirmedBooking(
+        container.read(unconfirmedBookingProvider(slug).notifier).state = UnconfirmedBooking(
           clinicId: clinicId,
           startAt: slot.startAt,
           date: draft.selectedDate ?? '',
           displayTime: slot.displayTime,
         );
-        if (mounted) setState(() => _error = null);
+        if (mounted) {
+          setState(() => _error = null);
+        } else {
+          announce(l.bkUnconfirmedAfterClose(doctorName), (
+            l.bkUnconfirmedOpenBookings,
+            () => router?.go(Routes.bookings),
+          ));
+        }
         return;
       }
       // Anything that is not uncertain is an answer the server sent and the app
@@ -325,10 +381,20 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
         await container.read(authControllerProvider.notifier).refreshUser();
         if (sessionEnded()) return;
       }
-      if (!mounted) return;
       final account = container.read(authControllerProvider).user;
       final needsVerification =
           e.failure == ApiFailure.forbidden && account != null && !account.isPhoneVerified;
+      if (!mounted) {
+        // Refused after the sheet was swiped away: said so — never as a
+        // success — in the messenger's own words, since this context is gone.
+        if (messenger != null && messenger.mounted) {
+          final reason = needsVerification
+              ? l.bkVerifyPhoneTitle
+              : messageForError(messenger.context, e);
+          announce(l.bkNotBookedAfterClose(doctorName, reason));
+        }
+        return;
+      }
       setState(() => _error = needsVerification ? null : messageForError(context, e));
       // If the slot went while they were deciding, drop the dead selection and
       // refetch, so they are choosing from what is actually still free. The sheet
@@ -429,6 +495,45 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
       if (mounted) setState(() => _verifying = false);
     }
   }
+}
+
+/// How a booking ended, told where the patient is now — for when its sheet was
+/// swiped away before the answer came, and so cannot show it.
+///
+/// A snack bar on the app's own messenger: never a dialog, and never a
+/// navigation the patient did not ask for. It goes after a few seconds rather
+/// than staying until dismissed (the default for one with an action), it is
+/// taken down if the account changes meanwhile, and its action does nothing
+/// once the account has changed: the outcome belongs to the account that booked.
+void _announceAfterClose(
+  ProviderContainer container,
+  ScaffoldMessengerState? messenger,
+  int? session,
+  String message, [
+  (String, VoidCallback)? action,
+]) {
+  if (messenger == null || !messenger.mounted) return;
+  bool sameSession() => container.read(authRepositoryProvider).session == session;
+  final shown = messenger.showSnackBar(
+    SnackBar(
+      content: Text(message),
+      persist: false,
+      duration: const Duration(seconds: 6),
+      action: action == null
+          ? null
+          : SnackBarAction(
+              label: action.$1,
+              onPressed: () {
+                if (sameSession()) action.$2();
+              },
+            ),
+    ),
+  );
+  final whoIsHere = container.listen<String?>(
+    authControllerProvider.select((s) => s.user?.id),
+    (_, __) => shown.close(),
+  );
+  unawaited(shown.closed.whenComplete(whoIsHere.close));
 }
 
 /// Why the confirm button asks for a phone code instead.
