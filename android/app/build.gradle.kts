@@ -1,3 +1,4 @@
+import java.security.KeyStore
 import java.util.Properties
 
 plugins {
@@ -6,20 +7,87 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Release signing is read from an untracked key.properties, so a keystore and its
-// passwords never enter version control. When the file is absent — as on a fresh
-// clone or in CI — the release build falls back to the debug key so the project
-// still builds for anyone. See "Release signing" in the README.
-val keystoreProperties = Properties()
+// Release signing is read from an untracked key.properties, so the upload key and
+// its passwords never enter version control. There is no fallback: a release
+// build without a complete, working configuration stops with an error saying what
+// is wrong. It is never signed with the debug key — that installs and runs, but
+// Google Play refuses it and no Play-signed build can ever update it. Debug builds
+// need none of this. See "Android release signing" in the README.
 val keystorePropertiesFile = rootProject.file("key.properties")
-val hasReleaseSigning = keystorePropertiesFile.exists()
-if (hasReleaseSigning) {
-    keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
-} else {
-    logger.warn(
-        "android/key.properties not found: release builds will be signed with the " +
-            "DEBUG key and cannot be uploaded to Google Play.",
-    )
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.isFile) keystorePropertiesFile.inputStream().use { load(it) }
+}
+
+/** A key.properties value, or null when it is absent or blank. Used as written. */
+fun signingValue(name: String): String? =
+    keystoreProperties.getProperty(name)?.takeIf { it.isNotBlank() }
+
+// Relative paths resolve against android/, where key.properties lives.
+val releaseStoreFile: File? = signingValue("storeFile")?.let { rootProject.file(it) }
+
+/**
+ * Why the release key cannot sign, or null when it can.
+ *
+ * Opens the keystore and the key itself, so a wrong password or alias is caught
+ * here, before the build, rather than at the last packaging step. The message
+ * names properties and files only — never a password or any other value read
+ * from key.properties.
+ */
+fun releaseSigningProblem(): String? {
+    if (!keystorePropertiesFile.isFile) return "android/key.properties was not found."
+
+    val required = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+    val missing = required.filter { signingValue(it) == null }
+    if (missing.isNotEmpty()) {
+        return "android/key.properties has no value for: ${missing.joinToString()}."
+    }
+
+    val store = releaseStoreFile!!
+    if (!store.isFile) {
+        return "the keystore named by storeFile in android/key.properties does not exist " +
+            "(a relative path is resolved against android/)."
+    }
+
+    // PKCS12 is the default type and, in compatibility mode, also reads JKS; JKS
+    // is tried explicitly for a JDK with that mode turned off.
+    val storePassword = signingValue("storePassword")!!.toCharArray()
+    val keyStore = listOf(KeyStore.getDefaultType(), "JKS").distinct().firstNotNullOfOrNull { type ->
+        runCatching {
+            KeyStore.getInstance(type).apply { store.inputStream().use { load(it, storePassword) } }
+        }.getOrNull()
+    } ?: return "the keystore could not be opened: storePassword in android/key.properties " +
+        "is wrong, or storeFile is not a keystore."
+
+    val alias = signingValue("keyAlias")!!
+    if (!keyStore.containsAlias(alias)) {
+        return "the keystore has no entry for the keyAlias in android/key.properties."
+    }
+    val key = runCatching { keyStore.getKey(alias, signingValue("keyPassword")!!.toCharArray()) }
+    if (key.isFailure) {
+        return "the key could not be unlocked: keyPassword in android/key.properties is wrong."
+    }
+    if (key.getOrNull() == null) {
+        return "the keyAlias in android/key.properties names a certificate, not a private key."
+    }
+    return null
+}
+
+// Runs before every release variant's build (see the end of this file), and never
+// for debug or profile builds.
+val checkReleaseSigning by tasks.registering {
+    group = "verification"
+    description = "Fails unless android/key.properties configures a working release (upload) key."
+    doLast {
+        releaseSigningProblem()?.let { problem ->
+            throw GradleException(
+                "Release signing is not configured: $problem\n" +
+                    "Release builds are never signed with the debug key. Put storeFile, " +
+                    "storePassword, keyAlias and keyPassword for the upload key in " +
+                    "android/key.properties (git-ignored; see \"Android release signing\" in " +
+                    "the README). Debug builds do not need it.",
+            )
+        }
+    }
 }
 
 android {
@@ -48,25 +116,21 @@ android {
     }
 
     signingConfigs {
-        if (hasReleaseSigning) {
-            create("release") {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                // Relative paths resolve against android/, where key.properties lives.
-                storeFile = keystoreProperties["storeFile"]?.let { rootProject.file(it) }
-                storePassword = keystoreProperties["storePassword"] as String
-            }
+        // Always defined, filled with whatever key.properties provides. Whether that
+        // is enough is checkReleaseSigning's to decide, before any release build
+        // gets to use it.
+        create("release") {
+            signingValue("keyAlias")?.let { keyAlias = it }
+            signingValue("keyPassword")?.let { keyPassword = it }
+            storeFile = releaseStoreFile
+            signingValue("storePassword")?.let { storePassword = it }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = if (hasReleaseSigning) {
-                signingConfigs.getByName("release")
-            } else {
-                // Debug keys: installs and runs, but is not publishable.
-                signingConfigs.getByName("debug")
-            }
+            // The upload key, and only the upload key.
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -85,4 +149,10 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+// `preReleaseBuild` is the first task of every release build — APK and app bundle
+// alike — so a release with an unusable key stops before anything is compiled.
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    dependsOn(checkReleaseSigning)
 }

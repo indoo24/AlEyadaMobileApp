@@ -138,14 +138,28 @@ class AuthController extends StateNotifier<AuthState> {
   /// application status — notably an approval landing while the app is open.
   Future<void> refreshUser() async {
     if (!_tokens.hasSession) return;
+    // Whose profile this asks for. An answer that arrives after a sign-out or a
+    // sign-in — success or failure — is about that earlier session: it must not
+    // show its user, sign out, or claim an offline session for whoever is here
+    // now. A refresh during the call keeps the session, so it does not count.
+    final session = _repo.session;
     try {
       final user = await _repo.me();
+      if (_repo.session != session) return;
       state = AuthState(status: AuthStatus.authenticated, user: user);
     } on ApiException catch (e) {
-      if (e.isAuthFailure) {
+      final now = _repo.session;
+      if (e.isAuthFailure && (now == null || now == session)) {
+        // This session's credentials were refused — the client may already have
+        // dropped them, which is why "no session now" still counts as this one.
         await _tokens.clear();
         _ending();
         state = const AuthState.signedOut();
+      } else if (now != session || e.failure == ApiFailure.sessionChanged) {
+        // Asked for by a session that has since ended or been replaced. The
+        // answer is that session's, and changes nothing about the current one —
+        // above all, it must not sign out whoever is signed in now.
+        return;
       } else if (state.user != null) {
         // Keep showing what we last knew rather than blanking the UI.
         state = state.copyWith(error: e);
@@ -185,7 +199,11 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   Future<void> updateProfile(Map<String, dynamic> changes) async {
+    final session = _repo.session;
     final user = await _repo.updateMe(changes);
+    // Saved for an account that has since signed out or been replaced: the
+    // save happened, but its user is not the one to show now.
+    if (_repo.session != session) return;
     state = state.copyWith(status: AuthStatus.authenticated, user: user, clearError: true);
   }
 }

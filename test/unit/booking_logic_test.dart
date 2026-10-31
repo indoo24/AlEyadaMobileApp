@@ -1,9 +1,13 @@
+import 'package:aleyada_mobile/core/api/api_error.dart';
 import 'package:aleyada_mobile/features/bookings/booking_logic.dart';
 import 'package:aleyada_mobile/features/bookings/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../fixtures/api_fixtures.dart';
 import '../fixtures/booking_fixtures.dart';
+import '../fixtures/doctor_detail_fixtures.dart' as dd;
+
+const slugOfFixture = dd.slug;
 
 void main() {
   PatientBooking b(String id, DateTime start, {String status = 'confirmed'}) =>
@@ -169,6 +173,102 @@ void main() {
         'clinic': {'id': 'c-9', 'name_ar': 'طنطا'},
       });
       expect(withId.clinicId, 'c-9');
+    });
+  });
+
+  group('a booking request that failed: refused, or perhaps made?', () {
+    ApiException failed(ApiFailure f, [int? status]) =>
+        ApiException(failure: f, errors: const [], statusCode: status);
+
+    test('no answer, a 5xx, or a 2xx that could not be read: it may exist', () {
+      expect(bookingOutcomeUncertain(failed(ApiFailure.network)), isTrue);
+      for (final s in [500, 502, 503, 504]) {
+        expect(bookingOutcomeUncertain(failed(ApiFailure.server, s)), isTrue, reason: '$s');
+      }
+      expect(bookingOutcomeUncertain(failed(ApiFailure.unexpected)), isTrue, reason: 'no status');
+      expect(
+        bookingOutcomeUncertain(const FormatException('not an envelope')),
+        isTrue,
+        reason: 'a 201 that could not be read was most likely made',
+      );
+    });
+
+    test('an answer the server sent and the app read is a refusal', () {
+      for (final (f, s) in [
+        (ApiFailure.validation, 400),
+        (ApiFailure.validation, 422),
+        (ApiFailure.unauthenticated, 401),
+        (ApiFailure.forbidden, 403),
+        (ApiFailure.notFound, 404),
+        (ApiFailure.conflict, 409),
+        (ApiFailure.rateLimited, 429),
+        (ApiFailure.unexpected, 405),
+        (ApiFailure.sessionChanged, 401),
+      ]) {
+        expect(bookingOutcomeUncertain(failed(f, s)), isFalse, reason: '$f $s');
+      }
+    });
+  });
+
+  group('finding a booking whose answer was lost', () {
+    final at = DateTime.utc(2030, 1, 5, 7);
+    PatientBooking at_(String id, DateTime start, {String status = 'confirmed', String? clinic}) =>
+        PatientBooking.fromJson(
+          patientBooking(
+            id: id,
+            start: start,
+            status: status,
+            overrides: {
+              if (clinic != null) 'clinic': {'id': clinic, 'name_ar': 'عيادة النخيل'},
+            },
+          ),
+        );
+
+    test('the active booking with this doctor at this instant', () {
+      final found = findSubmittedBooking(
+        [at_('other-time', at.add(const Duration(minutes: 30))), at_('it', at)],
+        doctorSlug: slugOfFixture,
+        startAt: at,
+        clinicId: 'c-1',
+      );
+      expect(found?.id, 'it', reason: 'a booking with no clinic id is matched on doctor and time');
+    });
+
+    test('the same instant written in another offset is the same time', () {
+      final found = findSubmittedBooking(
+        [at_('it', at)],
+        doctorSlug: slugOfFixture,
+        startAt: DateTime.parse('2030-01-05T09:00:00+02:00'),
+      );
+      expect(found?.id, 'it');
+    });
+
+    test('not a cancelled one, another doctor\'s, or another clinic\'s', () {
+      final found = findSubmittedBooking(
+        [
+          at_('cancelled', at, status: 'cancelled_by_clinic'),
+          PatientBooking.fromJson(patientBooking(id: 'elsewhere', start: at, doctorSlug: 'dr-x')),
+          at_('other-clinic', at, clinic: 'c-2'),
+        ],
+        doctorSlug: slugOfFixture,
+        startAt: at,
+        clinicId: 'c-1',
+      );
+      expect(found, isNull);
+    });
+
+    test('a pending one counts: it is active', () {
+      final found = findSubmittedBooking(
+        [at_('it', at, status: 'pending', clinic: 'c-1')],
+        doctorSlug: slugOfFixture,
+        startAt: at,
+        clinicId: 'c-1',
+      );
+      expect(found?.status, BookingStatus.pending);
+    });
+
+    test('an empty list finds nothing — which is not proof of anything', () {
+      expect(findSubmittedBooking([], doctorSlug: slugOfFixture, startAt: at), isNull);
     });
   });
 }

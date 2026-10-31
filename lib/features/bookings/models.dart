@@ -1,4 +1,5 @@
 import '../../core/api/envelope.dart';
+import '../../core/utils/media_url.dart';
 import '../doctors/models.dart' show ContactInfo;
 
 /// One bookable slot.
@@ -170,6 +171,14 @@ enum VisitType {
   };
 }
 
+/// The first of [values] that is a string with something in it, trimmed; or ''.
+String _firstText(Iterable<dynamic> values) {
+  for (final v in values) {
+    if (v is String && v.trim().isNotEmpty) return v.trim();
+  }
+  return '';
+}
+
 /// A patient's own appointment.
 ///
 /// Note [canCancel] and [cancellationCutoffAt]: the backend computes both and
@@ -249,9 +258,21 @@ class PatientBooking {
     final c = asMap(clinic);
     return PatientBooking(
       id: parseString(j['id']),
-      doctorName: parseString(d?['display_name'] ?? d?['full_name_ar'] ?? ''),
-      doctorSlug: parseString(d?['slug']),
-      doctorPhoto: d?['photo'] as String?,
+      // The first name that actually has text. `a ?? b` is not enough: a blank
+      // `display_name` is "" rather than null, and would hide every fallback —
+      // which is how a booking ended up with no doctor name at all. The keys are
+      // the ones the public doctor payload uses; the flat `doctor_name` is the
+      // shape the other booking serializers (assistant, reviewable) use.
+      doctorName: _firstText([
+        d?['display_name'],
+        d?['full_name_ar'],
+        d?['full_name_en'],
+        j['doctor_name'],
+      ]),
+      doctorSlug: _firstText([d?['slug'], j['doctor_slug']]),
+      // Absolute http(s) or null: a relative `/media/...` path is resolved
+      // against the API host, a blank or unsafe value is dropped.
+      doctorPhoto: resolveMediaUrl(_firstText([d?['photo']])),
       clinicName: parseString(c?['name_ar']),
       clinicAddress: c?['address_ar'] as String?,
       clinicId: parseString(c?['id']).trim().isEmpty ? null : parseString(c?['id']).trim(),
