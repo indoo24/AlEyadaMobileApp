@@ -132,7 +132,59 @@ class BookingDraftController extends StateNotifier<BookingDraft> {
   void reset() => state = const BookingDraft();
 }
 
+/// Tied to the account, like the bookings list: a confirm still in flight from
+/// one account can never hold, reset or fill in the next account's sheet.
 final bookingDraftProvider =
-    StateNotifierProvider.family<BookingDraftController, BookingDraft, String>(
-      (ref, slug) => BookingDraftController(),
-    );
+    StateNotifierProvider.family<BookingDraftController, BookingDraft, String>((ref, slug) {
+      ref.watch(authControllerProvider.select((s) => s.user?.id));
+      return BookingDraftController();
+    });
+
+/// A booking sent to the server whose answer never arrived (see
+/// `bookingOutcomeUncertain`): it may or may not exist.
+class UnconfirmedBooking {
+  const UnconfirmedBooking({
+    required this.clinicId,
+    required this.startAt,
+    required this.date,
+    required this.displayTime,
+    this.checkedNotFound = false,
+  });
+
+  final String clinicId;
+
+  /// The slot's start, UTC — what identifies the booking if it was made.
+  final DateTime startAt;
+
+  /// The clinic-local day and time the patient picked, for showing.
+  final String date;
+  final String displayTime;
+
+  /// My Bookings was read and did not list it. Not proof it was never made.
+  final bool checkedNotFound;
+
+  UnconfirmedBooking notFound() => UnconfirmedBooking(
+    clinicId: clinicId,
+    startAt: startAt,
+    date: date,
+    displayTime: displayTime,
+    checkedNotFound: true,
+  );
+}
+
+/// A booking the server confirmed after its sheet had been swiped away (a drag
+/// closes the sheet even while a request is out). Kept, for the account that
+/// made it, until a sheet for this doctor has shown it — so opening the sheet
+/// again shows the booking instead of offering the times as if nothing happened.
+final completedBookingProvider = StateProvider.family<PatientBooking?, String>((ref, slug) {
+  ref.watch(authControllerProvider.select((s) => s.user?.id));
+  return null;
+});
+
+/// The unconfirmed booking with this doctor, if any. It outlives the sheet, so
+/// closing and reopening it cannot lead to a second booking before the first
+/// was looked for — and it belongs to the account that sent it.
+final unconfirmedBookingProvider = StateProvider.family<UnconfirmedBooking?, String>((ref, slug) {
+  ref.watch(authControllerProvider.select((s) => s.user?.id));
+  return null;
+});

@@ -35,6 +35,17 @@ class TokenStore {
   String? _refresh;
   bool _loaded = false;
 
+  /// Storage writes, one after another in the order they were asked for.
+  ///
+  /// The in-memory copy changes the moment [save] or [clear] is called, but
+  /// each persists with several platform calls. Unqueued, a save that began
+  /// just before a sign-out could finish after the sign-out's deletes and
+  /// leave its token on disk, to be restored at the next launch.
+  Future<void> _persisting = Future.value();
+
+  Future<void> _persist(Future<void> Function() write) =>
+      _persisting = _persisting.then((_) => write());
+
   String? get accessToken => _access;
   String? get refreshToken => _refresh;
   bool get hasSession => (_refresh ?? '').isNotEmpty;
@@ -62,13 +73,15 @@ class TokenStore {
     _access = access;
     _refresh = refresh;
     _loaded = true;
-    try {
-      await _storage.write(key: _kAccess, value: access);
-      await _storage.write(key: _kRefresh, value: refresh);
-    } catch (_) {
-      // The session still works for this run; it just will not survive a
-      // restart. Better than refusing to log the user in.
-    }
+    await _persist(() async {
+      try {
+        await _storage.write(key: _kAccess, value: access);
+        await _storage.write(key: _kRefresh, value: refresh);
+      } catch (_) {
+        // The session still works for this run; it just will not survive a
+        // restart. Better than refusing to log the user in.
+      }
+    });
   }
 
   /// After a refresh: the access token always changes, and the refresh token
@@ -80,7 +93,7 @@ class TokenStore {
     _access = null;
     _refresh = null;
     _loaded = true;
-    await _bestEffortClear();
+    await _persist(_bestEffortClear);
   }
 
   Future<void> _bestEffortClear() async {

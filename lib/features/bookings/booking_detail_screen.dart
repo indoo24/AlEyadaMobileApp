@@ -178,7 +178,11 @@ class _Content extends ConsumerWidget {
         _AppointmentCard(booking: b, nowUtc: nowUtc, upcoming: upcoming),
         if (notice != null) ...[gap, notice],
         gap,
-        _InfoCard(booking: b, specialty: specialtyOf(profile.doctor)),
+        _InfoCard(
+          booking: b,
+          doctorName: doctorNameOf(b, profile.doctor),
+          specialty: specialtyOf(profile.doctor),
+        ),
         if (b.clinicName.isNotEmpty || (b.clinicAddress ?? '').trim().isNotEmpty) ...[
           gap,
           _ClinicCard(booking: b, doctor: profile.doctor, link: profile.clinic),
@@ -289,6 +293,7 @@ class _DoctorHeader extends StatelessWidget {
     final l = L.of(context);
     final b = booking;
     final specialty = specialtyOf(doctor);
+    final doctorName = doctorNameOf(b, doctor);
     final canOpen = b.doctorSlug.isNotEmpty;
 
     return Container(
@@ -310,16 +315,18 @@ class _DoctorHeader extends StatelessWidget {
               padding: const EdgeInsets.all(14),
               child: Row(
                 children: [
-                  DoctorAvatar(photo: b.doctorPhoto, name: b.doctorName, size: 56, radius: 28),
+                  DoctorAvatar(
+                    photo: doctorPhotoOf(b, doctor),
+                    name: doctorName,
+                    size: 56,
+                    radius: 28,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          b.doctorName,
-                          style: context.homeType.doctorName.copyWith(fontSize: 16),
-                        ),
+                        Text(doctorName, style: context.homeType.doctorName.copyWith(fontSize: 16)),
                         if (specialty != null)
                           Text(
                             specialty,
@@ -528,9 +535,10 @@ class _Notice extends StatelessWidget {
 }
 
 class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.booking, required this.specialty});
+  const _InfoCard({required this.booking, required this.doctorName, required this.specialty});
 
   final PatientBooking booking;
+  final String doctorName;
   final String? specialty;
 
   @override
@@ -541,7 +549,7 @@ class _InfoCard extends StatelessWidget {
     final payment = PaymentState.parse(b.paymentStatus);
 
     final rows = <(String, String, bool)>[
-      (l.bkDoctor, b.doctorName, false),
+      if (doctorName.isNotEmpty) (l.bkDoctor, doctorName, false),
       if (specialty != null) (l.bdSpecialty, specialty!, false),
       if (b.clinicName.isNotEmpty) (l.bookingClinic, b.clinicName, false),
       if (b.displayDate.isNotEmpty) (l.bdDate, longDayLabel(b.displayDate, locale), false),

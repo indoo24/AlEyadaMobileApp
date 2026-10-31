@@ -1650,6 +1650,47 @@ class LAr extends L {
   String get bkTime => 'الوقت';
 
   @override
+  String get bkUnconfirmedTitle => 'لم نتمكّن من تأكيد حجزك';
+
+  @override
+  String get bkUnconfirmedBody =>
+      'انقطع الاتصال قبل أن يصلنا رد الخادم، لذلك ربما تم الحجز بالفعل. تحقّق من حجوزاتك قبل أن تحاول الحجز مرة أخرى.';
+
+  @override
+  String get bkUnconfirmedNotFound =>
+      'لم نجد هذا الموعد في حجوزاتك حتى الآن، لكن هذا لا يعني بالضرورة أنه لم يُحجز. تحقّق مرة أخرى بعد قليل، أو من صفحة حجوزاتي، قبل أن تحجز موعدًا آخر.';
+
+  @override
+  String get bkUnconfirmedCheck => 'تحقّق من حجوزاتي';
+
+  @override
+  String get bkUnconfirmedCheckAgain => 'تحقّق مرة أخرى';
+
+  @override
+  String get bkUnconfirmedOpenBookings => 'فتح حجوزاتي';
+
+  @override
+  String get bkUnconfirmedBookAnyway => 'اختيار موعد آخر';
+
+  @override
+  String get bkUnconfirmedFoundTitle => 'وجدنا حجزك';
+
+  @override
+  String bkBookedAfterClose(String doctor) {
+    return 'تم تأكيد حجزك مع $doctor.';
+  }
+
+  @override
+  String bkUnconfirmedAfterClose(String doctor) {
+    return 'لم نتمكّن من تأكيد حجزك مع $doctor. تحقّق من حجوزاتك قبل أن تحجز مرة أخرى.';
+  }
+
+  @override
+  String bkNotBookedAfterClose(String doctor, String reason) {
+    return 'لم يتم حجز موعدك مع $doctor: $reason';
+  }
+
+  @override
   String get bkVerifyPhoneTitle => 'أكّد رقم هاتفك لإتمام الحجز';
 
   @override

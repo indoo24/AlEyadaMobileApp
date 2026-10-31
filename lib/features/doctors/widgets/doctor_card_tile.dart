@@ -84,7 +84,8 @@ class DoctorCardTile extends StatelessWidget {
   }
 }
 
-/// A doctor's photo, or their initial when there is none.
+/// A doctor's photo, or their initial when there is none — or, when not even a
+/// name is known, a plain person icon (never a question mark).
 class DoctorAvatar extends StatelessWidget {
   const DoctorAvatar({super.key, this.photo, required this.name, this.size = 56, this.radius});
 
@@ -97,7 +98,19 @@ class DoctorAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial = name.trim().isEmpty ? '؟' : name.trim().characters.first;
+    final trimmed = name.trim();
+    final Widget fallback = Center(
+      child: trimmed.isEmpty
+          ? Icon(Icons.person_rounded, size: size * 0.55, color: context.palette.primary)
+          : Text(
+              trimmed.characters.first,
+              style: TextStyle(
+                fontSize: size * 0.4,
+                fontWeight: FontWeight.w700,
+                color: context.palette.primary,
+              ),
+            ),
+    );
     return Semantics(
       label: L.of(context).semanticDoctorPhoto,
       image: true,
@@ -111,16 +124,7 @@ class DoctorAvatar extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: (photo == null || photo!.isEmpty)
-            ? Center(
-                child: Text(
-                  initial,
-                  style: TextStyle(
-                    fontSize: size * 0.4,
-                    fontWeight: FontWeight.w700,
-                    color: context.palette.primary,
-                  ),
-                ),
-              )
+            ? fallback
             : Image.network(
                 photo!,
                 fit: BoxFit.cover,
@@ -128,16 +132,7 @@ class DoctorAvatar extends StatelessWidget {
                 cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
                 // A missing photo must not leave a broken-image glyph on a
                 // medical directory; fall back to the initial.
-                errorBuilder: (_, __, ___) => Center(
-                  child: Text(
-                    initial,
-                    style: TextStyle(
-                      fontSize: size * 0.4,
-                      fontWeight: FontWeight.w700,
-                      color: context.palette.primary,
-                    ),
-                  ),
-                ),
+                errorBuilder: (_, __, ___) => fallback,
                 loadingBuilder: (context, child, progress) =>
                     progress == null ? child : ColoredBox(color: context.palette.pageSoft),
               ),

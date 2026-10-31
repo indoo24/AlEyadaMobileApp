@@ -130,6 +130,28 @@ void main() {
       expect(h.store.cleared, isFalse, reason: 'the tokens are probably still good');
       expect(h.controller.state.error?.isNetworkFailure, isTrue);
     });
+
+    for (final status in [503, 429]) {
+      test(
+        'a $status from the refresh keeps the session: it says nothing about the token',
+        () async {
+          final h = _build(refresh: 'r');
+          h.adapter.onGet('/auth/me/', (s) => s.reply(401, notAuthenticatedError));
+          h.adapter.onPost(
+            '/auth/token/refresh/',
+            (s) => s.reply(status, {'data': null, 'meta': <String, dynamic>{}, 'errors': []}),
+            data: Matchers.any,
+          );
+
+          await h.controller.restore();
+
+          expect(h.controller.state.status, AuthStatus.offlineWithSession);
+          expect(h.store.cleared, isFalse);
+          expect(h.store.refreshToken, 'r');
+          expect(h.controller.state.error?.isAuthFailure, isFalse);
+        },
+      );
+    }
   });
 
   group('signing in', () {
@@ -209,6 +231,26 @@ void main() {
       expect(h2.state.user, isNotNull);
       expect(h2.state.error?.isNetworkFailure, isTrue);
     });
+
+    test('refreshUser keeps the user and the tokens when the token refresh hits a 5xx', () async {
+      final h = _build(refresh: 'r');
+      h.adapter.onGet('/auth/me/', (s) => s.reply(200, meResponse));
+      await h.controller.restore();
+
+      // The access token expires during a backend deploy.
+      h.adapter.onGet('/auth/me/', (s) => s.reply(401, notAuthenticatedError));
+      h.adapter.onPost(
+        '/auth/token/refresh/',
+        (s) => s.reply(502, {'data': null, 'meta': <String, dynamic>{}, 'errors': []}),
+        data: Matchers.any,
+      );
+      await h.controller.refreshUser();
+
+      expect(h.controller.state.status, AuthStatus.authenticated);
+      expect(h.controller.state.user, isNotNull);
+      expect(h.controller.state.error?.failure, ApiFailure.server);
+      expect(h.store.cleared, isFalse);
+    });
   });
 
   group('policy re-acceptance', () {
@@ -245,9 +287,11 @@ void main() {
       await expectLater(
         h.controller.acceptPolicies(ids),
         throwsA(
-          isA<ApiException>()
-              .having((e) => e.failure, 'failure', ApiFailure.validation)
-              .having((e) => e.fieldErrors.keys, 'fields', ['policy_version_ids']),
+          isA<ApiException>().having((e) => e.failure, 'failure', ApiFailure.validation).having(
+            (e) => e.fieldErrors.keys,
+            'fields',
+            ['policy_version_ids'],
+          ),
         ),
       );
     });

@@ -10,6 +10,9 @@ class AuthRepository {
 
   final ApiClient _api;
 
+  /// The transport's session identity — see [ApiClient.session].
+  int? get session => _api.session;
+
   /// Phone **or** email plus password. The backend accepts either as the
   /// identifier and normalises phone formats itself, so the app does not have
   /// to guess which the user typed.

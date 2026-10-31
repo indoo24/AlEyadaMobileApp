@@ -18,8 +18,10 @@ import '../doctors/models.dart';
 import '../doctors/providers.dart';
 import '../doctors/widgets/doctor_card_tile.dart';
 import '../home/home_style.dart';
+import 'booking_logic.dart';
 import 'models.dart';
 import 'providers.dart';
+import 'widgets/booking_tile.dart';
 import '../../core/theme/app_palette.dart';
 
 /// Booking flow: pick a clinic (when there is a choice), a day, a time, confirm.
@@ -48,6 +50,12 @@ Future<void> showBookingSheet(BuildContext context, DoctorDetail doctor, {String
   if (container.read(authControllerProvider).isAuthenticated) {
     unawaited(container.read(authControllerProvider.notifier).refreshUser());
   }
+  // A booking confirmed after an earlier sheet was swiped away: this sheet opens
+  // on it, once, rather than on times that no longer include it.
+  final completed = container.read(completedBookingProvider(doctor.slug));
+  if (completed != null) {
+    container.read(completedBookingProvider(doctor.slug).notifier).state = null;
+  }
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -56,14 +64,17 @@ Future<void> showBookingSheet(BuildContext context, DoctorDetail doctor, {String
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (_) => _BookingSheet(doctor: doctor),
+    builder: (_) => _BookingSheet(doctor: doctor, completed: completed),
   );
 }
 
 class _BookingSheet extends ConsumerStatefulWidget {
-  const _BookingSheet({required this.doctor});
+  const _BookingSheet({required this.doctor, this.completed});
 
   final DoctorDetail doctor;
+
+  /// See [completedBookingProvider].
+  final PatientBooking? completed;
 
   @override
   ConsumerState<_BookingSheet> createState() => _BookingSheetState();
@@ -82,6 +93,21 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
 
   /// A verification code is being requested.
   bool _verifying = false;
+
+  /// [_booked] came from reading My Bookings after an unconfirmed submission,
+  /// not from the booking request's own answer.
+  bool _foundByCheck = false;
+
+  /// My Bookings is being read to look for an unconfirmed booking, and why that
+  /// last failed, if it did.
+  bool _checking = false;
+  Object? _checkError;
+
+  @override
+  void initState() {
+    super.initState();
+    _booked = widget.completed;
+  }
 
   @override
   void dispose() {
@@ -105,10 +131,39 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
     // website asks for the code at this same step). Sending the booking anyway
     // would only earn a 403.
     final unverifiedPhone = user != null && !user.isPhoneVerified ? user.phone : null;
+    final unconfirmed = ref.watch(unconfirmedBookingProvider(_slug));
+    // A confirm from a sheet that was swiped away, answered while this one is
+    // open: shown here, and so not again at the next opening.
+    ref.listen<PatientBooking?>(completedBookingProvider(_slug), (_, next) {
+      if (next == null || _booked != null) return;
+      setState(() => _booked = next);
+      final kept = ref.read(completedBookingProvider(_slug).notifier);
+      // Once this change has finished notifying its listeners.
+      scheduleMicrotask(() {
+        if (kept.mounted && identical(kept.state, next)) kept.state = null;
+      });
+    });
 
     final Widget content;
     if (_booked != null) {
-      content = _SuccessView(doctor: widget.doctor, booking: _booked!, clinic: link);
+      final bookedAt = clinics.where((c) => c.clinic.id == _booked!.clinicId).firstOrNull;
+      content = _SuccessView(
+        doctor: widget.doctor,
+        booking: _booked!,
+        clinic: bookedAt ?? link,
+        found: _foundByCheck,
+      );
+    } else if (unconfirmed != null) {
+      // Until it has been looked for, the lost booking replaces the calendar:
+      // there is nothing to confirm a second time, and no other time to take.
+      content = _UnconfirmedView(
+        unconfirmed: unconfirmed,
+        checking: _checking,
+        error: _checkError,
+        onCheck: _checkBookings,
+        onOpenBookings: _openBookings,
+        onBookAnyway: _bookAnyway,
+      );
     } else if (link == null) {
       content = _ClinicPicker(
         clinics: clinics,
@@ -188,7 +243,7 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
                   children: [content],
                 ),
               ),
-              if (_booked == null && link != null && hasSlots)
+              if (_booked == null && unconfirmed == null && link != null && hasSlots)
                 _ConfirmBar(
                   slug: _slug,
                   onConfirm: _confirm,
@@ -233,6 +288,27 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
     final controller = ref.read(bookingDraftProvider(_slug).notifier);
     final key = (slug: _slug, clinicId: clinicId);
 
+    // Who is booking. Every answer below is acted on only while that is still
+    // the session: a booking — or a failure — that arrives after a sign-out or
+    // another account's sign-in is the earlier account's, and is not shown,
+    // remembered or acted on for whoever is here now.
+    final session = container.read(authRepositoryProvider).session;
+    bool sessionEnded() => container.read(authRepositoryProvider).session != session;
+
+    // A drag closes the sheet even while the request is out, and the request
+    // carries on regardless — it is never cancelled or sent again for that. So
+    // everything needed to tell the patient how it ended is read now, from
+    // things that outlive the sheet: the app's messenger and router, and the
+    // words. Nothing below reaches the sheet's context or state unless it is
+    // still mounted.
+    final slug = _slug;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final router = GoRouter.maybeOf(context);
+    final l = L.of(context);
+    final doctorName = widget.doctor.displayName;
+    void announce(String message, [(String, VoidCallback)? action]) =>
+        _announceAfterClose(container, messenger, session, message, action);
+
     setState(() => _error = null);
     controller.setSubmitting(true);
     try {
@@ -246,13 +322,56 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
             visitType: draft.visitType,
             notesForDoctor: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
           );
+      if (sessionEnded()) return;
       // The list is stale, and so is the offer this slot came from.
       container.invalidate(myBookingsProvider);
       container.invalidate(availabilityProvider(key));
       controller.reset();
-      if (!mounted) return;
+      if (!mounted) {
+        // Made, after the sheet was swiped away: kept for the next opening of
+        // this doctor's sheet, and announced where the patient is now.
+        container.read(completedBookingProvider(slug).notifier).state = booking;
+        announce(l.bkBookedAfterClose(doctorName), (
+          l.bkViewBooking,
+          () => router?.push(Routes.bookingPath(booking.id)),
+        ));
+        return;
+      }
       setState(() => _booked = booking);
-    } on ApiException catch (e) {
+    } catch (error) {
+      // This session's own credentials refused: the client has just dropped
+      // them, which is why "no session now" still means this one. That is
+      // reported (as "sign in again"); anything else, once the session has
+      // moved on, is not.
+      final ownSessionRefused =
+          error is ApiException &&
+          error.isAuthFailure &&
+          container.read(authRepositoryProvider).session == null;
+      if (sessionEnded() && !ownSessionRefused) return;
+      if (bookingOutcomeUncertain(error)) {
+        // Sent, with no answer to rely on: it may exist. It is not sent again,
+        // and no other time is offered, until My Bookings has been looked at —
+        // even if this sheet is closed and opened again.
+        container.invalidate(myBookingsProvider);
+        container.read(unconfirmedBookingProvider(slug).notifier).state = UnconfirmedBooking(
+          clinicId: clinicId,
+          startAt: slot.startAt,
+          date: draft.selectedDate ?? '',
+          displayTime: slot.displayTime,
+        );
+        if (mounted) {
+          setState(() => _error = null);
+        } else {
+          announce(l.bkUnconfirmedAfterClose(doctorName), (
+            l.bkUnconfirmedOpenBookings,
+            () => router?.go(Routes.bookings),
+          ));
+        }
+        return;
+      }
+      // Anything that is not uncertain is an answer the server sent and the app
+      // read: a refusal.
+      final e = error as ApiException;
       // A 403 for a signed-in patient means the *account* failed a check the
       // backend makes on every booking — an unverified phone, or policies that
       // must be re-accepted. Re-read the account: the sheet then shows the
@@ -260,11 +379,22 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
       // a bare "no permission" the user can do nothing about.
       if (e.failure == ApiFailure.forbidden) {
         await container.read(authControllerProvider.notifier).refreshUser();
+        if (sessionEnded()) return;
       }
-      if (!mounted) return;
       final account = container.read(authControllerProvider).user;
       final needsVerification =
           e.failure == ApiFailure.forbidden && account != null && !account.isPhoneVerified;
+      if (!mounted) {
+        // Refused after the sheet was swiped away: said so — never as a
+        // success — in the messenger's own words, since this context is gone.
+        if (messenger != null && messenger.mounted) {
+          final reason = needsVerification
+              ? l.bkVerifyPhoneTitle
+              : messageForError(messenger.context, e);
+          announce(l.bkNotBookedAfterClose(doctorName, reason));
+        }
+        return;
+      }
       setState(() => _error = needsVerification ? null : messageForError(context, e));
       // If the slot went while they were deciding, drop the dead selection and
       // refetch, so they are choosing from what is actually still free. The sheet
@@ -274,11 +404,71 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
         controller.clearSlot();
         container.invalidate(availabilityProvider(key));
       }
-    } catch (e) {
-      if (mounted) setState(() => _error = messageForError(context, e));
     } finally {
-      controller.setSubmitting(false);
+      // A draft that belonged to an account that has since changed is gone.
+      if (controller.mounted) controller.setSubmitting(false);
     }
+  }
+
+  /// Read My Bookings again and look for the booking whose answer was lost.
+  ///
+  /// Found, it is shown as the server lists it. Not found, the sheet says so
+  /// without concluding it was never made: the endpoint gives no way to know.
+  Future<void> _checkBookings() async {
+    final pending = ref.read(unconfirmedBookingProvider(_slug));
+    if (pending == null || _checking) return;
+    final container = ProviderScope.containerOf(context, listen: false);
+    final session = container.read(authRepositoryProvider).session;
+    bool sessionEnded() => container.read(authRepositoryProvider).session != session;
+
+    setState(() {
+      _checking = true;
+      _checkError = null;
+    });
+    try {
+      container.invalidate(myBookingsProvider);
+      final all = await container.read(myBookingsProvider.future);
+      if (!mounted || sessionEnded()) return;
+      final found = findSubmittedBooking(
+        all,
+        doctorSlug: _slug,
+        startAt: pending.startAt,
+        clinicId: pending.clinicId,
+      );
+      final unconfirmed = container.read(unconfirmedBookingProvider(_slug).notifier);
+      if (found == null) {
+        unconfirmed.state = pending.notFound();
+        return;
+      }
+      unconfirmed.state = null;
+      container.invalidate(availabilityProvider((slug: _slug, clinicId: pending.clinicId)));
+      setState(() {
+        _booked = found;
+        _foundByCheck = true;
+      });
+    } catch (e) {
+      if (mounted && !sessionEnded()) setState(() => _checkError = e);
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
+  }
+
+  /// My Bookings itself. The unconfirmed booking is kept, so the sheet asks
+  /// again if it is reopened before the booking turned up.
+  void _openBookings() {
+    final router = GoRouter.of(context);
+    Navigator.of(context).pop();
+    router.go(Routes.bookings);
+  }
+
+  /// Book a time after all — only offered once My Bookings was read and did
+  /// not list the lost booking, and only on the patient's say-so.
+  void _bookAnyway() {
+    ref.read(unconfirmedBookingProvider(_slug).notifier).state = null;
+    ref.read(bookingDraftProvider(_slug).notifier).reset();
+    final clinicId = ref.read(selectedClinicProvider(_slug));
+    if (clinicId != null) ref.invalidate(availabilityProvider((slug: _slug, clinicId: clinicId)));
+    setState(() => _checkError = null);
   }
 
   /// Send a verification code and open the existing code screen, which returns
@@ -305,6 +495,45 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
       if (mounted) setState(() => _verifying = false);
     }
   }
+}
+
+/// How a booking ended, told where the patient is now — for when its sheet was
+/// swiped away before the answer came, and so cannot show it.
+///
+/// A snack bar on the app's own messenger: never a dialog, and never a
+/// navigation the patient did not ask for. It goes after a few seconds rather
+/// than staying until dismissed (the default for one with an action), it is
+/// taken down if the account changes meanwhile, and its action does nothing
+/// once the account has changed: the outcome belongs to the account that booked.
+void _announceAfterClose(
+  ProviderContainer container,
+  ScaffoldMessengerState? messenger,
+  int? session,
+  String message, [
+  (String, VoidCallback)? action,
+]) {
+  if (messenger == null || !messenger.mounted) return;
+  bool sameSession() => container.read(authRepositoryProvider).session == session;
+  final shown = messenger.showSnackBar(
+    SnackBar(
+      content: Text(message),
+      persist: false,
+      duration: const Duration(seconds: 6),
+      action: action == null
+          ? null
+          : SnackBarAction(
+              label: action.$1,
+              onPressed: () {
+                if (sameSession()) action.$2();
+              },
+            ),
+    ),
+  );
+  final whoIsHere = container.listen<String?>(
+    authControllerProvider.select((s) => s.user?.id),
+    (_, __) => shown.close(),
+  );
+  unawaited(shown.closed.whenComplete(whoIsHere.close));
 }
 
 /// Why the confirm button asks for a phone code instead.
@@ -1143,11 +1372,20 @@ class _ConfirmBar extends ConsumerWidget {
 /// What the server confirmed. Every value comes from the booking it returned;
 /// there is no reference number because the API does not issue one.
 class _SuccessView extends StatelessWidget {
-  const _SuccessView({required this.doctor, required this.booking, required this.clinic});
+  const _SuccessView({
+    required this.doctor,
+    required this.booking,
+    required this.clinic,
+    this.found = false,
+  });
 
   final DoctorDetail doctor;
   final PatientBooking booking;
   final DoctorClinicLink? clinic;
+
+  /// Found in My Bookings after its own answer was lost, rather than answered
+  /// by the booking request: titled as found, with the status the server lists.
+  final bool found;
 
   @override
   Widget build(BuildContext context) {
@@ -1173,10 +1411,11 @@ class _SuccessView extends StatelessWidget {
         Semantics(
           liveRegion: true,
           child: Text(
-            l.bookingSuccessTitle,
+            found ? l.bkUnconfirmedFoundTitle : l.bookingSuccessTitle,
             style: context.homeType.greeting.copyWith(fontSize: 19),
           ),
         ),
+        if (found) ...[const SizedBox(height: 10), BookingStatusChip(status: booking.status)],
         const SizedBox(height: 18),
         _Summary(
           rows: [
@@ -1214,6 +1453,111 @@ class _SuccessView extends StatelessWidget {
           ),
           child: Text(l.bkDone),
         ),
+      ],
+    );
+  }
+}
+
+/// A booking that was sent but never answered: it may or may not exist.
+///
+/// Says so plainly, shows which appointment it was, and offers to look in My
+/// Bookings. It never claims the booking failed — the endpoint gives no way to
+/// know — and offers another time only once My Bookings was read without it.
+class _UnconfirmedView extends StatelessWidget {
+  const _UnconfirmedView({
+    required this.unconfirmed,
+    required this.checking,
+    required this.error,
+    required this.onCheck,
+    required this.onOpenBookings,
+    required this.onBookAnyway,
+  });
+
+  final UnconfirmedBooking unconfirmed;
+  final bool checking;
+  final Object? error;
+  final VoidCallback onCheck;
+  final VoidCallback onOpenBookings;
+  final VoidCallback onBookAnyway;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final tone = context.palette.toneWarning;
+    final notFound = unconfirmed.checkedNotFound;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        Center(
+          child: Container(
+            width: 76,
+            height: 76,
+            decoration: BoxDecoration(color: tone.bg, shape: BoxShape.circle),
+            child: Icon(Icons.sync_problem_rounded, color: tone.fg, size: 44),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Semantics(
+          liveRegion: true,
+          child: Text(
+            l.bkUnconfirmedTitle,
+            textAlign: TextAlign.center,
+            style: context.homeType.greeting.copyWith(fontSize: 19),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          notFound ? l.bkUnconfirmedNotFound : l.bkUnconfirmedBody,
+          textAlign: TextAlign.center,
+          style: context.homeType.meta.copyWith(fontSize: 13.5, height: 1.6),
+        ),
+        const SizedBox(height: 18),
+        _Summary(
+          rows: [
+            if (unconfirmed.date.isNotEmpty)
+              (l.bookingDateTime, longDayLabel(unconfirmed.date, locale), false),
+            if (unconfirmed.displayTime.isNotEmpty) (l.bkTime, unconfirmed.displayTime, true),
+          ],
+        ),
+        const SizedBox(height: 16),
+        FormErrorBanner(message: error == null ? null : messageForError(context, error!)),
+        FilledButton(
+          onPressed: checking ? null : onCheck,
+          style: FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(50),
+            textStyle: context.homeType.button.copyWith(fontSize: 15),
+          ),
+          child: checking
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                )
+              : Text(notFound ? l.bkUnconfirmedCheckAgain : l.bkUnconfirmedCheck),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton(
+          onPressed: checking ? null : onOpenBookings,
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(48),
+            textStyle: context.homeType.button.copyWith(fontSize: 14),
+          ),
+          child: Text(l.bkUnconfirmedOpenBookings),
+        ),
+        if (notFound) ...[
+          const SizedBox(height: 4),
+          TextButton(
+            onPressed: checking ? null : onBookAnyway,
+            style: TextButton.styleFrom(
+              minimumSize: const Size.fromHeight(46),
+              textStyle: context.homeType.button.copyWith(fontSize: 14),
+            ),
+            child: Text(l.bkUnconfirmedBookAnyway),
+          ),
+        ],
       ],
     );
   }

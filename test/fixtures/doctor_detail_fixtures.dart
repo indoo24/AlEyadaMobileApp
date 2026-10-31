@@ -314,6 +314,16 @@ class DetailServer {
             requests.add(o);
             if (bookGate != null) await bookGate!.future;
             onBook?.call();
+            final lost = bookAnswerLost;
+            if (lost != null) {
+              // The request arrived; whether it was carried out is up to the test.
+              if (bookSavedBeforeLoss) booked.add(createdBooking());
+              return handler.reject(DioException(requestOptions: o, type: lost), true);
+            }
+            if (bookUnreadable) {
+              booked.add(createdBooking());
+              return handler.resolve(reply('<html>proxy page</html>', 201));
+            }
             if (bookError != null) return fail(bookErrorStatus, bookError!);
             booked.add(createdBooking());
             return handler.resolve(reply(envelope(createdBooking()), 201));
@@ -333,7 +343,18 @@ class DetailServer {
           }
           if (o.path == '/bookings/' && o.method == 'GET') {
             requests.add(o);
+            if (bookingsListGate != null) await bookingsListGate!.future;
+            if (bookingsListLost) {
+              return handler.reject(
+                DioException(requestOptions: o, type: DioExceptionType.connectionError),
+                true,
+              );
+            }
             return handler.resolve(reply(paged(booked)));
+          }
+          if (o.path == '/auth/logout/') {
+            requests.add(o);
+            return handler.resolve(reply(envelope(null)));
           }
           if (o.path == '/tracking/contact-click/') {
             return handler.resolve(reply(envelope(null), 201));
@@ -385,6 +406,21 @@ class DetailServer {
   Completer<void>? bookGate;
   Map<String, dynamic>? bookError;
   int bookErrorStatus = 409;
+
+  /// The booking's answer never reaches the app — lost this way.
+  DioExceptionType? bookAnswerLost;
+
+  /// With [bookAnswerLost]: the server made the booking before the answer was lost.
+  bool bookSavedBeforeLoss = false;
+
+  /// The booking is made and answered 201 — with a body that is not the API's.
+  bool bookUnreadable = false;
+
+  /// Hold `GET /bookings/`, or lose its answer.
+  Completer<void>? bookingsListGate;
+  bool bookingsListLost = false;
+  Iterable<RequestOptions> get bookingsLists =>
+      requests.where((r) => r.path == '/bookings/' && r.method == 'GET');
 
   final requests = <RequestOptions>[];
 

@@ -1,3 +1,4 @@
+import '../../core/api/api_error.dart';
 import 'models.dart';
 
 /// Decisions My Bookings and Booking Details share, kept free of widgets.
@@ -164,6 +165,51 @@ enum PaymentState {
     'rejected' => rejected,
     _ => unknown,
   };
+}
+
+/// Whether a booking request that failed may nonetheless have created the
+/// booking.
+///
+/// The booking endpoint takes no idempotency key, so the answer is the only
+/// proof of what happened. An answer the server sent and the app read — a
+/// validation error, 401, 403, 404, 409, 429 — is a refusal: nothing was made.
+/// Without one the request may still have been carried out:
+///
+///  * no answer at all — a timeout or a connection lost once the request may
+///    already be on its way (a failure to connect at all cannot be told apart);
+///  * a 5xx — the server, or a gateway in front of it, failed, possibly after
+///    the booking was saved;
+///  * a 2xx that could not be read, which almost certainly means it was made.
+bool bookingOutcomeUncertain(Object error) {
+  if (error is! ApiException) return true;
+  return switch (error.failure) {
+    ApiFailure.network || ApiFailure.server => true,
+    // No status means no answer (a failed handshake, for instance).
+    ApiFailure.unexpected => error.statusCode == null,
+    _ => false,
+  };
+}
+
+/// The patient's active booking for this doctor at [startAt] (a UTC instant),
+/// and at [clinicId] when both sides name one — the booking a submission whose
+/// answer was lost would have made. Null when there is none in [bookings].
+///
+/// The API returns no slot id on a booking and no request reference, so the
+/// doctor, the time and the clinic are what identify it. A patient cannot hold
+/// two active bookings with one doctor at one time, so at most one matches.
+PatientBooking? findSubmittedBooking(
+  List<PatientBooking> bookings, {
+  required String doctorSlug,
+  required DateTime startAt,
+  String? clinicId,
+}) {
+  for (final b in bookings) {
+    if (!b.status.isActive || b.doctorSlug != doctorSlug) continue;
+    if (!b.startAt.isAtSameMomentAs(startAt)) continue;
+    if (clinicId != null && b.clinicId != null && b.clinicId != clinicId) continue;
+    return b;
+  }
+  return null;
 }
 
 /// The booking's clinic on the doctor's public profile: by id when the booking

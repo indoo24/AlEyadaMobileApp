@@ -3115,6 +3115,72 @@ abstract class L {
   /// **'الوقت'**
   String get bkTime;
 
+  /// No description provided for @bkUnconfirmedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نتمكّن من تأكيد حجزك'**
+  String get bkUnconfirmedTitle;
+
+  /// No description provided for @bkUnconfirmedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'انقطع الاتصال قبل أن يصلنا رد الخادم، لذلك ربما تم الحجز بالفعل. تحقّق من حجوزاتك قبل أن تحاول الحجز مرة أخرى.'**
+  String get bkUnconfirmedBody;
+
+  /// No description provided for @bkUnconfirmedNotFound.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نجد هذا الموعد في حجوزاتك حتى الآن، لكن هذا لا يعني بالضرورة أنه لم يُحجز. تحقّق مرة أخرى بعد قليل، أو من صفحة حجوزاتي، قبل أن تحجز موعدًا آخر.'**
+  String get bkUnconfirmedNotFound;
+
+  /// No description provided for @bkUnconfirmedCheck.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقّق من حجوزاتي'**
+  String get bkUnconfirmedCheck;
+
+  /// No description provided for @bkUnconfirmedCheckAgain.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقّق مرة أخرى'**
+  String get bkUnconfirmedCheckAgain;
+
+  /// No description provided for @bkUnconfirmedOpenBookings.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح حجوزاتي'**
+  String get bkUnconfirmedOpenBookings;
+
+  /// No description provided for @bkUnconfirmedBookAnyway.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار موعد آخر'**
+  String get bkUnconfirmedBookAnyway;
+
+  /// No description provided for @bkUnconfirmedFoundTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'وجدنا حجزك'**
+  String get bkUnconfirmedFoundTitle;
+
+  /// No description provided for @bkBookedAfterClose.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تأكيد حجزك مع {doctor}.'**
+  String bkBookedAfterClose(String doctor);
+
+  /// No description provided for @bkUnconfirmedAfterClose.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نتمكّن من تأكيد حجزك مع {doctor}. تحقّق من حجوزاتك قبل أن تحجز مرة أخرى.'**
+  String bkUnconfirmedAfterClose(String doctor);
+
+  /// No description provided for @bkNotBookedAfterClose.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يتم حجز موعدك مع {doctor}: {reason}'**
+  String bkNotBookedAfterClose(String doctor, String reason);
+
   /// No description provided for @bkVerifyPhoneTitle.
   ///
   /// In ar, this message translates to:

@@ -14,11 +14,15 @@ import 'package:http_mock_adapter/http_mock_adapter.dart';
 /// app — only the HTTP adapter is swapped. A test that mocks the repository
 /// instead would pass while the envelope parsing was broken.
 class TestHarness {
-  TestHarness({String? refreshToken}) {
+  TestHarness({
+    String? refreshToken,
+    void Function()? onSessionExpired,
+    DateTime Function()? clock,
+  }) {
     dio = Dio(BaseOptions(baseUrl: 'https://example.test/api/v1'));
     adapter = DioAdapter(dio: dio, matcher: const UrlRequestMatcher());
     store = _InMemoryTokenStore(refresh: refreshToken);
-    client = ApiClient(tokens: store, dio: dio);
+    client = ApiClient(tokens: store, dio: dio, onSessionExpired: onSessionExpired, clock: clock);
   }
 
   late final Dio dio;

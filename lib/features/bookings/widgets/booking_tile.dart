@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/tokens.dart';
+import '../../../core/utils/media_url.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../doctors/doctor_detail_logic.dart';
@@ -28,6 +29,32 @@ String? specialtyOf(DoctorDetail? d) {
   if (primary != null && primary.isNotEmpty) return primary;
   final title = d.card.professionalTitleAr.trim();
   return title.isEmpty ? null : title;
+}
+
+/// The name to show for the doctor of [b].
+///
+/// The booking's own, when it carries one; otherwise the public profile's — which
+/// the screens already load for the specialty — trying `display_name`, then the
+/// Arabic, then the English full name. Empty only when neither source has any
+/// name at all.
+String doctorNameOf(PatientBooking b, DoctorDetail? profile) {
+  final own = b.doctorName.trim();
+  if (own.isNotEmpty) return own;
+  final card = profile?.card;
+  if (card == null) return '';
+  for (final name in [card.displayName, card.fullNameAr, card.fullNameEn ?? '']) {
+    if (name.trim().isNotEmpty) return name.trim();
+  }
+  return '';
+}
+
+/// The photo to show for the doctor of [b]: the booking's, else the profile's —
+/// as an absolute URL — or null when there is none (the avatar then shows an
+/// initial, or a doctor icon when there is no name either).
+String? doctorPhotoOf(PatientBooking b, DoctorDetail? profile) {
+  final own = (b.doctorPhoto ?? '').trim();
+  if (own.isNotEmpty) return own;
+  return resolveMediaUrl(profile?.card.photo);
 }
 
 /// The public profile behind a booking, when there is a slug to look it up by.
@@ -203,7 +230,9 @@ class BookingTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final b = booking;
-    final specialty = specialtyOf(doctorOf(ref, b)?.valueOrNull);
+    final profile = doctorOf(ref, b)?.valueOrNull;
+    final specialty = specialtyOf(profile);
+    final doctorName = doctorNameOf(b, profile);
     final address = (b.clinicAddress ?? '').trim();
 
     return Container(
@@ -226,14 +255,19 @@ class BookingTile extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    DoctorAvatar(photo: b.doctorPhoto, name: b.doctorName, size: 46, radius: 23),
+                    DoctorAvatar(
+                      photo: doctorPhotoOf(b, profile),
+                      name: doctorName,
+                      size: 46,
+                      radius: 23,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            b.doctorName,
+                            doctorName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: context.homeType.doctorName,
@@ -333,7 +367,9 @@ class NextBookingCard extends ConsumerWidget {
     final l = L.of(context);
     final locale = Localizations.localeOf(context).toLanguageTag();
     final b = booking;
-    final specialty = specialtyOf(doctorOf(ref, b)?.valueOrNull);
+    final profile = doctorOf(ref, b)?.valueOrNull;
+    final specialty = specialtyOf(profile);
+    final doctorName = doctorNameOf(b, profile);
     final countdown = countdownLabel(l, b, nowUtc);
     final parts = calendarParts(b.displayDate, locale);
 
@@ -397,8 +433,8 @@ class NextBookingCard extends ConsumerWidget {
                   padding: const EdgeInsets.all(2),
                   decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                   child: DoctorAvatar(
-                    photo: b.doctorPhoto,
-                    name: b.doctorName,
+                    photo: doctorPhotoOf(b, profile),
+                    name: doctorName,
                     size: 44,
                     radius: 22,
                   ),
@@ -409,7 +445,7 @@ class NextBookingCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        b.doctorName,
+                        doctorName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
