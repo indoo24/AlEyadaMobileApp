@@ -58,6 +58,9 @@ Future<void> showBookingSheet(BuildContext context, DoctorDetail doctor, {String
   }
   return showModalBottomSheet<void>(
     context: context,
+    // Over the tab shell, not in its navigator, where Home's doctor cards
+    // would open it under the floating dock.
+    useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: context.palette.surfaceRaised,
@@ -221,6 +224,9 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
       );
     }
 
+    final confirmBar =
+        _booked == null && unconfirmed == null && link != null && hasSlots;
+
     return PopScope(
       // Never lose track of a booking mid-request.
       canPop: !draft.submitting,
@@ -239,11 +245,19 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
               Expanded(
                 child: ListView(
                   controller: controller,
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 16, AppSpacing.gutter, 24),
+                  // The confirm bar keeps itself above the system navigation
+                  // bar; without it, the content's end has to.
+                  padding: EdgeInsets.fromLTRB(
+                    AppSpacing.gutter,
+                    16,
+                    AppSpacing.gutter,
+                    24 +
+                        (confirmBar ? 0 : MediaQuery.paddingOf(context).bottom),
+                  ),
                   children: [content],
                 ),
               ),
-              if (_booked == null && unconfirmed == null && link != null && hasSlots)
+              if (confirmBar)
                 _ConfirmBar(
                   slug: _slug,
                   onConfirm: _confirm,

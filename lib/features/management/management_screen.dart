@@ -46,11 +46,13 @@ class ManagementScreen extends ConsumerWidget {
               onRefresh: refresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(
+                // The bottom clears the floating nav dock as well (its height is
+                // the body's bottom padding under the shell, 0 anywhere else).
+                padding: EdgeInsets.fromLTRB(
                   AppSpacing.gutter,
                   HomeSpacing.top,
                   AppSpacing.gutter,
-                  AppSpacing.xl,
+                  AppSpacing.xl + MediaQuery.paddingOf(context).bottom,
                 ),
                 children: const [
                   _ActivationBanner(),

@@ -212,6 +212,9 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> {
     final suggestions = _suggestions();
 
     const gutter = AppSpacing.gutter;
+    // Clears the floating nav dock: under the shell the body's bottom padding is
+    // the dock's height, and 0 anywhere else.
+    final dock = MediaQuery.paddingOf(context).bottom;
 
     return RefreshIndicator(
       onRefresh: () => ref.read(doctorListProvider.notifier).refresh(),
@@ -252,16 +255,19 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> {
               child: LinearProgressIndicator(minHeight: 2, backgroundColor: Colors.transparent),
             ),
           if (list.hasError && page == null)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: AppErrorView(
-                error: list.error!,
-                onRetry: () => ref.read(doctorListProvider.notifier).refresh(),
+            SliverPadding(
+              padding: EdgeInsets.only(bottom: dock),
+              sliver: SliverFillRemaining(
+                hasScrollBody: false,
+                child: AppErrorView(
+                  error: list.error!,
+                  onRetry: () => ref.read(doctorListProvider.notifier).refresh(),
+                ),
               ),
             )
           else if (page == null)
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(gutter, 4, gutter, 0),
+              padding: EdgeInsets.fromLTRB(gutter, 4, gutter, dock),
               sliver: SliverList.separated(
                 itemCount: 3,
                 separatorBuilder: (_, __) => const SizedBox(height: HomeSpacing.card),
@@ -269,15 +275,18 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> {
               ),
             )
           else if (page.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: _EmptyResults(
-                canClear: query.hasFilters,
-                onClear: () {
-                  _search.clear();
-                  _settledText = '';
-                  ref.read(doctorQueryProvider.notifier).state = DoctorQuery(sort: query.sort);
-                },
+            SliverPadding(
+              padding: EdgeInsets.only(bottom: dock),
+              sliver: SliverFillRemaining(
+                hasScrollBody: false,
+                child: _EmptyResults(
+                  canClear: query.hasFilters,
+                  onClear: () {
+                    _search.clear();
+                    _settledText = '';
+                    ref.read(doctorQueryProvider.notifier).state = DoctorQuery(sort: query.sort);
+                  },
+                ),
               ),
             )
           else ...[
@@ -298,7 +307,7 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                padding: EdgeInsets.only(top: AppSpacing.xl, bottom: AppSpacing.xl + dock),
                 child: page.hasMore
                     ? const Center(child: CircularProgressIndicator(strokeWidth: 2.2))
                     : const SizedBox.shrink(),

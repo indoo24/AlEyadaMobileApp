@@ -24,9 +24,13 @@ import '../../../core/theme/app_palette.dart';
 /// **unrestricted** one — a patient must be able to search everywhere the
 /// directory has entries, even though a doctor may only register in the launch
 /// governorate.
+///
+/// On the root navigator, so the tab shell's floating dock is not painted
+/// over the sheet.
 Future<void> showDoctorFilterSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     showDragHandle: true,
     builder: (_) => const _FilterSheet(),

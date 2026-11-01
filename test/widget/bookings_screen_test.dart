@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:aleyada_mobile/app/bottom_nav.dart';
 import 'package:aleyada_mobile/app/router.dart';
+import 'package:aleyada_mobile/app/shell.dart';
 import 'package:aleyada_mobile/core/auth/models.dart';
 import 'package:aleyada_mobile/core/providers.dart';
 import 'package:aleyada_mobile/core/theme/app_theme.dart';
@@ -330,5 +332,77 @@ void main() {
         }
       }
     }
+  });
+
+  testWidgets('under the floating dock, the last booking scrolls clear of it', (tester) async {
+    server.all = [
+      for (var i = 0; i < 8; i++)
+        patientBooking(id: 'b$i', start: DateTime.utc(2030, 1, 5 + i, 7), doctorName: 'د. $i'),
+    ];
+    await container
+        .read(authControllerProvider.notifier)
+        .adoptSession(
+          const AuthTokens(access: 'a', refresh: 'r'),
+          user: Me.fromJson(patientUser()),
+        );
+    Widget stub(String name) => Scaffold(body: Text(name));
+    final router = GoRouter(
+      initialLocation: Routes.bookings,
+      routes: [
+        ShellRoute(
+          builder: (_, __, child) => AppShell(child: child),
+          routes: [
+            GoRoute(path: Routes.home, builder: (_, __) => stub('home')),
+            GoRoute(path: Routes.doctors, builder: (_, __) => stub('doctors')),
+            GoRoute(path: Routes.bookings, builder: (_, __) => const BookingsScreen()),
+            GoRoute(path: Routes.favorites, builder: (_, __) => stub('favorites')),
+            GoRoute(path: Routes.account, builder: (_, __) => stub('account')),
+          ],
+        ),
+      ],
+    );
+    tester.view
+      ..physicalSize = const Size(720, 1280)
+      ..devicePixelRatio = 2
+      ..padding = const FakeViewPadding(bottom: 48)
+      ..viewPadding = const FakeViewPadding(bottom: 48);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(
+          routerConfig: router,
+          locale: const Locale('ar'),
+          theme: AppTheme.light(),
+          localizationsDelegates: L.localizationsDelegates,
+          supportedLocales: L.supportedLocales,
+        ),
+      ),
+    );
+    await settle(tester);
+
+    final dockTop = tester
+        .getRect(
+          find.descendant(of: find.byType(GlassBottomNav), matching: find.byType(BackdropFilter)),
+        )
+        .top;
+    final list = find.byType(ListView).last;
+    expect(
+      tester
+          .state<ScrollableState>(find.descendant(of: list, matching: find.byType(Scrollable)))
+          .position
+          .maxScrollExtent,
+      greaterThan(0),
+      reason: 'longer than the screen, so the check means something',
+    );
+    await tester.drag(list, const Offset(0, -4000));
+    await settle(tester);
+
+    expect(
+      tester.getRect(find.byType(BookingTile).last).bottom,
+      lessThanOrEqualTo(dockTop),
+      reason: 'the last booking ends above the dock, not under it',
+    );
+    expect(tester.takeException(), isNull);
   });
 }

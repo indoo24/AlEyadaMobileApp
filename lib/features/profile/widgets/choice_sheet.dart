@@ -14,9 +14,13 @@ class ChoiceOption<T> {
 
 /// Opens a bottom sheet for [builder] — the frame every settings picker shares,
 /// so the language and the appearance sheets look and behave the same.
+///
+/// It opens on the root navigator: the account tab lives in the tab shell's
+/// own navigator, under the floating dock, which would be painted over it.
 Future<void> showChoiceSheetFrame(BuildContext context, WidgetBuilder builder) =>
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       useSafeArea: true,
       backgroundColor: context.palette.surfaceRaised,
       shape: const RoundedRectangleBorder(
@@ -101,8 +105,15 @@ class ChoiceSheet<T> extends StatelessWidget {
       );
     }
 
+    // The sheet runs to the bottom edge; its last option ends above the system
+    // navigation bar, and the options scroll when they outgrow the sheet.
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 10, AppSpacing.gutter, 20),
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.gutter,
+        10,
+        AppSpacing.gutter,
+        20 + MediaQuery.paddingOf(context).bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -120,10 +131,19 @@ class ChoiceSheet<T> extends StatelessWidget {
             child: Text(title, style: context.homeType.sectionTitle.copyWith(fontSize: 17)),
           ),
           const SizedBox(height: 12),
-          for (var i = 0; i < options.length; i++) ...[
-            if (i > 0) const SizedBox(height: 6),
-            option(options[i]),
-          ],
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < options.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 6),
+                    option(options[i]),
+                  ],
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:aleyada_mobile/app/bottom_nav.dart';
 import 'package:aleyada_mobile/app/router.dart';
 import 'package:aleyada_mobile/app/shell.dart';
 import 'package:aleyada_mobile/core/auth/models.dart';
@@ -506,5 +507,41 @@ void main() {
       expect(empty.uniquePatients, 0);
       expect(empty.contactRate, 0);
     });
+  });
+
+  testWidgets('under the floating dock, the hub\'s last card scrolls clear of it', (tester) async {
+    await signInAs(doctorUser());
+    await pumpRouter(tester, shellRouter(start: Routes.management));
+    // A small phone with a gesture bar, so the hub is longer than the screen.
+    tester.view
+      ..physicalSize = const Size(720, 1120)
+      ..padding = const FakeViewPadding(bottom: 48)
+      ..viewPadding = const FakeViewPadding(bottom: 48);
+    await settle(tester);
+
+    final dockTop = tester
+        .getRect(
+          find.descendant(of: find.byType(GlassBottomNav), matching: find.byType(BackdropFilter)),
+        )
+        .top;
+    final hub = find.descendant(of: find.byType(ManagementScreen), matching: find.byType(ListView));
+    final scrollable = find.descendant(of: hub, matching: find.byType(Scrollable)).first;
+    expect(
+      tester.state<ScrollableState>(scrollable).position.maxScrollExtent,
+      greaterThan(0),
+      reason: 'longer than the screen, so the check means something',
+    );
+    await tester.drag(hub, const Offset(0, -6000));
+    await settle(tester);
+
+    // The list's last child — whatever the hub ends with — sits above the dock.
+    final children =
+        (tester.widget<ListView>(hub).childrenDelegate as SliverChildListDelegate).children;
+    expect(
+      tester.getRect(find.byWidget(children.last)).bottom,
+      lessThanOrEqualTo(dockTop),
+      reason: 'the hub ends above the dock, not under it',
+    );
+    expect(tester.takeException(), isNull);
   });
 }

@@ -313,7 +313,14 @@ class _Section extends StatelessWidget {
 
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 16, AppSpacing.gutter, 28),
+      // The bottom clears the floating nav dock as well (its height is the body's
+      // bottom padding under the shell, 0 anywhere else).
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.gutter,
+        16,
+        AppSpacing.gutter,
+        28 + MediaQuery.paddingOf(context).bottom,
+      ),
       itemCount: items.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (_, i) => _Appear(index: i, child: items[i]),
@@ -347,7 +354,12 @@ class _LoadingList extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListView.separated(
     physics: const NeverScrollableScrollPhysics(),
-    padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, 16, AppSpacing.gutter, 28),
+    padding: EdgeInsets.fromLTRB(
+      AppSpacing.gutter,
+      16,
+      AppSpacing.gutter,
+      28 + MediaQuery.paddingOf(context).bottom,
+    ),
     itemCount: 3,
     separatorBuilder: (_, __) => const SizedBox(height: 12),
     itemBuilder: (_, __) => const BookingCardSkeleton(),
@@ -468,7 +480,8 @@ class _Centered extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(minHeight: constraints.maxHeight),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          // Centred in what the floating nav dock leaves visible.
+          padding: EdgeInsets.fromLTRB(32, 24, 32, 24 + MediaQuery.paddingOf(context).bottom),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: children),
         ),
       ),
