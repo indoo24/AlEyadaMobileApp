@@ -752,6 +752,17 @@ class LAr extends L {
   String get homeArticleCertified => 'مراجَع طبياً';
 
   @override
+  String get articleScreenTitle => 'المقال';
+
+  @override
+  String articleReviewedBy(String name) {
+    return 'راجعه طبياً: $name';
+  }
+
+  @override
+  String get articleNoContent => 'لا يتوفر نص لهذا المقال بعد.';
+
+  @override
   String get searchRecentTitle => 'عمليات البحث الأخيرة';
 
   @override

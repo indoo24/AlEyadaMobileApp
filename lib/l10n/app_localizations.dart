@@ -1471,6 +1471,24 @@ abstract class L {
   /// **'مراجَع طبياً'**
   String get homeArticleCertified;
 
+  /// No description provided for @articleScreenTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المقال'**
+  String get articleScreenTitle;
+
+  /// No description provided for @articleReviewedBy.
+  ///
+  /// In ar, this message translates to:
+  /// **'راجعه طبياً: {name}'**
+  String articleReviewedBy(String name);
+
+  /// No description provided for @articleNoContent.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يتوفر نص لهذا المقال بعد.'**
+  String get articleNoContent;
+
   /// No description provided for @searchRecentTitle.
   ///
   /// In ar, this message translates to:

@@ -760,6 +760,17 @@ class LEn extends L {
   String get homeArticleCertified => 'Medically reviewed';
 
   @override
+  String get articleScreenTitle => 'Article';
+
+  @override
+  String articleReviewedBy(String name) {
+    return 'Medically reviewed by $name';
+  }
+
+  @override
+  String get articleNoContent => 'This article has no text yet.';
+
+  @override
   String get searchRecentTitle => 'Recent searches';
 
   @override

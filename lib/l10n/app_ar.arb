@@ -264,6 +264,10 @@
   "homeNoArticles": "لا توجد مقالات منشورة حالياً.",
   "homeSectionError": "تعذّر تحميل هذا القسم.",
   "homeArticleCertified": "مراجَع طبياً",
+  "articleScreenTitle": "المقال",
+  "articleReviewedBy": "راجعه طبياً: {name}",
+  "@articleReviewedBy": { "placeholders": { "name": { "type": "String" } } },
+  "articleNoContent": "لا يتوفر نص لهذا المقال بعد.",
 
   "searchRecentTitle": "عمليات البحث الأخيرة",
   "searchClearAll": "مسح الكل",
