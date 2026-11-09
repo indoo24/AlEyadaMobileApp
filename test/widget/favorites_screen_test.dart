@@ -1,3 +1,4 @@
+import 'package:aleyada_mobile/app/bottom_nav.dart';
 import 'package:aleyada_mobile/app/shell.dart';
 import 'package:aleyada_mobile/app/router.dart';
 import 'package:aleyada_mobile/core/theme/app_theme.dart';
@@ -509,6 +510,91 @@ void main() {
       expect(heartOn(), findsNothing);
       expect(container.read(favoritesProvider).entries, isEmpty);
     });
+
+    testWidgets(
+      'under the floating dock, Search and Favorites scroll their last doctor clear of it',
+      (tester) async {
+        seed([_row(_firstId, _firstSlug), _row(_secondId, _secondSlug)]);
+        Widget stub(String name) => Scaffold(body: Text(name));
+        final router = GoRouter(
+          initialLocation: Routes.doctors,
+          routes: [
+            ShellRoute(
+              builder: (_, __, child) => AppShell(child: child),
+              routes: [
+                GoRoute(path: Routes.home, builder: (_, __) => stub('home')),
+                GoRoute(path: Routes.doctors, builder: (_, __) => const DoctorsScreen()),
+                GoRoute(path: Routes.bookings, builder: (_, __) => stub('bookings')),
+                GoRoute(path: Routes.favorites, builder: (_, __) => const FavoritesScreen()),
+                GoRoute(path: Routes.account, builder: (_, __) => stub('account')),
+              ],
+            ),
+          ],
+        );
+        // A small phone with a gesture bar, so both lists are longer than the screen.
+        tester.view
+          ..physicalSize = const Size(720, 1120)
+          ..devicePixelRatio = 2
+          ..padding = const FakeViewPadding(bottom: 48)
+          ..viewPadding = const FakeViewPadding(bottom: 48);
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              locale: const Locale('ar'),
+              theme: AppTheme.light(),
+              localizationsDelegates: L.localizationsDelegates,
+              supportedLocales: L.supportedLocales,
+            ),
+          ),
+        );
+        await settle(tester);
+
+        final dockTop = tester
+            .getRect(
+              find.descendant(
+                of: find.byType(GlassBottomNav),
+                matching: find.byType(BackdropFilter),
+              ),
+            )
+            .top;
+
+        /// The tab's main list: the tallest vertical scrollable on screen.
+        Finder mainList() {
+          final vertical = find.byWidgetPredicate(
+            (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+          );
+          final all = vertical.evaluate().toList();
+          all.sort((a, b) => b.size!.height.compareTo(a.size!.height));
+          return find.byElementPredicate((e) => e == all.first);
+        }
+
+        for (final tab in ['الأطباء', 'المفضلة']) {
+          await tester.tap(
+            find.descendant(of: find.byType(GlassBottomNav), matching: find.text(tab)),
+          );
+          await settle(tester);
+          expect(find.byType(DoctorResultCard), findsNWidgets(2), reason: tab);
+
+          final list = mainList();
+          expect(
+            tester.state<ScrollableState>(list).position.maxScrollExtent,
+            greaterThan(0),
+            reason: '$tab: longer than the screen, so the check means something',
+          );
+          await tester.drag(list, const Offset(0, -3000));
+          await settle(tester);
+          expect(
+            tester.getRect(find.byType(DoctorResultCard).last).bottom,
+            lessThanOrEqualTo(dockTop),
+            reason: '$tab: the last doctor ends above the dock, not under it',
+          );
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }
 

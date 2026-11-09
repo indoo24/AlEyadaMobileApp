@@ -107,7 +107,12 @@ class _LoadingList extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListView(
     physics: const NeverScrollableScrollPhysics(),
-    padding: const EdgeInsets.all(AppSpacing.gutter),
+    padding: EdgeInsets.fromLTRB(
+      AppSpacing.gutter,
+      AppSpacing.gutter,
+      AppSpacing.gutter,
+      AppSpacing.gutter + MediaQuery.paddingOf(context).bottom,
+    ),
     children: const [
       Skeleton(height: 200, radius: homeCardRadius),
       SizedBox(height: HomeSpacing.card),
@@ -202,11 +207,13 @@ class _FavoritesListState extends ConsumerState<_FavoritesList> {
               child: AnimatedList(
                 key: _listKey,
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(
+                // The bottom clears the floating nav dock as well (its height is
+                // the body's bottom padding under the shell, 0 anywhere else).
+                padding: EdgeInsets.fromLTRB(
                   AppSpacing.gutter,
                   HomeSpacing.top,
                   AppSpacing.gutter,
-                  AppSpacing.xl,
+                  AppSpacing.xl + MediaQuery.paddingOf(context).bottom,
                 ),
                 initialItemCount: _shown.length,
                 itemBuilder: (context, i, animation) => _Animated(
@@ -308,7 +315,13 @@ class _EmptyFavorites extends StatelessWidget {
     final l = L.of(context);
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        // Centred in what the floating nav dock leaves visible.
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.xl,
+          AppSpacing.xl,
+          AppSpacing.xl + MediaQuery.paddingOf(context).bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

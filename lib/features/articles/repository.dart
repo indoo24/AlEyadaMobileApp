@@ -15,4 +15,9 @@ class ArticleRepository {
     );
     return unwrapPaginated(body, ArticleListItem.fromJson);
   }
+
+  Future<ArticleDetail> article(String slug) async {
+    final body = await _api.get(Endpoints.article(slug));
+    return ArticleDetail.fromJson(unwrapObject(body));
+  }
 }

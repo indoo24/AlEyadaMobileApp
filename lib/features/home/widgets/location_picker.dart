@@ -23,9 +23,13 @@ String homeLocationLabel(BuildContext context, WidgetRef ref) {
 
 /// Choose the city the home feed is scoped to. The list is the directory's own
 /// (unrestricted) city list, so every city a patient can search is offered.
+///
+/// On the root navigator, so the tab shell's floating dock is not painted
+/// over the sheet.
 Future<void> showCityPicker(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     showDragHandle: true,
     builder: (_) => const _CityPicker(),
@@ -64,7 +68,10 @@ class _CityPicker extends ConsumerWidget {
               isEmpty: (list) => list.isEmpty,
               data: (list) => ListView(
                 shrinkWrap: true,
-                padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+                // The last city scrolls clear of the system navigation bar.
+                padding: EdgeInsets.only(
+                  bottom: AppSpacing.xl + MediaQuery.paddingOf(context).bottom,
+                ),
                 children: [
                   _CityTile(
                     label: l.homeLocationAll,

@@ -54,10 +54,12 @@ class AppShell extends ConsumerWidget {
     if (index < 0) index = 0;
 
     return Scaffold(
-      // The dock floats over Home's feed (which pads itself to clear it). The
-      // other tabs have their own Scaffolds and list padding, so for them the
-      // dock keeps a strip of its own rather than covering their last rows.
-      extendBody: location == Routes.home,
+      // Every tab runs under the dock, so it is the same floating glass over
+      // each page's own content, not over a solid strip of the shell. The
+      // Scaffold then reports the dock's height as the body's bottom padding, and
+      // each tab adds that to the end of its scrolling content
+      // (`MediaQuery.paddingOf(context).bottom`) so its last row can scroll clear.
+      extendBody: true,
       body: child,
       bottomNavigationBar: GlassBottomNav(
         selectedIndex: index,

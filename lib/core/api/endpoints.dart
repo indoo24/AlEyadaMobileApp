@@ -71,6 +71,9 @@ class Endpoints {
 
   /// GET published articles, newest first. `page_size` is honoured.
   static const articles = '/articles/';
+
+  /// GET one published article, body included.
+  static String article(String slug) => '/articles/$slug/';
   static const publicSettings = '/settings/public/';
 
   /// POST a contact-click. Fire-and-forget analytics; a failure here must never

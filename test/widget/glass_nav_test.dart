@@ -16,14 +16,26 @@ void main() {
   late TestHarness h;
   late GoRouter router;
 
+  /// The bottom padding each stand-in tab was laid out with.
+  late Map<String, double> bottomPadding;
+
   setUp(() {
     h = TestHarness();
     h.adapter
       ..onGet('/specializations/', (s) => s.reply(200, specializationsResponse))
       ..onGet('/doctors/', (s) => s.reply(200, doctorListResponse));
+    bottomPadding = {};
     // The real AppShell and the real Home; the other tabs are stand-ins, since
     // only the dock's behaviour is under test.
-    Widget tab(String name) => Scaffold(body: Center(child: Text('page:$name')));
+    Widget tab(String name) => Scaffold(
+      key: ValueKey('page:$name'),
+      body: Builder(
+        builder: (context) {
+          bottomPadding[name] = MediaQuery.paddingOf(context).bottom;
+          return Center(child: Text('page:$name'));
+        },
+      ),
+    );
     router = GoRouter(
       initialLocation: Routes.home,
       routes: [
@@ -33,6 +45,7 @@ void main() {
             GoRoute(path: Routes.home, builder: (_, __) => const HomeScreen()),
             GoRoute(path: Routes.doctors, builder: (_, __) => tab('doctors')),
             GoRoute(path: Routes.bookings, builder: (_, __) => tab('bookings')),
+            GoRoute(path: Routes.favorites, builder: (_, __) => tab('favorites')),
             GoRoute(path: Routes.account, builder: (_, __) => tab('account')),
           ],
         ),
@@ -141,6 +154,40 @@ void main() {
     expect(rect.left, greaterThanOrEqualTo(16));
     expect(360 - rect.right, greaterThanOrEqualTo(16));
     expect(800 - rect.bottom, greaterThanOrEqualTo(34), reason: 'clear of the home indicator');
+  });
+
+  testWidgets('every main tab runs under the same floating dock, and is told what it covers', (
+    tester,
+  ) async {
+    await pumpApp(tester, viewPadding: const EdgeInsets.only(bottom: 24)); // gesture bar
+    Rect glass() =>
+        tester.getRect(find.descendant(of: dock(), matching: find.byType(BackdropFilter)));
+    final onHome = glass();
+
+    for (final (label, name) in [
+      ('الأطباء', 'doctors'),
+      ('حجوزاتي', 'bookings'),
+      ('المفضلة', 'favorites'),
+      ('حسابي', 'account'),
+    ]) {
+      await tester.tap(find.descendant(of: dock(), matching: find.text(label)));
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(dock(), findsOneWidget, reason: '$label: one dock, the shell\'s');
+      expect(glass(), onHome, reason: '$label: the same capsule, in the same place, as on Home');
+      // The page runs on under the dock to the bottom edge — what the glass
+      // floats over is the page itself, not a strip of the shell...
+      expect(tester.getRect(find.byKey(ValueKey('page:$name'))).bottom, 800, reason: label);
+      // ...and it is told how much the dock covers, gesture bar included, so its
+      // content can clear it.
+      expect(bottomPadding[name], closeTo(800 - onHome.top, 0.5), reason: label);
+      expect(
+        800 - onHome.bottom,
+        greaterThanOrEqualTo(24),
+        reason: '$label: above the gesture bar',
+      );
+    }
   });
 
   testWidgets('Home can be scrolled until its last item sits above the dock', (tester) async {

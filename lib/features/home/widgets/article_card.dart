@@ -16,7 +16,7 @@ class ArticleCard extends StatelessWidget {
 
   final ArticleListItem article;
 
-  /// Null while there is no article page to open.
+  /// Opens the article; the whole card is the target.
   final VoidCallback? onTap;
 
   @override

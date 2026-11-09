@@ -240,10 +240,25 @@ class _ClinicsSection extends ConsumerWidget {
     final clinics = ref.watch(homeClinicsProvider(city));
     final width = (MediaQuery.sizeOf(context).width * 0.74).clamp(240.0, 300.0);
 
+    // "See all" once there is something to see more of, with the count left
+    // over, as the doctors section does.
+    final page = clinics.valueOrNull;
+    final remaining = page == null
+        ? 0
+        : page.pagination.count - page.items.length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _Padded(HomeSectionHeader(title: l.homeCentersTitle)),
+        _Padded(
+          HomeSectionHeader(
+            title: l.homeCentersTitle,
+            onSeeAll: (page?.items.isNotEmpty ?? false)
+                ? () => context.push(Routes.clinics)
+                : null,
+            seeAllLabel: remaining > 0 ? l.homeSeeAllCount(remaining) : null,
+          ),
+        ),
         const SizedBox(height: AppSpacing.md),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
@@ -303,18 +318,28 @@ class _ArticlesSection extends ConsumerWidget {
     final page = ref.watch(homeArticlesProvider).valueOrNull;
     if (page == null || page.items.isEmpty) return const SizedBox.shrink();
     final width = (MediaQuery.sizeOf(context).width * 0.78).clamp(250.0, 320.0);
+    final remaining = page.pagination.count - page.items.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _Padded(HomeSectionHeader(title: l.homeArticlesTitle)),
+        _Padded(
+          HomeSectionHeader(
+            title: l.homeArticlesTitle,
+            onSeeAll: () => context.push(Routes.articles),
+            seeAllLabel: remaining > 0 ? l.homeSeeAllCount(remaining) : null,
+          ),
+        ),
         const SizedBox(height: AppSpacing.md),
         HorizontalStrip(
           children: [
             for (final a in page.items)
               SizedBox(
                 width: width,
-                child: ArticleCard(article: a),
+                child: ArticleCard(
+                  article: a,
+                  onTap: () => context.push(Routes.articlePath(a.slug)),
+                ),
               ),
           ],
         ),
