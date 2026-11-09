@@ -164,8 +164,12 @@ class _TileSkeleton extends StatelessWidget {
 }
 
 /// Every specialty in a sheet, for "see all" and the Specialties shortcut.
+///
+/// On the root navigator, so the tab shell's floating dock is not painted
+/// over the sheet.
 Future<void> showAllSpecialties(BuildContext context) => showModalBottomSheet<void>(
   context: context,
+  useRootNavigator: true,
   isScrollControlled: true,
   useSafeArea: true,
   backgroundColor: context.palette.surfaceRaised,
@@ -232,11 +236,13 @@ class _AllSpecialtiesSheet extends ConsumerWidget {
                     final columns = c.maxWidth >= 380 ? 4 : 3;
                     return GridView.builder(
                       controller: controller,
-                      padding: const EdgeInsets.fromLTRB(
+                      // The last row scrolls clear of the system navigation
+                      // bar.
+                      padding: EdgeInsets.fromLTRB(
                         AppSpacing.gutter,
                         6,
                         AppSpacing.gutter,
-                        24,
+                        24 + MediaQuery.paddingOf(context).bottom,
                       ),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: columns,

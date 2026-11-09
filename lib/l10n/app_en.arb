@@ -264,6 +264,10 @@
   "homeNoArticles": "No articles published yet.",
   "homeSectionError": "This section could not be loaded.",
   "homeArticleCertified": "Medically reviewed",
+  "articleScreenTitle": "Article",
+  "articleReviewedBy": "Medically reviewed by {name}",
+  "@articleReviewedBy": { "placeholders": { "name": { "type": "String" } } },
+  "articleNoContent": "This article has no text yet.",
 
   "searchRecentTitle": "Recent searches",
   "searchClearAll": "Clear all",

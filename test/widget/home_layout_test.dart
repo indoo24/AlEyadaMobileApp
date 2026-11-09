@@ -1,7 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:aleyada_mobile/core/theme/app_theme.dart';
 import 'package:aleyada_mobile/features/home/home_screen.dart';
+import 'package:aleyada_mobile/features/home/widgets/quick_discovery.dart';
 import 'package:aleyada_mobile/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -62,6 +66,9 @@ final _cities = {
   'meta': <String, dynamic>{},
   'errors': <dynamic>[],
 };
+
+/// A quick action card's rect, its icon's, and its label's rect and paragraph.
+typedef _Card = ({Rect card, Rect icon, Rect label, RenderParagraph text});
 
 void main() {
   late TestHarness h;
@@ -149,6 +156,94 @@ void main() {
       }
     }
   }
+
+  group('quick action cards', () {
+    const labels = {
+      'ar': ['كل الأطباء', 'التخصصات', 'حجز إلكتروني', 'الأقل سعرًا'],
+      'en': ['All doctors', 'Specialties', 'Book online', 'Lowest fee'],
+    };
+
+    List<_Card> cards(WidgetTester tester, String lang) => [
+      for (final label in labels[lang]!)
+        () {
+          final text = find.descendant(
+            of: find.byType(QuickDiscovery),
+            matching: find.text(label),
+          );
+          final card = find.ancestor(of: text, matching: find.byType(InkWell));
+          final icon = find.descendant(of: card, matching: find.byType(Icon));
+          return (
+            card: tester.getRect(card.first),
+            icon: tester.getRect(icon),
+            label: tester.getRect(text),
+            text: tester.renderObject<RenderParagraph>(text),
+          );
+        }(),
+    ];
+
+    for (final entry in sizes.entries) {
+      for (final lang in labels.keys) {
+        for (final scale in const [1.0, 1.1, 1.3]) {
+          testWidgets('one height per row, icons and labels level: '
+              '${entry.key}, $lang, text x$scale', (tester) async {
+            final size = entry.value;
+            await pumpHome(
+              tester,
+              size: size,
+              locale: Locale(lang),
+              textScale: scale,
+            );
+
+            // Four across, or two rows of two.
+            final rows = <double, List<_Card>>{};
+            for (final c in cards(tester, lang)) {
+              rows.putIfAbsent(c.card.top, () => []).add(c);
+            }
+            for (final row in rows.values) {
+              final first = row.first;
+              for (final c in row) {
+                expect(c.card.size, first.card.size, reason: 'same card size');
+                expect(c.icon.top, first.icon.top, reason: 'icons level');
+                expect(c.label.top, first.label.top, reason: 'labels level');
+                // All of the label shows, inside its card, under its icon.
+                expect(c.text.didExceedMaxLines, isFalse);
+                expect(c.card.expandToInclude(c.label), c.card);
+                expect(c.label.center.dx, closeTo(c.icon.center.dx, 0.5));
+              }
+              // The row is as tall as its longest label needs and no taller,
+              // so a locale where nothing wraps keeps its single-line cards.
+              final lowest = row.map((c) => c.label.bottom).reduce(math.max);
+              const paddingAndBorder = 12 + 1;
+              expect(
+                first.card.bottom - lowest,
+                closeTo(paddingAndBorder, 0.01),
+              );
+            }
+            expect(tester.takeException(), isNull);
+          });
+        }
+      }
+    }
+
+    testWidgets('"حجز إلكتروني" wraps as two whole words; its row grows too', (
+      tester,
+    ) async {
+      // Wide enough to stay four across, with text large enough that this
+      // label, the longest, needs a second line while the others do not.
+      await pumpHome(tester, size: const Size(412, 915), textScale: 1.3);
+      final all = cards(tester, 'ar');
+      final online = all[2];
+      final oneLine = all[0].label.height;
+
+      expect(all.map((c) => c.card.top).toSet(), hasLength(1));
+      expect(online.label.height, closeTo(2 * oneLine, 0.5)); // حجز / إلكتروني
+      for (final c in [all[0], all[1], all[3]]) {
+        expect(c.label.height, oneLine);
+        expect(c.card.height, online.card.height);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  });
 
   testWidgets('every section renders real data from the API', (tester) async {
     await pumpHome(tester, size: const Size(360, 800));

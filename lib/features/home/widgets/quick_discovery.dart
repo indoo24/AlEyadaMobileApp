@@ -61,45 +61,33 @@ class QuickDiscovery extends ConsumerWidget {
         // become a 2 × 2 grid, which doubles each label's width.
         final perTile = (constraints.maxWidth - 3 * AppSpacing.sm) / 4;
         final compact = perTile / MediaQuery.textScalerOf(context).scale(1) < 68;
-        if (!compact) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        // A two-word label can still wrap to a second line ("حجز إلكتروني" is the
+        // widest, with a few pixels to spare at 360 wide). Every tile in a row
+        // takes the height of the tallest, so a wrap never makes one card stand
+        // out: icons stay level and each label starts on the same line.
+        Widget row(Iterable<int> tiles) => IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (var i = 0; i < items.length; i++) ...[
-                if (i > 0) const SizedBox(width: AppSpacing.sm),
+              for (final i in tiles) ...[
+                if (i != tiles.first) const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: _Shortcut(icon: items[i].$1, label: items[i].$2, onTap: items[i].$3),
+                  child: _Shortcut(
+                    icon: items[i].$1,
+                    label: items[i].$2,
+                    onTap: items[i].$3,
+                  ),
                 ),
               ],
             ],
-          );
-        }
-        Widget tile(int i) => Expanded(
-          child: _Shortcut(icon: items[i].$1, label: items[i].$2, onTap: items[i].$3),
+          ),
         );
+        if (!compact) return row([0, 1, 2, 3]);
         return Column(
           children: [
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  tile(0),
-                  const SizedBox(width: AppSpacing.sm),
-                  tile(1),
-                ],
-              ),
-            ),
+            row([0, 1]),
             const SizedBox(height: AppSpacing.sm),
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  tile(2),
-                  const SizedBox(width: AppSpacing.sm),
-                  tile(3),
-                ],
-              ),
-            ),
+            row([2, 3]),
           ],
         );
       },

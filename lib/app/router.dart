@@ -5,12 +5,15 @@ import 'package:go_router/go_router.dart';
 import '../core/auth/auth_controller.dart';
 import '../core/auth/models.dart';
 import '../core/providers.dart';
+import '../features/articles/article_detail_screen.dart';
+import '../features/articles/articles_screen.dart';
 import '../features/auth/consent_screen.dart';
 import '../features/auth/otp_screen.dart';
 import '../features/auth/sign_in_screen.dart';
 import '../features/auth/sign_up_screen.dart';
 import '../features/bookings/booking_detail_screen.dart';
 import '../features/bookings/bookings_screen.dart';
+import '../features/clinics/medical_centers_screen.dart';
 import '../features/doctors/doctor_detail_screen.dart';
 import '../features/doctors/doctors_screen.dart';
 import '../features/favorites/favorites_screen.dart';
@@ -61,8 +64,14 @@ class Routes {
   static const managementAssistants = '/management/assistants';
   static const managementSchedule = '/management/schedule';
 
+  /// Every clinic and medical center, and every article — Home's "see all".
+  static const clinics = '/clinics';
+  static const articles = '/articles';
+  static const article = '/articles/:slug';
+
   static String doctorPath(String slug) => '/doctors/$slug';
   static String bookingPath(String id) => '/bookings/$id';
+  static String articlePath(String slug) => '/articles/$slug';
 }
 
 /// Routes a signed-out visitor may not see.
@@ -177,6 +186,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.doctor,
         builder: (_, state) => DoctorDetailScreen(slug: state.pathParameters['slug'] ?? ''),
+      ),
+      GoRoute(
+        path: Routes.clinics,
+        builder: (_, __) => const MedicalCentersScreen(),
+      ),
+      GoRoute(
+        path: Routes.articles,
+        builder: (_, __) => const ArticlesScreen(),
+      ),
+      GoRoute(
+        path: Routes.article,
+        builder: (_, state) =>
+            ArticleDetailScreen(slug: state.pathParameters['slug'] ?? ''),
       ),
       GoRoute(
         path: Routes.bookingDetail,
