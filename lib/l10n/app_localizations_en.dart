@@ -152,6 +152,20 @@ class LEn extends L {
   String get authGuestPrompt => 'Sign in to see your bookings.';
 
   @override
+  String get authContinueAsGuest => 'Continue as guest';
+
+  @override
+  String get authGuestHint =>
+      'Browse doctors, clinics and articles without an account.';
+
+  @override
+  String get authLoginRequired => 'Sign-in required';
+
+  @override
+  String get authSignInToContinue =>
+      'Sign in or create an account to continue.';
+
+  @override
   String get otpTitle => 'Verify your phone';
 
   @override

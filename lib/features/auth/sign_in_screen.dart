@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/router.dart';
 import '../../app/safe_redirect.dart';
 import '../../core/api/api_error.dart';
+import '../../core/auth/guest_mode.dart';
 import '../../core/errors/error_messages.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
@@ -109,14 +110,58 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     }
   }
 
+  /// Look around without an account. Nothing about the session changes: no
+  /// tokens, no user — only the choice, so the router lets them into Home.
+  Future<void> _continueAsGuest() async {
+    await ref.read(guestModeProvider.notifier).enter();
+    if (!mounted) return;
+    // Sent here from a page (a protected action): go back to it.
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    // The welcome screen itself: into the app, at a public page they were on,
+    // or Home. Never a protected one — that would only bring them back here.
+    final next = safeNextLocation(widget.next);
+    context.go(next != null && !isProtectedLocation(next) ? next : Routes.home);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = L.of(context);
+    final guest = ref.watch(guestModeProvider) == true;
+    final next = safeNextLocation(widget.next);
+    final signUp = next == null
+        ? Routes.signUp
+        : '${Routes.signUp}?next=${Uri.encodeComponent(next)}';
+
+    // A guest sent here by a protected tab has nothing beneath this screen:
+    // back returns them to Home rather than closing the app.
+    return PopScope(
+      canPop: !guest || context.canPop(),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) context.go(Routes.home);
+      },
+      child: _form(context, l, guest: guest, signUp: signUp),
+    );
+  }
+
+  Widget _form(
+    BuildContext context,
+    L l, {
+    required bool guest,
+    required String signUp,
+  }) {
     return AuthScaffold(
       children: [
         const SizedBox(height: 8),
         AuthBrandHeader(title: l.authSignIn, subtitle: l.authSignInSubtitle),
         const SizedBox(height: 24),
+        // Why a guest is here: what they tried needs an account.
+        if (guest && widget.next != null) ...[
+          const _SignInRequiredNote(),
+          const SizedBox(height: 14),
+        ],
         AutofillGroup(
           child: AuthCard(
             children: [
@@ -181,8 +226,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         AuthFooterLink(
           question: l.authNoAccount,
           action: l.authSignUp,
-          onTap: _busy ? null : () => context.push(Routes.signUp),
+          onTap: _busy ? null : () => context.push(signUp),
         ),
+        const SizedBox(height: 10),
+        _GuestAction(onPressed: _busy ? null : _continueAsGuest),
       ],
     );
   }
@@ -205,6 +252,94 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     );
     if (phone == null || !context.mounted) return;
     context.push('${Routes.otp}?phone=${Uri.encodeComponent(phone)}&purpose=password_reset');
+  }
+}
+
+/// "Sign-in required" — shown to a guest whose action needs an account.
+class _SignInRequiredNote extends StatelessWidget {
+  const _SignInRequiredNote();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    final p = context.palette;
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: p.pageSoft,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.lock_outline_rounded, size: 20, color: p.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l.authLoginRequired,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: p.heading,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l.authSignInToContinue,
+                    style: TextStyle(fontSize: 13, color: p.muted, height: 1.5),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "Continue as guest": set apart from signing in and creating an account —
+/// outlined rather than filled, with a line on what a guest can do.
+class _GuestAction extends StatelessWidget {
+  const _GuestAction({required this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    final p = context.palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OutlinedButton.icon(
+          onPressed: onPressed,
+          icon: const Icon(Icons.explore_outlined, size: 20),
+          label: Text(l.authContinueAsGuest),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(50),
+            foregroundColor: p.heading,
+            side: BorderSide(color: p.border),
+            textStyle: const TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              fontSize: 14.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l.authGuestHint,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12.5, color: p.muted, height: 1.5),
+        ),
+      ],
+    );
   }
 }
 

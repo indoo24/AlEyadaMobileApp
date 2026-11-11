@@ -379,6 +379,30 @@ abstract class L {
   /// **'سجّل الدخول لمتابعة حجوزاتك.'**
   String get authGuestPrompt;
 
+  /// No description provided for @authContinueAsGuest.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتابعة كضيف'**
+  String get authContinueAsGuest;
+
+  /// No description provided for @authGuestHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفّح الأطباء والعيادات والمقالات دون حساب.'**
+  String get authGuestHint;
+
+  /// No description provided for @authLoginRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الدخول مطلوب'**
+  String get authLoginRequired;
+
+  /// No description provided for @authSignInToContinue.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجّل الدخول أو أنشئ حساباً للمتابعة.'**
+  String get authSignInToContinue;
+
   /// No description provided for @otpTitle.
   ///
   /// In ar, this message translates to:

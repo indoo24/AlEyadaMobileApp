@@ -52,6 +52,10 @@
   "authNameRequired": "Please enter your name.",
   "authPasswordTooShort": "That password is too short.",
   "authGuestPrompt": "Sign in to see your bookings.",
+  "authContinueAsGuest": "Continue as guest",
+  "authGuestHint": "Browse doctors, clinics and articles without an account.",
+  "authLoginRequired": "Sign-in required",
+  "authSignInToContinue": "Sign in or create an account to continue.",
 
   "otpTitle": "Verify your phone",
   "otpSentTo": "We sent a verification code to {phone}",

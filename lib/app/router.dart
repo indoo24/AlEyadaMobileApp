@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/auth/auth_controller.dart';
+import '../core/auth/guest_mode.dart';
 import '../core/auth/models.dart';
 import '../core/providers.dart';
 import '../features/articles/article_detail_screen.dart';
@@ -87,6 +88,16 @@ const _authenticatedOnly = <String>{
 /// Routes that only make sense when signed out.
 const _guestOnly = <String>{Routes.signIn, Routes.signUp};
 
+/// The ways in: what someone with no session who has not chosen to continue as
+/// a guest may see. Joining as a doctor is a way of creating an account too.
+const _entry = <String>{
+  Routes.splash,
+  Routes.signIn,
+  Routes.signUp,
+  Routes.otp,
+  Routes.join,
+};
+
 final routerProvider = Provider<GoRouter>((ref) {
   // A plain Listenable so go_router re-evaluates its guards the instant the
   // session changes, rather than on the next navigation.
@@ -99,6 +110,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: false,
     redirect: (context, state) {
       final auth = ref.read(authControllerProvider);
+      // Null until the saved choice is read. Only consulted with no session.
+      final guest = ref.read(guestModeProvider);
       final loc = state.matchedLocation;
 
       // Hold everyone on the splash until the session question is answered.
@@ -112,7 +125,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (loc == Routes.splash) {
         // Session settled, but let the launch animation finish before leaving.
         if (!ref.read(splashAnimationDoneProvider)) return null;
-        return auth.hasSession ? _homeFor(auth.user) : Routes.home;
+        if (auth.hasSession) return _homeFor(auth.user);
+        // No session: a returning guest goes back in, anyone else is welcomed
+        // at sign-in. Wait for the saved choice rather than guess it.
+        if (guest == null) return null;
+        return guest ? Routes.home : Routes.signIn;
       }
 
       // Policies moved on: the backend will refuse every write until they are
@@ -128,6 +145,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!auth.hasSession && _isProtected(loc)) {
         // Remember where they were headed so signing in resumes it.
         return '${Routes.signIn}?next=${Uri.encodeComponent(state.uri.toString())}';
+      }
+
+      // No session and no choice to look around as a guest — after signing
+      // out, or when a session expires: everything but the ways in leads to
+      // sign-in. A public page they were on is kept as `next`.
+      if (!auth.hasSession && guest != true && !_entry.contains(loc)) {
+        return loc == Routes.home
+            ? Routes.signIn
+            : '${Routes.signIn}?next=${Uri.encodeComponent(state.uri.toString())}';
       }
 
       if (auth.hasSession && _guestOnly.contains(loc)) {
@@ -151,7 +177,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.signIn,
         builder: (_, state) => SignInScreen(next: state.uri.queryParameters['next']),
       ),
-      GoRoute(path: Routes.signUp, builder: (_, __) => const SignUpScreen()),
+      GoRoute(
+        path: Routes.signUp,
+        builder: (_, state) =>
+            SignUpScreen(next: state.uri.queryParameters['next']),
+      ),
       GoRoute(
         path: Routes.otp,
         builder: (_, state) {
@@ -221,6 +251,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 bool _isProtected(String location) =>
     _authenticatedOnly.any((r) => location == r || location.startsWith('$r/'));
 
+/// Whether [location] needs a signed-in account. Its path is what counts.
+bool isProtectedLocation(String location) =>
+    _isProtected(Uri.tryParse(location)?.path ?? location);
+
 /// Where a given user belongs on launch.
 ///
 /// A doctor's home is their management hub; everyone else starts in the directory —
@@ -243,15 +277,23 @@ class _AuthRefresh extends ChangeNotifier {
       (_, __) => notifyListeners(),
       fireImmediately: false,
     );
+    // Choosing to continue as a guest, and the saved choice arriving at launch.
+    _guestSub = ref.listen<bool?>(
+      guestModeProvider,
+      (_, __) => notifyListeners(),
+      fireImmediately: false,
+    );
   }
 
   late final ProviderSubscription<AuthState> _sub;
   late final ProviderSubscription<bool> _splashSub;
+  late final ProviderSubscription<bool?> _guestSub;
 
   @override
   void dispose() {
     _sub.close();
     _splashSub.close();
+    _guestSub.close();
     super.dispose();
   }
 }

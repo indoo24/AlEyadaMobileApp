@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
+import '../../app/safe_redirect.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/models.dart';
 import '../../core/errors/error_messages.dart';
@@ -19,7 +20,11 @@ import '../../core/theme/app_palette.dart';
 /// *current* policy versions with the payload and refuses the signup without
 /// them, so the versions are fetched rather than assumed.
 class SignUpScreen extends ConsumerStatefulWidget {
-  const SignUpScreen({super.key});
+  const SignUpScreen({super.key, this.next});
+
+  /// Where the person was headed before being asked to sign in. Verifying the
+  /// phone signs them in, and that step resumes it.
+  final String? next;
 
   @override
   ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
@@ -94,7 +99,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (!mounted) return;
       // The account exists but the phone is unverified. Verifying it is also what
       // signs them in, so the OTP screen is the next step rather than a detour.
-      context.push('${Routes.otp}?phone=${Uri.encodeComponent(_phone.text.trim())}&purpose=signup');
+      final next = safeNextLocation(widget.next);
+      context.push(
+        '${Routes.otp}?phone=${Uri.encodeComponent(_phone.text.trim())}'
+        '&purpose=signup'
+        '${next == null ? '' : '&next=${Uri.encodeComponent(next)}'}',
+      );
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {

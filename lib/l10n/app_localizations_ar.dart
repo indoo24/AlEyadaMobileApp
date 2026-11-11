@@ -150,6 +150,18 @@ class LAr extends L {
   String get authGuestPrompt => 'سجّل الدخول لمتابعة حجوزاتك.';
 
   @override
+  String get authContinueAsGuest => 'المتابعة كضيف';
+
+  @override
+  String get authGuestHint => 'تصفّح الأطباء والعيادات والمقالات دون حساب.';
+
+  @override
+  String get authLoginRequired => 'تسجيل الدخول مطلوب';
+
+  @override
+  String get authSignInToContinue => 'سجّل الدخول أو أنشئ حساباً للمتابعة.';
+
+  @override
   String get otpTitle => 'تأكيد رقم الهاتف';
 
   @override

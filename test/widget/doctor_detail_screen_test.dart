@@ -78,6 +78,10 @@ void main() {
           builder: (_, s) => Scaffold(body: Text('sign-in ${s.uri}')),
         ),
         GoRoute(
+          path: Routes.signUp,
+          builder: (_, s) => Scaffold(body: Text('sign-up ${s.uri}')),
+        ),
+        GoRoute(
           path: Routes.otp,
           builder: (_, s) => Scaffold(body: Text('otp ${s.uri}')),
         ),
@@ -495,14 +499,71 @@ void main() {
       expect(tester.widget<FilledButton>(confirm).onPressed, isNotNull);
     });
 
-    testWidgets('a guest is sent to sign in, and nothing is booked', (tester) async {
+    testWidgets(
+      'a guest is told why, then sent to sign in; nothing is booked',
+      (tester) async {
+        await pumpDetail(tester, size: const Size(390, 820));
+        await tap(tester, find.text('احجز موعد').first);
+        await tap(tester, inSheet(find.text('09:00')));
+        await tap(tester, inSheet(find.text('سجّل الدخول لتأكيد الحجز')));
+
+        // First the reason, with both ways in.
+        expect(find.text('تسجيل الدخول مطلوب'), findsOneWidget);
+        expect(
+          find.text('سجّل الدخول أو أنشئ حساباً للمتابعة.'),
+          findsOneWidget,
+        );
+        expect(
+          find.widgetWithText(OutlinedButton, 'إنشاء حساب'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('sign-in /sign-in'), findsNothing);
+
+        await tap(tester, find.widgetWithText(FilledButton, 'تسجيل الدخول'));
+        expect(
+          find.textContaining('sign-in /sign-in?next=%2Fdoctors%2F$slug'),
+          findsOneWidget,
+        );
+        expect(server.bookings, isEmpty);
+      },
+    );
+
+    testWidgets('a guest can choose to create an account instead, and come '
+        'back to this doctor', (tester) async {
       await pumpDetail(tester, size: const Size(390, 820));
       await tap(tester, find.text('احجز موعد').first);
       await tap(tester, inSheet(find.text('09:00')));
       await tap(tester, inSheet(find.text('سجّل الدخول لتأكيد الحجز')));
+      await tap(tester, find.widgetWithText(OutlinedButton, 'إنشاء حساب'));
 
-      expect(find.textContaining('sign-in /sign-in?next=%2Fdoctors%2F$slug'), findsOneWidget);
+      expect(
+        find.textContaining('sign-up /sign-up?next=%2Fdoctors%2F$slug'),
+        findsOneWidget,
+      );
+      // Sign-in sits beneath it, as when creating an account from sign-in.
+      Navigator.of(tester.element(find.textContaining('sign-up'))).pop();
+      await settle(tester, 5);
+      expect(
+        find.textContaining('sign-in /sign-in?next=%2Fdoctors%2F$slug'),
+        findsOneWidget,
+      );
       expect(server.bookings, isEmpty);
+    });
+
+    testWidgets('a guest who dismisses the prompt stays in the booking sheet', (
+      tester,
+    ) async {
+      await pumpDetail(tester, size: const Size(390, 820));
+      await tap(tester, find.text('احجز موعد').first);
+      await tap(tester, inSheet(find.text('09:00')));
+      await tap(tester, inSheet(find.text('سجّل الدخول لتأكيد الحجز')));
+      expect(find.text('تسجيل الدخول مطلوب'), findsOneWidget);
+
+      await tester.binding.handlePopRoute(); // system back
+      await settle(tester, 5);
+      expect(find.text('تسجيل الدخول مطلوب'), findsNothing);
+      expect(inSheet(find.text('سجّل الدخول لتأكيد الحجز')), findsOneWidget);
+      expect(find.textContaining('sign-in'), findsNothing);
     });
 
     testWidgets('phone-only at this clinic: the server\'s message and contact buttons', (

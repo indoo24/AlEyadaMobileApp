@@ -52,6 +52,10 @@
   "authNameRequired": "من فضلك أدخل الاسم.",
   "authPasswordTooShort": "كلمة المرور قصيرة جدًا.",
   "authGuestPrompt": "سجّل الدخول لمتابعة حجوزاتك.",
+  "authContinueAsGuest": "المتابعة كضيف",
+  "authGuestHint": "تصفّح الأطباء والعيادات والمقالات دون حساب.",
+  "authLoginRequired": "تسجيل الدخول مطلوب",
+  "authSignInToContinue": "سجّل الدخول أو أنشئ حساباً للمتابعة.",
 
   "otpTitle": "تأكيد رقم الهاتف",
   "otpSentTo": "أرسلنا رمز تأكيد إلى {phone}",

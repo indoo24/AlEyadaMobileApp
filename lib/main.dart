@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
 import 'app/locale_controller.dart';
 import 'app/theme_mode_controller.dart';
+import 'core/auth/guest_mode.dart';
 import 'core/providers.dart';
 
 Future<void> main() async {
@@ -12,12 +13,18 @@ Future<void> main() async {
   // Read the saved appearance and language before the first frame, so a person
   // who chose dark mode or English never sees a flash of the other. Both reads
   // are a few milliseconds from SharedPreferences and cannot fail the launch.
-  final (themeMode, locale) = await (ThemeModeController.load(), LocaleController.load()).wait;
+  // The guest choice is read the same way, so the splash never waits on it.
+  final (themeMode, locale, guest) = await (
+    ThemeModeController.load(),
+    LocaleController.load(),
+    GuestModeController.load(),
+  ).wait;
 
   final container = ProviderContainer(
     overrides: [
       preloadedThemeModeProvider.overrideWithValue(themeMode),
       preloadedLocaleProvider.overrideWithValue((locale: locale)),
+      preloadedGuestModeProvider.overrideWithValue(guest),
     ],
   );
 

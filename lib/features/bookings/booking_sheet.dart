@@ -13,6 +13,7 @@ import '../../core/utils/contact_links.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/form_fields.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/widgets/sign_in_required.dart';
 import '../doctors/doctor_detail_logic.dart';
 import '../doctors/models.dart';
 import '../doctors/providers.dart';
@@ -282,11 +283,13 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
     if (draft.submitting || slot == null || clinicId == null) return;
 
     if (!ref.read(authControllerProvider).isAuthenticated) {
-      // Send them to sign in and bring them back to this doctor.
+      // Say why first, then send them to sign in (or sign up) and bring them
+      // back to this doctor.
       final router = GoRouter.of(context);
-      final target = Uri.encodeComponent(Routes.doctorPath(_slug));
+      final entry = await askToSignIn(context);
+      if (entry == null || !mounted) return;
       Navigator.of(context).pop();
-      router.push('${Routes.signIn}?next=$target');
+      openAuthEntry(router, entry, next: Routes.doctorPath(_slug));
       return;
     }
 
